@@ -42,7 +42,7 @@ from __future__ import print_function
 import re
 from collections import namedtuple, defaultdict
 
-__version__ = '0.1'
+__version__ = '0.1.0'
 __version_info__ = __version__.replace('.', ' ').replace('-', ' ').split()
 
 
