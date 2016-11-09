@@ -42,7 +42,7 @@ from __future__ import print_function
 import re
 from collections import namedtuple, defaultdict
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 __version_info__ = __version__.replace('.', ' ').replace('-', ' ').split()
 
 
@@ -91,11 +91,14 @@ class Graph(object):
         if indent is False: indent = None
         return _serialize_penman(self._triples, top, indent)
 
-    def to_triples(self):
+    def to_triples(self, normalize=False):
         ts = []
         # if self._top is not None:
         #     ts.append()
-        ts.extend(self._triples)
+        for t in self._triples:
+            if normalize and t.is_inverted():
+                t = _invert(t)
+            ts.append(t)
         return ts
 
 
@@ -203,15 +206,39 @@ def _parse_penman(toks):
     return Graph.from_triples(triples)
 
 
-def _serialize_penman(triples, top, indent):
+def _serialize_penman(triples, top, indent, weights=None):
+    if weights is None:
+        weights = _default_inversion_weights(triples)
     g = defaultdict(list)
     remaining = set()
     for triple in triples:
         g[triple.source].append((triple, triple, 0.0))
-        g[triple.target].append((_invert(triple), triple, 1.0))
+        g[triple.target].append((_invert(triple), triple, weights[triple]))
         remaining.add(triple)
     p = _walk(g, top, remaining)
     return _layout(p, top, indent, 0, set())
+
+
+def _default_inversion_weights(triples):
+    """
+    Default to a high weight for inverting :instance-of or any that
+    never appear as a source (e.g. :polarity -, not (- :polarity-of ...)
+    """
+    wts = {}
+    srcs = set()
+    for t in triples:
+        if t.relation not in ('instance-of', 'instance'):
+            srcs.add(t.target if t.is_inverted() else t.source)
+    for t in triples:
+        if t.relation == 'instance-of':
+            wts[t] = 2.0
+        elif t.relation == 'instance':
+            wts[t] = 0.0
+        elif t.target not in srcs:
+            wts[t] = 2.0
+        else:
+            wts[t] = 1.0
+    return wts
 
 
 def _walk(g, v, remaining):
@@ -253,10 +280,20 @@ def _main(args):
     import sys
     infile = args['--input'] or sys.stdin
     data = load(infile)
-    gformat = Graph.to_triples if args['--triples'] else Graph.to_penman
-    for g in data:
-        print(gformat(g))
-        print()
+    if args['--triples']:
+        print(
+            '\n\n'.join(
+                ' ^\n'.join(
+                    map(
+                        '{0[1]}({0[0]}, {0[2]})'.format,
+                        g.to_triples()
+                    )
+                )
+                for g in data
+            )
+        )
+    else:
+        print('\n'.join(g.to_penman() for g in data))
 
 
 if __name__ == '__main__':

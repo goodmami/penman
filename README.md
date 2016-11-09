@@ -14,10 +14,10 @@ notation. It is meant to be used as a Python library or as a script.
   - [x] graph instantiation
   - [x] inspecting list of triples
   - [ ] reading
-  - [ ] writing
+  - [x] writing
     - [x] print list of triples
-    - [ ] format as conjunction of logical triples
-    - [ ] normalize inverse edges
+    - [x] format as conjunction of logical triples
+    - [x] normalize inverse edges
 * Graphs
   - [ ] node and edge inspection
   - [ ] graph metrics

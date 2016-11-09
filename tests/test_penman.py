@@ -69,3 +69,18 @@ def test_to_penman():
         '    :ARG2 (e3 / _sleep_v_1\n'
         '              :ARG1 x1))'
     )
+    g = load([
+        ('a', 'instance-of', 'aaa'),
+        ('a', 'ARG1', 'b'),
+        ('b', 'instance-of', 'bbb'),
+        ('c', 'instance-of', 'ccc'),
+        ('c', 'ARG1', 'b2'),
+        ('c', 'ARG2', 'a'),
+        ('b2', 'instance-of', 'bbb')
+    ])
+    assert g.to_penman() == (
+        '(a / aaa\n'
+        '   :ARG1 (b / bbb)\n'
+        '   :ARG2-of (c / ccc\n'
+        '               :ARG1 (b2 / bbb)))'
+    )
