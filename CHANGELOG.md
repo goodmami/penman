@@ -2,6 +2,14 @@
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+* The `indent` parameter to `Graph.to_penman()` now takes a range of values:
+  - `indent=True` is the default with adaptive indentation
+  - `indent=False` and `indent=None` do not insert newlines and use a
+    single space to delimit fields
+  - `indent=N`, where `N` is an integer, indents N spaces after a newline
+
 ## [v0.2.0][]
 
 ### Changed

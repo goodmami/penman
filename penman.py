@@ -266,12 +266,17 @@ def _layout(g, v, indent, offset, seen):
                        e.is_inverted(),
                        e.relation)
     )
-    offset += len(v) + 2  # 2 for '(' and ' '
+    if indent is True:
+        offset += len(v) + 2
+    elif indent is not None and indent is not False:
+        offset += indent
     for edge in outedges:
         rel = '/' if edge.relation == 'instance-of' else ':' + edge.relation
-        branch = _layout(g, edge.target, indent, offset + len(rel) + 1, seen)
+        inner_offset = (len(rel) + 1) if indent is True else 0
+        branch = _layout(g, edge.target, indent, offset + inner_offset, seen)
         branches.append('{} {}'.format(rel, branch))
-    rels = ('\n' + (' ' * offset)).join(branches)
+    delim = ' ' if (indent is None or indent is False) else '\n'
+    rels = (delim + (' ' * offset)).join(branches)
     s = '({} {})'.format(v, rels)
     return s
 

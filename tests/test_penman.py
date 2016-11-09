@@ -84,3 +84,33 @@ def test_to_penman():
         '   :ARG2-of (c / ccc\n'
         '               :ARG1 (b2 / bbb)))'
     )
+
+def test_to_penman_with_indent():
+    g = penman.Graph.from_triples([
+        ('a', 'instance-of', 'aaa'),
+        ('a', 'ARG1', 'b'),
+        ('b', 'instance-of', 'bbb'),
+        ('b', 'ARG1', 'c'),
+        ('c', 'instance-of', 'ccc')
+    ])
+    assert g.to_penman(indent=True) == (
+        '(a / aaa\n'
+        '   :ARG1 (b / bbb\n'
+        '            :ARG1 (c / ccc)))'
+    )
+    assert g.to_penman(indent=False) == (
+        '(a / aaa :ARG1 (b / bbb :ARG1 (c / ccc)))'
+    )
+    assert g.to_penman(indent=None) == (
+        '(a / aaa :ARG1 (b / bbb :ARG1 (c / ccc)))'
+    )
+    assert g.to_penman(indent=0) == (
+        '(a / aaa\n'
+        ':ARG1 (b / bbb\n'
+        ':ARG1 (c / ccc)))'
+    )
+    assert g.to_penman(indent=2) == (
+        '(a / aaa\n'
+        '  :ARG1 (b / bbb\n'
+        '    :ARG1 (c / ccc)))'
+    )
