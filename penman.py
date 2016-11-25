@@ -24,125 +24,299 @@ Options:
 #
 # Classes:
 #  * Triple(source, relation, target)
+#    - Triple.is_inverted()
 #  * Graph(triples, comment=None)
-#    - Graph.from_penman(s)
-#    - Graph.to_penman(top=None, indent=2, comment=False)
-#    - Graph.from_triples(ts)
-#    - Graph.triples()
+#    - Graph.from_penman(string)
+#    - Graph.to_penman(top=None, indent=True)
+#    - Graph.from_triples(triples, top=None)
+#    - Graph.to_triples(normalize=False)
+#    - Graph.top
+#    - Graph.variables()
+#    - Graph.concepts()
+#    - Graph.constants()
+#    - Graph.edges(source=None, relation=None, target=None)
 #
 # Module Functions:
-#  * load(f)
-#  * loads(s)
-#  * dump(f, xs)
-#  * dumps(xs)
-#  
+#  * load(source, triples=False, **kwargs)
+#  * loads(string, triples=False, **kwargs)
+#  * dump(file, graphs, triples=False, **kwargs)
+#  * dumps(graphs, triples=False, **kwargs)
+#  * is_relation_inverted(relation)
+#  * invert_relation(relation)
+#
+# Module Variables:
+#  * TOP
+#  * TOP_RELATION
+#
 
 from __future__ import print_function
 
-import re
 from collections import namedtuple, defaultdict
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __version_info__ = __version__.replace('.', ' ').replace('-', ' ').split()
 
-
-class Triple(namedtuple('Triple', ('source', 'relation', 'target'))):
-    def is_inverted(self):
-        return self.relation.endswith('-of')
+TOP = 'TOP'
+TOP_RELATION = 'TOP'
 
 
-def _invert(t):
+def is_relation_inverted(relation):
+    """
+    Return True if *relation* is inverted.
+    """
+    return relation.endswith('-of')  # and relation != 'instance-of'
+
+
+def invert_relation(relation):
+    """
+    Invert or deinvert *relation*.
+    """
+    return relation[:-3] if is_relation_inverted(relation) else relation+'-of'
+
+
+def _invert(triple):
     return Triple(
-        t.target,
-        t.relation[:-3] if t.is_inverted() else t.relation+'-of',
-        t.source
+        triple.target,
+        invert_relation(triple.relation),
+        triple.source
     )
 
 
+class Triple(namedtuple('Triple', ('source', 'relation', 'target'))):
+    """
+    Basic container for triple data.
+    """
+
+    def is_inverted(self):
+        """
+        Return True if the triple is inverted.
+        """
+        return is_relation_inverted(self.relation)
+
+
 class Graph(object):
+    """
+    A basic class for modeling a directed acyclic graph.
+    """
+
     def __init__(self):
         self._triples = []
         self._top = None
+        self._inv_weights = {}
 
     def __str__(self):
         return self.to_penman()
 
     @classmethod
-    def from_penman(cls, s):
-        toks, pos, depth = _lex_penman(s)
+    def from_penman(cls, string):
+        """
+        Create a Graph from a string in the PENMAN format.
+        """
+        toks, _, depth = _lex_penman(string)
         if depth > 0:
-            raise ValueError('incomplete graph: {}'.format(s))
+            raise ValueError('incomplete graph: {}'.format(string))
         return _parse_penman(toks)
 
     @classmethod
-    def from_triples(cls, ts):
-        g = cls()
-        for source, relation, target in ts:
-            if g._top is None:  # implicit top (first triple only)
-                g._top = source
-            if source is None and relation is None:  # explicit top
-                g._top = target
+    def from_triples(cls, triples, top=None):
+        """
+        Create a Graph from an iterable of triples.
+        """
+        graph = cls()
+        graph._top = top
+        for source, relation, target in triples:
+            if graph._top is None:  # implicit top (first unnormalized triple)
+                graph._top = source
+            if source == TOP and relation == TOP_RELATION:  # explicit top
+                graph._top = target
             else:
-                g._triples.append(Triple(source, relation, target))
-        return g
+                # if is_relation_inverted(relation):
+                #     source, target = target, source
+                #     relation = relation[:-3]
+                #     inv_weight = 0.0
+                # else:
+                #     inv_weight = 1.0
+                graph._triples.append(Triple(source, relation, target))
+        return graph
+
+    @property
+    def top(self):
+        """
+        Return the top variable.
+        """
+        return self._top
+
+    @top.setter
+    def top(self, top):
+        self._top = top  # check if top is valid variable?
+
+    def variables(self):
+        """
+        Return the list of variables (nonterminal node identifiers).
+        """
+        variables = set()
+        for source, relation, target in self._triples:
+            if ((is_relation_inverted(relation) and relation != 'instance-of')
+                    or relation == 'instance'):
+                source = target
+            variables.add(source)
+        return variables
+
+    # def instances(self, concept=None):
+    #     """
+    #     Return the set of variables that are instances of a concept.
+    #     """
+    #     instances = set()
+    #     for triple in self._triples:
+    #         if triple.relation == 'instance-of':
+    #             if concept is None or concept == triple.target:
+    #                 instances.add(triple.source)
+    #         elif triple.relation == 'instance':
+    #             if concept is None or concept == triple.source:
+    #                 instances.add(triple.target)
+    #     return instances
+
+    def concepts(self):
+        """
+        Return the set of concepts in the graph.
+        """
+        concepts = set()
+        for triple in self._triples:
+            if triple.relation == 'instance-of':
+                concepts.add(triple.target)
+            elif triple.relation == 'instance':
+                concepts.add(triple.source)
+        return concepts
+
+    def constants(self):
+        """
+        Return the non-instance terminal nodes.
+        """
+        constants = []
+        variables = self.variables()
+        for triple in self._triples:
+            if triple.relation in ('instance-of', 'instance'):
+                continue
+            if triple.is_inverted():
+                if triple.source not in variables:
+                    constants.append(triple.source)
+            elif triple.target not in variables:
+                constants.append(triple.target)
+        return constants
+
+    def edges(self, source=None, relation=None, target=None):
+        """
+        Return edges filtered by their *source*, *relation*, or *target*.
+        Edges don't include node labels (instance-of relations).
+        """
+        edges = []
+        for triple in self._triples:
+            src, rln, tgt = triple
+            if triple.is_inverted():
+                src, rln, tgt = tgt, invert_relation(rln), src
+            if ((source is None or source == src) and
+                    (relation is None or relation == rln) and
+                    (target is None or target == tgt)):
+                edges.append((src, rln, tgt))
+        return edges
 
     def to_penman(self, top=None, indent=True):
-        if top is None: top = self._top
-        if indent is False: indent = None
+        """
+        Serialize the graph to PENMAN and return the string.
+
+        Args:
+          top: the node identifier of the top of the graph
+          indent: if True, adaptively indent; if False or None,
+                  don't indent; if a non-negative integer, indent
+                  that many spaces per nesting level
+        """
+        if top is None:
+            top = self._top
+        if indent is False:
+            indent = None
         return _serialize_penman(self._triples, top, indent)
 
     def to_triples(self, normalize=False):
-        ts = []
+        """
+        Return a list of triples.
+
+        Args:
+            normalize: if True, ensure all triples are uninverted
+        """
+        triples = []
         # if self._top is not None:
-        #     ts.append()
-        for t in self._triples:
-            if normalize and t.is_inverted():
-                t = _invert(t)
-            ts.append(t)
-        return ts
+        #     triples.append()
+        for triple in self._triples:
+            if normalize and triple.is_inverted():
+                triple = _invert(triple)
+            triples.append(triple)
+        return triples
 
 
-def load(f, **kwargs):
-    if hasattr(f, 'read'):
-        return list(_read_penman(f, **kwargs))
+def load(source, triples=False, **kwargs):
+    """
+    Deserialize a list of PENMAN-encoded graphs from *source*.
+    """
+    read = _read_triples if triples else _read_penman
+    if hasattr(source, 'read'):
+        return list(read(source, **kwargs))
     else:
-        with open(f) as fh:
-            return list(_read_penman(fh, **kwargs))
-
-# def iterload(f):
-#   with open(f) as fh:
-#       for g in _read_penman(fh):
-#           yield g
+        with open(source) as fh:
+            return list(read(fh, **kwargs))
 
 
-def loads(s, **kwargs):
-    return list(_read_penman(s.splitlines()))
+def loads(string, triples=False, **kwargs):
+    """
+    Deserialize a list of PENMAN-encoded graphs from *string*.
+    """
+    lines = string.splitlines()
+    if triples:
+        graphs = _read_triples(lines, **kwargs)
+    else:
+        graphs = _read_penman(lines, **kwargs)
+    return list(graphs)
 
 
-def dump(f, xs, **kwargs):
-    with open(f, 'w') as fh:
-        print(dumps(xs, **kwargs), file=fh)
+def dump(file, graphs, triples=False, **kwargs):
+    """
+    Serialize each graph in *graphs* to PENMAN and write to *file*.
+    """
+    text = dumps(graphs, triples=triples, **kwargs)
+
+    if hasattr(file, 'write'):
+        print(text, file=file)
+    else:
+        with open(file, 'w') as fh:
+            print(text, file=fh)
 
 
-def dumps(xs, **kwargs):
-    strings = []
-    for x in xs:
-        if isinstance(x, Graph):
-            strings.append(x.to_penman())
-        else:
-            strings.append(x)
-    return '\n'.join(x.to_penman() for x in xs)
+def dumps(graphs, triples=False, **kwargs):
+    """
+    Serialize each graph in *graphs* to the PENMAN format.
+    """
+    if triples:
+        strings = [
+            _serialize_triples(
+                g.to_triples(normalize=kwargs.get('normalize', False))
+            )
+            for g in graphs
+        ]
+    else:
+        strings = [
+            g.to_penman(top=kwargs.get('top'), indent=kwargs.get('indent', True))
+            for g in graphs
+        ]
+    return '\n\n'.join(strings) + '\n'
 
 
 def _read_penman(line_iterator, **kwargs):
     toks, depth = [], 0
     for line in line_iterator:
         if depth > 0 or line.lstrip().startswith('('):
-            new_toks, pos, depth = _lex_penman(line, depth=depth)
+            new_toks, _, depth = _lex_penman(line, depth=depth)
             toks.extend(new_toks)
             if depth == 0:
-                g = _parse_penman(toks)
-                yield g
+                yield _parse_penman(toks)
                 toks = []
 
 
@@ -151,10 +325,10 @@ def _lex_penman(s, depth=0):
     toks = []
     while i < end:
         c = s[i]
-        if c in ' (:)"/\n\t\r\v\f':  # breaking characters
+        if c in ' (:,)"/\n\t\r\v\f':  # breaking characters ("," for triples)
             if start < i:
-                toks.append(s[start:i])        
-            if c in '():/':  # basic punctuation
+                toks.append(s[start:i])
+            if c in '():/,':  # basic punctuation
                 toks.append(c)
                 if c == '(':
                     depth += 1
@@ -185,15 +359,15 @@ def _lex_penman(s, depth=0):
 
 def _parse_penman(toks):
     toks = list(reversed(toks))
-    nodestack = [None]
-    reln = None
+    nodestack = [TOP]
+    reln = TOP_RELATION
     triples = []
     while toks:
         tok = toks.pop()
         if tok == '(':
-            v = toks.pop()
-            triples.append(Triple(nodestack[-1], reln, v))
-            nodestack.append(v)
+            var = toks.pop()
+            triples.append(Triple(nodestack[-1], reln, var))
+            nodestack.append(var)
         elif tok == ')':
             nodestack.pop()
         elif tok == '/':
@@ -211,9 +385,9 @@ def _serialize_penman(triples, top, indent, weights=None):
         weights = _default_inversion_weights(triples)
     g = defaultdict(list)
     remaining = set()
-    for triple in triples:
-        g[triple.source].append((triple, triple, 0.0))
-        g[triple.target].append((_invert(triple), triple, weights[triple]))
+    for idx, triple in enumerate(triples):
+        g[triple.source].append((triple, triple, 0.0, idx))
+        g[triple.target].append((_invert(triple), triple, weights[triple], idx))
         remaining.add(triple)
     p = _walk(g, top, remaining)
     return _layout(p, top, indent, 0, set())
@@ -241,18 +415,21 @@ def _default_inversion_weights(triples):
     return wts
 
 
-def _walk(g, v, remaining):
-    p = defaultdict(list)
-    candidates = [(e, t, w) for e, t, w in g.get(v, []) if t in remaining]
-    candidates.sort(key=lambda e_t_w: e_t_w[2], reverse=True)
+def _walk(graph, var, remaining):
+    path = defaultdict(list)
+    candidates = [
+        # e, t, w, o = edge, triple, weight, original-order
+        (e, t, w, o) for e, t, w, o in graph.get(var, []) if t in remaining
+    ]
+    candidates.sort(key=lambda c: (c[2], c[3]), reverse=True)
     while candidates:
-        e, t, w = candidates.pop()
-        if t in remaining:
-            p[e.source].append(e)
-            remaining.remove(t)
-            candidates.extend(g.get(e.target, []))
-            candidates.sort(key=lambda e_t_w: e_t_w[2], reverse=True)
-    return p
+        edge, triple, _, _ = candidates.pop()
+        if triple in remaining:
+            path[edge.source].append(edge)
+            remaining.remove(triple)
+            candidates.extend(graph.get(edge.target, []))
+            candidates.sort(key=lambda c: c[2], reverse=True)
+    return path
 
 
 def _layout(g, v, indent, offset, seen):
@@ -263,11 +440,11 @@ def _layout(g, v, indent, offset, seen):
     outedges = sorted(
         g[v],
         key=lambda e: (-e.relation.startswith('instance'),
-                       e.is_inverted(),
-                       e.relation)
+                       e.is_inverted())
     )
+    head = '({} '.format(v)
     if indent is True:
-        offset += len(v) + 2
+        offset += len(head)
     elif indent is not None and indent is not False:
         offset += indent
     for edge in outedges:
@@ -276,32 +453,45 @@ def _layout(g, v, indent, offset, seen):
         branch = _layout(g, edge.target, indent, offset + inner_offset, seen)
         branches.append('{} {}'.format(rel, branch))
     delim = ' ' if (indent is None or indent is False) else '\n'
-    rels = (delim + (' ' * offset)).join(branches)
-    s = '({} {})'.format(v, rels)
-    return s
+    tail = (delim + (' ' * offset)).join(branches) + ')'
+    return head + tail
 
 
-def _main(args):
+def _read_triples(line_iterator, **kwargs):
+    triples = []
+    for line in line_iterator:
+        while line:
+            toks, pos, _ = _lex_penman(line)
+            if len(toks) == 6 and toks[1::2] == ['(', ',', ')']:
+                relation, lhs, rhs = toks[::2]
+                triples.append(Triple(lhs, relation, rhs))
+                line = line[pos:].lstrip()
+                if line and line[0] == '^':
+                    line = line[1:]
+                else:
+                    yield Graph.from_triples(triples)
+                    triples = []
+                    line = ''
+            line = line.lstrip()
+
+
+def _serialize_triples(triples):
+    return ' ^\n'.join(
+        map('{0[1]}({0[0]}, {0[2]})'.format, triples)
+    )
+
+
+def _main():
     import sys
+    from docopt import docopt
+    args = docopt(__doc__, version='Penman {}'.format(__version__))
+
     infile = args['--input'] or sys.stdin
     data = load(infile)
-    if args['--triples']:
-        print(
-            '\n\n'.join(
-                ' ^\n'.join(
-                    map(
-                        '{0[1]}({0[0]}, {0[2]})'.format,
-                        g.to_triples()
-                    )
-                )
-                for g in data
-            )
-        )
-    else:
-        print('\n'.join(g.to_penman() for g in data))
+
+    outfile = args['--output'] or sys.stdout
+    dump(outfile, data, triples=args['--triples'])
 
 
 if __name__ == '__main__':
-    from docopt import docopt
-    args = docopt(__doc__, version='Penman {}'.format(__version__))
-    _main(args)
+    _main()

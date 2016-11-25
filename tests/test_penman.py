@@ -114,3 +114,38 @@ def test_to_penman_with_indent():
         '  :ARG1 (b / bbb\n'
         '    :ARG1 (c / ccc)))'
     )
+
+def test_graph_inspection():
+    g = penman.Graph.from_penman(
+        '(e2 / _try_v_1'
+        '    :ARG1 (x1 / named'
+        '              :CARG "Abrams"'
+        '              :RSTR-of (_1 / proper_q))'
+        '    :ARG2 (e3 / _sleep_v_1'
+        '              :ARG1 x1))'
+    )
+    assert g.top == 'e2'
+    assert g.variables() == set(['e2', 'x1', '_1', 'e3'])
+    # assert g.instances() == set(['e2', 'x1', '_1', 'e3'])
+    # assert g.instances('named') == set(['x1'])
+    assert g.concepts() == set([
+        '_try_v_1',
+        'named',
+        'proper_q',
+        '_sleep_v_1'
+    ])
+    assert sorted(g.constants()) == [
+        '"Abrams"'
+    ]
+    assert g.edges(source='e2')  == [
+        ('e2', 'ARG1', 'x1'),
+        ('e2', 'ARG2', 'e3')        
+    ]
+    assert g.edges(source='e3') == [
+        ('e3', 'ARG1', 'x1')
+    ]
+    assert g.edges(target='e3') == [
+        ('e2', 'ARG2', 'e3'),
+        ('_sleep_v_1', 'instance', 'e3')
+    ]
+

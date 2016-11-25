@@ -1,7 +1,9 @@
 # Penman
 
-This module models graphs encoded in the PENMAN (e.g., [AMR][])
+This module models graphs encoded in the [PENMAN][] (e.g., [AMR][])
 notation. It is meant to be used as a Python library or as a script.
+It does not include any of the concept inventory or text-generation
+capabilities of the [PENMAN][] project.
 
 ### Features
 
@@ -13,13 +15,13 @@ notation. It is meant to be used as a Python library or as a script.
 * Triples
   - [x] graph instantiation
   - [x] inspecting list of triples
-  - [ ] reading
+  - [x] reading
   - [x] writing
     - [x] print list of triples
     - [x] format as conjunction of logical triples
     - [x] normalize inverse edges
 * Graphs
-  - [ ] node and edge inspection
+  - [x] node and edge inspection
   - [ ] graph metrics
   - [ ] graph manipulation
 
@@ -71,4 +73,5 @@ $ python penman.py <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 - Python 2.7 or 3.3+
 - [docopt](https://pypi.python.org/pypi/docopt)
 
+[PENMAN]: http://www.isi.edu/natural-language/penman/penman.html
 [AMR]: http://amr.isi.edu/
