@@ -1,7 +1,7 @@
 # Penman
 
-This module models graphs encoded in the [PENMAN][] (e.g., [AMR][])
-notation. It is meant to be used as a Python library or as a script.
+This module models graphs encoded in the [PENMAN notation](#penman-notation)
+(e.g., [AMR][]). It may be used as a Python library or as a script.
 It does not include any of the concept inventory or text-generation
 capabilities of the [PENMAN][] project.
 
@@ -30,7 +30,7 @@ capabilities of the [PENMAN][] project.
 ```python
 >>> from penman import Graph
 >>> g = Graph.from_penman('(b / bark :ARG0 (d / dog))')
->>> g.to_triples()
+>>> g.triples()
 [Triple(source='b', relation='instance-of', target='bark'), Triple(source='b', relation='ARG0', target='d'), Triple(source='d', relation='instance-of', target='dog')]
 >>> print(g.to_penman())
 (b / bark
@@ -73,5 +73,33 @@ $ python penman.py <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 - Python 2.7 or 3.3+
 - [docopt](https://pypi.python.org/pypi/docopt)
 
+### PENMAN Notation
+
+The [PENMAN][] project was a large effort at natural language generation,
+and what I'm calling "PENMAN notation" is in fact "Sentence Plan
+Language" (SPL; [Kaspar 1989]), but I'll stick with "PENMAN notation"
+because it may be a more familiar name to modern users and it also sounds
+less specific to sentence representations, e.g., in case someone wants to
+use the format to encode arbitrary graphs. A [PEG][] definition for the
+notation is given below (for clarity, whitespace is not explicitly
+included; assume all nonterminals can be surrounded by `/\s+/`):
+
+```ruby
+Graph    <- Node
+Node     <- '(' NodeData ')'
+NodeData <- Variable ('/' Type)? Relation*
+Type     <- String / Symbol
+Variable <- Symbol
+Relation <- Role Value
+Role     <- /:[^\s(]+/
+Value    <- Node / Float / Integer / String / Symbol
+String   <- /"[^"\\]*(?:\\.[^"\\]*)*"/
+Symbol   <- /[^\s)\/]+/
+Float    <- /-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+/
+Integer  <- /-?\d+/
+```
+
 [PENMAN]: http://www.isi.edu/natural-language/penman/penman.html
 [AMR]: http://amr.isi.edu/
+[Kasper 1989]: http://www.aclweb.org/anthology/H89-1022
+[PEG]: https://en.wikipedia.org/wiki/Parsing_expression_grammar

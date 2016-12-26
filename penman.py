@@ -29,7 +29,7 @@ Options:
 #    - Graph.from_penman(string)
 #    - Graph.to_penman(top=None, indent=True)
 #    - Graph.from_triples(triples, top=None)
-#    - Graph.to_triples(normalize=False)
+#    - Graph.triples()
 #    - Graph.top
 #    - Graph.variables()
 #    - Graph.concepts()
@@ -53,7 +53,7 @@ from __future__ import print_function
 
 from collections import namedtuple, defaultdict
 
-__version__ = '0.3.0'
+__version__ = '0.4.0-alpha'
 __version_info__ = __version__.replace('.', ' ').replace('-', ' ').split()
 
 TOP = 'TOP'
@@ -64,7 +64,7 @@ def is_relation_inverted(relation):
     """
     Return True if *relation* is inverted.
     """
-    return relation.endswith('-of')  # and relation != 'instance-of'
+    return relation.endswith('-of')  # and relation != 'instance'
 
 
 def invert_relation(relation):
@@ -102,7 +102,7 @@ class Graph(object):
     def __init__(self):
         self._triples = []
         self._top = None
-        self._inv_weights = {}
+        self._nodes = set()
 
     def __str__(self):
         return self.to_penman()
@@ -130,13 +130,11 @@ class Graph(object):
             if source == TOP and relation == TOP_RELATION:  # explicit top
                 graph._top = target
             else:
-                # if is_relation_inverted(relation):
-                #     source, target = target, source
-                #     relation = relation[:-3]
-                #     inv_weight = 0.0
-                # else:
-                #     inv_weight = 1.0
-                graph._triples.append(Triple(source, relation, target))
+                triple = Triple(source, relation, target)
+                if is_relation_inverted(relation):
+                    triple = _invert(triple)
+                graph._triples.append(triple)
+                graph._nodes.add(triple.source)
         return graph
 
     @property
@@ -154,13 +152,7 @@ class Graph(object):
         """
         Return the list of variables (nonterminal node identifiers).
         """
-        variables = set()
-        for source, relation, target in self._triples:
-            if ((is_relation_inverted(relation) and relation != 'instance-of')
-                    or relation == 'instance'):
-                source = target
-            variables.add(source)
-        return variables
+        return set(src for src, _, _ in self._triples)
 
     # def instances(self, concept=None):
     #     """
@@ -168,7 +160,7 @@ class Graph(object):
     #     """
     #     instances = set()
     #     for triple in self._triples:
-    #         if triple.relation == 'instance-of':
+    #         if triple.relation == 'instance':
     #             if concept is None or concept == triple.target:
     #                 instances.add(triple.source)
     #         elif triple.relation == 'instance':
@@ -180,13 +172,7 @@ class Graph(object):
         """
         Return the set of concepts in the graph.
         """
-        concepts = set()
-        for triple in self._triples:
-            if triple.relation == 'instance-of':
-                concepts.add(triple.target)
-            elif triple.relation == 'instance':
-                concepts.add(triple.source)
-        return concepts
+        return set(tgt for _, rel, tgt in self._triples if rel=='instance')
 
     def constants(self):
         """
@@ -195,7 +181,7 @@ class Graph(object):
         constants = []
         variables = self.variables()
         for triple in self._triples:
-            if triple.relation in ('instance-of', 'instance'):
+            if triple.relation == 'instance':
                 continue
             if triple.is_inverted():
                 if triple.source not in variables:
@@ -207,17 +193,15 @@ class Graph(object):
     def edges(self, source=None, relation=None, target=None):
         """
         Return edges filtered by their *source*, *relation*, or *target*.
-        Edges don't include node labels (instance-of relations).
+        Edges don't include terminal triples (node types or attributes).
         """
         edges = []
         for triple in self._triples:
-            src, rln, tgt = triple
-            if triple.is_inverted():
-                src, rln, tgt = tgt, invert_relation(rln), src
-            if ((source is None or source == src) and
-                    (relation is None or relation == rln) and
-                    (target is None or target == tgt)):
-                edges.append((src, rln, tgt))
+            if (triple.target in self._nodes and
+                    (source is None or source == triple.source) and
+                    (relation is None or relation == triple.relation) and
+                    (target is None or target == triple.target)):
+                edges.append(triple)
         return edges
 
     def to_penman(self, top=None, indent=True):
@@ -236,21 +220,11 @@ class Graph(object):
             indent = None
         return _serialize_penman(self._triples, top, indent)
 
-    def to_triples(self, normalize=False):
+    def triples(self):
         """
-        Return a list of triples.
-
-        Args:
-            normalize: if True, ensure all triples are uninverted
+        Return the list of triples.
         """
-        triples = []
-        # if self._top is not None:
-        #     triples.append()
-        for triple in self._triples:
-            if normalize and triple.is_inverted():
-                triple = _invert(triple)
-            triples.append(triple)
-        return triples
+        return list(self._triples)
 
 
 def load(source, triples=False, **kwargs):
@@ -297,7 +271,7 @@ def dumps(graphs, triples=False, **kwargs):
     if triples:
         strings = [
             _serialize_triples(
-                g.to_triples(normalize=kwargs.get('normalize', False))
+                g.triples()
             )
             for g in graphs
         ]
@@ -372,7 +346,7 @@ def _parse_penman(toks):
             nodestack.pop()
         elif tok == '/':
             tgt = toks.pop()
-            triples.append(Triple(nodestack[-1], 'instance-of', tgt))
+            triples.append(Triple(nodestack[-1], 'instance', tgt))
         elif tok == ':':
             reln = toks.pop()
         else:
@@ -380,46 +354,24 @@ def _parse_penman(toks):
     return Graph.from_triples(triples)
 
 
-def _serialize_penman(triples, top, indent, weights=None):
-    if weights is None:
-        weights = _default_inversion_weights(triples)
+def _serialize_penman(triples, top, indent):
+    nodes = set(src for src, _, _ in triples)
     g = defaultdict(list)
     remaining = set()
     for idx, triple in enumerate(triples):
         g[triple.source].append((triple, triple, 0.0, idx))
-        g[triple.target].append((_invert(triple), triple, weights[triple], idx))
+        if triple.target in nodes:
+            g[triple.target].append((_invert(triple), triple, 1.0, idx))
         remaining.add(triple)
     p = _walk(g, top, remaining)
     return _layout(p, top, indent, 0, set())
 
 
-def _default_inversion_weights(triples):
-    """
-    Default to a high weight for inverting :instance-of or any that
-    never appear as a source (e.g. :polarity -, not (- :polarity-of ...)
-    """
-    wts = {}
-    srcs = set()
-    for t in triples:
-        if t.relation not in ('instance-of', 'instance'):
-            srcs.add(t.target if t.is_inverted() else t.source)
-    for t in triples:
-        if t.relation == 'instance-of':
-            wts[t] = 2.0
-        elif t.relation == 'instance':
-            wts[t] = 0.0
-        elif t.target not in srcs:
-            wts[t] = 2.0
-        else:
-            wts[t] = 1.0
-    return wts
-
-
-def _walk(graph, var, remaining):
+def _walk(graph, top, remaining):
     path = defaultdict(list)
     candidates = [
         # e, t, w, o = edge, triple, weight, original-order
-        (e, t, w, o) for e, t, w, o in graph.get(var, []) if t in remaining
+        (e, t, w, o) for e, t, w, o in graph.get(top, []) if t in remaining
     ]
     candidates.sort(key=lambda c: (c[2], c[3]), reverse=True)
     while candidates:
@@ -448,7 +400,7 @@ def _layout(g, v, indent, offset, seen):
     elif indent is not None and indent is not False:
         offset += indent
     for edge in outedges:
-        rel = '/' if edge.relation == 'instance-of' else ':' + edge.relation
+        rel = '/' if edge.relation == 'instance' else ':' + edge.relation
         inner_offset = (len(rel) + 1) if indent is True else 0
         branch = _layout(g, edge.target, indent, offset + inner_offset, seen)
         branches.append('{} {}'.format(rel, branch))

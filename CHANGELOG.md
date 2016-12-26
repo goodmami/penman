@@ -2,6 +2,14 @@
 
 ## [Unreleased][unreleased]
 
+### Changed
+
+* `Graph.to_triples()` is now `Graph.triples()` and no longer has a
+  `normalize` attribute.
+* `Graph.edges()` only returns triples between nonterminal nodes
+* Default relation for node types is `instance`, since `instance-of`
+  seems to not be used, documented, or intuitive.
+
 ## [v0.3.0][]
 
 ### Added
