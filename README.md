@@ -28,21 +28,23 @@ capabilities of the [PENMAN][] project.
 ### Library Usage
 
 ```python
->>> from penman import Graph
->>> g = Graph.from_penman('(b / bark :ARG0 (d / dog))')
+>>> import penman
+>>> g = penman.decode('(b / bark :ARG0 (d / dog))')
 >>> g.triples()
-[Triple(source='b', relation='instance-of', target='bark'), Triple(source='b', relation='ARG0', target='d'), Triple(source='d', relation='instance-of', target='dog')]
->>> print(g.to_penman())
+[Triple(source='b', relation='instance', target='bark'), Triple(source='b', relation='ARG0', target='d'), Triple(source='d', relation='instance', target='dog')]
+>>> print(penman.encode(g))
 (b / bark
    :ARG0 (d / dog))
->>> print(g.to_penman(top='d'))
+>>> print(penman.encode(g, top='d', indent=6))
 (d / dog
-   :ARG0-of (b / bark))
+      :ARG0-of (b / bark))
+>>> print(penman.encode(g, indent=False))
+(b / bark :ARG0 (d / dog))```
 ```
 
 ### Script Usage
 
-```bash
+```
 $ python penman.py --help
 Penman
 
@@ -81,18 +83,18 @@ Language" (SPL; [Kaspar 1989]), but I'll stick with "PENMAN notation"
 because it may be a more familiar name to modern users and it also sounds
 less specific to sentence representations, e.g., in case someone wants to
 use the format to encode arbitrary graphs. A [PEG][] definition for the
-notation is given below (for clarity, whitespace is not explicitly
+notation is given below (for simplicity, whitespace is not explicitly
 included; assume all nonterminals can be surrounded by `/\s+/`):
 
 ```ruby
-Graph    <- Node
+Start    <- Node
 Node     <- '(' NodeData ')'
-NodeData <- Variable ('/' Type)? Relation*
-Type     <- String / Symbol
+NodeData <- Variable ('/' NodeType)? Edge*
+NodeType <- String / Symbol
 Variable <- Symbol
-Relation <- Role Value
-Role     <- /:[^\s(]+/
-Value    <- Node / Float / Integer / String / Symbol
+Edge     <- Relation Value
+Relation <- /:[^\s(]*/
+Value    <- Node / String / Float / Integer / Symbol
 String   <- /"[^"\\]*(?:\\.[^"\\]*)*"/
 Symbol   <- /[^\s)\/]+/
 Float    <- /-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+/
