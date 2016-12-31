@@ -117,4 +117,4 @@ Integer  <- /-?\d+/
 [loads(s)]: docs/API.md#loads
 [dump(gs, f)]: docs/API.md#dump
 [dumps(gs)]: docs/API.md#dumps
-[Graph][]: docs/API.md#graph
+[Graph]: docs/API.md#graph
