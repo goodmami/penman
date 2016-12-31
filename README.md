@@ -1,4 +1,8 @@
-# Penman
+
+| Branch | Status |
+| ------ | ------ |
+| [master](https://github.com/goodmami/penman/tree/master)  | [![Build Status](https://travis-ci.org/goodmami/penman.svg?branch=master)](https://travis-ci.org/goodmami/penman) |
+| [develop](https://github.com/goodmami/penman/tree/develop) | [![Build Status](https://travis-ci.org/goodmami/penman.svg?branch=develop)](https://travis-ci.org/goodmami/penman) |
 
 This module models graphs encoded in the [PENMAN notation](#penman-notation)
 (e.g., [AMR][]). It may be used as a Python library or as a script.
