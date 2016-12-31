@@ -7,23 +7,26 @@ capabilities of the [PENMAN][] project.
 
 ### Features
 
-* PENMAN notation
-  - [x] reading
-  - [x] writing
-    - [x] select new top
-    - [x] re-indent
-* Triples
-  - [x] graph instantiation
-  - [x] inspecting list of triples
-  - [x] reading
-  - [x] writing
-    - [x] print list of triples
-    - [x] format as conjunction of logical triples
-    - [x] normalize inverse edges
-* Graphs
-  - [x] node and edge inspection
-  - [ ] graph metrics
-  - [ ] graph manipulation
+Serialization between graphs and either PENMAN notation or triple
+conjunctions is provided by the [PENMANCodec][] class's `encode()`,
+`decode()`, and `iterdecode()` methods. Module-level functions
+provide a convenient interface to this class:
+
+* [encode(g)][] - serialized graph *g* and return the string
+* [decode(s)][] - deserialize *s* and return the graph 
+* [load(f)][] - return all graphs in file *f*
+* [loads(s)][] - return all graphs in string *s*
+* [dump(gs, f)][] - serialize all graphs in *gs* and write to file *f*
+* [dumps(gs)][] - serialize all graphs in *gs* and return the string
+
+Passing `triples=True` to the above functions does (de)serialization
+to/from conjunctions of triples. The `indent` parameter of `encode()`,
+`dump()`, and `dumps()` changes how PENMAN-serialized graphs are
+indented (by default, they are adaptively indented to line up with
+their containing node). Deserialized [Graph][] objects may be inspected
+and queried for their variables (nonterminal node identifiers), triples,
+etc. For more information, please consult the [documentation][], and see
+the example [below](#library-usage).
 
 ### Library Usage
 
@@ -48,7 +51,7 @@ capabilities of the [PENMAN][] project.
 $ python penman.py --help
 Penman
 
-An API and utility for working with graphs in the PENMAN format.
+An API and utility for working with graphs in PENMAN notation.
 
 Usage: penman.py [-h|--help] [-V|--version] [options]
 
@@ -73,12 +76,12 @@ $ python penman.py <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 ### Requirements
 
 - Python 2.7 or 3.3+
-- [docopt](https://pypi.python.org/pypi/docopt)
+- [docopt](https://pypi.python.org/pypi/docopt) (for script usage)
 
 ### PENMAN Notation
 
 The [PENMAN][] project was a large effort at natural language generation,
-and what I'm calling "PENMAN notation" is in fact "Sentence Plan
+and what I'm calling "PENMAN notation" is more accurately "Sentence Plan
 Language" (SPL; [Kaspar 1989]), but I'll stick with "PENMAN notation"
 because it may be a more familiar name to modern users and it also sounds
 less specific to sentence representations, e.g., in case someone wants to
@@ -90,13 +93,13 @@ included; assume all nonterminals can be surrounded by `/\s+/`):
 Start    <- Node
 Node     <- '(' NodeData ')'
 NodeData <- Variable ('/' NodeType)? Edge*
-NodeType <- String / Symbol
-Variable <- Symbol
-Edge     <- Relation Value
+NodeType <- Atom
+Variable <- Atom
+Edge     <- Relation (Node / Value)
 Relation <- /:[^\s(]*/
-Value    <- Node / String / Float / Integer / Symbol
+Value    <- String / Float / Integer / Atom
 String   <- /"[^"\\]*(?:\\.[^"\\]*)*"/
-Symbol   <- /[^\s)\/]+/
+Atom     <- /[^\s)\/]+/
 Float    <- /-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+/
 Integer  <- /-?\d+/
 ```
@@ -105,3 +108,13 @@ Integer  <- /-?\d+/
 [AMR]: http://amr.isi.edu/
 [Kasper 1989]: http://www.aclweb.org/anthology/H89-1022
 [PEG]: https://en.wikipedia.org/wiki/Parsing_expression_grammar
+
+[documentation]: docs/API.md
+[PENMANCodec]: docs/API.md#penmancodec
+[encode(g)]: docs/API.md#encode
+[decode(s)]: docs/API.md#decode
+[load(f)]: docs/API.md#load
+[loads(s)]: docs/API.md#loads
+[dump(gs, f)]: docs/API.md#dump
+[dumps(gs)]: docs/API.md#dumps
+[Graph][]: docs/API.md#graph

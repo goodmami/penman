@@ -2,13 +2,39 @@
 
 ## [Unreleased][unreleased]
 
+## [v0.4.0][]
+
+This release is a major rewrite of the serialization mechanism. Now a
+serialization codec manages the interface between graphs and PENMAN or
+triple conjunctions, and it can be instantiated with parameters or
+subclassed to customize behavior.
+
+### Added
+
+* `PENMANCodec` class for managing serialization to/from PENMAN and
+   triple conjunctions
+* `Graph.attributes()` returns terminal relations
+
+### Removed
+
+* Module-level `TOP` and `TOP_RELATION` are no longer used for
+  customizing serialization behavior (see `PENMANCodec`)
+* `Graph.concepts()`
+* `Graph.constants()`
+* `Triple.is_inverted()` (use `PENMANCodec.is_relation_inverted()`)
+
 ### Changed
 
 * `Graph.to_triples()` is now `Graph.triples()` and no longer has a
-  `normalize` attribute.
+  `normalize` parameter, but can now be filtered by `source`,
+  `relation`, and `target`, as with `Graph.edges()` and
+  `Graph.attributes()`
 * `Graph.edges()` only returns triples between nonterminal nodes
 * Default relation for node types is `instance`, since `instance-of`
   seems to not be used, documented, or intuitive.
+* `load()`, `loads()`, `dump()`, and `dumps()` now take a `cls`
+  parameter for a serialization codec, and any additional `**kwargs`
+  are passed to its constructor.
 
 ## [v0.3.0][]
 
@@ -61,4 +87,5 @@ First release with very basic functionality.
 [v0.1.0]: ../../releases/tag/v0.1.0
 [v0.2.0]: ../../releases/tag/v0.2.0
 [v0.3.0]: ../../releases/tag/v0.3.0
+[v0.4.0]: ../../releases/tag/v0.4.0
 [README]: README.md
