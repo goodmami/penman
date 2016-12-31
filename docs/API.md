@@ -16,19 +16,19 @@ Classes and methods:
 
 * [Triple](#triple)
 * [Graph](#graph)
-  - [Graph.top](#graph)
-  - [Graph.variables()](#graph-variables)
-  - [Graph.triples()](#graph-triples)
-  - [Graph.edges()](#graph-edges)
-  - [Graph.attributes()](#graph-attributes)
+  - [Graph.top](#Graph-top)
+  - [Graph.variables()](#Graph-variables)
+  - [Graph.triples()](#Graph-triples)
+  - [Graph.edges()](#Graph-edges)
+  - [Graph.attributes()](#Graph-attributes)
 * [PENMANCodec](#penmancodec)
-  - [PENMANCodec.decode()](#penmancodec-decode)
-  - [PENMANCodec.iterdecode()](#penmancodec-iterdecode)
-  - [PENMANCodec.encode()](#penmancodec-encode)
-  - [PENMANCodec.is_relation_inverted()](#penmancodec-is_relation_inverted)
-  - [PENMANCodec.invert_relation()](#penmancodec-invert_relation)
-  - [PENMANCodec.handle_value()](#penmancodec-handle_value)
-  - [PENMANCodec.handle_triple()](#penmancodec-handle_triple)
+  - [PENMANCodec.decode()](#PENMANCodec-decode)
+  - [PENMANCodec.iterdecode()](#PENMANCodec-iterdecode)
+  - [PENMANCodec.encode()](#PENMANCodec-encode)
+  - [PENMANCodec.is_relation_inverted()](#PENMANCodec-is_relation_inverted)
+  - [PENMANCodec.invert_relation()](#PENMANCodec-invert_relation)
+  - [PENMANCodec.handle_value()](#PENMANCodec-handle_value)
+  - [PENMANCodec.handle_triple()](#PENMANCodec-handle_triple)
 
 ## Functions
 
@@ -194,6 +194,7 @@ Create a Graph from an iterable of triples.
 
 #### Properties
 
+<a name="Graph-top" href="API.md#Graph-top">#</a>
 penman.Graph.**top**
 
 The top variable.
