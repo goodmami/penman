@@ -103,7 +103,28 @@ def test_decode(x1):
 
     # fuller example
     assert decode(x1[0]).triples() == x1[1]
+
+    # invalid strings
+    with pytest.raises(penman.DecodeError):
+        decode('(')
+        decode('(a')
+        decode('(a /')
+        decode('(a / alpha')
+        decode('(a b)')
+
+    # custom codec
+    class TestCodec(penman.PENMANCodec):
+        TYPE_REL = 'test'
+
+    g = decode('(a / alpha)', cls=TestCodec)
+    assert g.triples() == [
+        ('a', 'test', 'alpha')
+    ]
+    assert g.top == 'a'
     
+def test_decode_triples():
+    pass
+
 def test_iterdecode():
     codec = penman.PENMANCodec()
     assert len(list(codec.iterdecode('(h / hello)(g / goodbye)'))) == 2
@@ -112,6 +133,9 @@ def test_iterdecode():
         '(g / graph\n'
         '   :quant 1)\n'
         'some text, then (g / graph :quant (a / another))'))) == 2
+    # uncomment below if not reraising exceptions in iterdecode
+    # assert len(list(codec.iterdecode('(h / hello'))) == 0
+    # assert len(list(codec.iterdecode('(h / hello)(g / goodbye'))) == 1
 
 def test_encode(x1):
     encode = penman.encode
@@ -203,6 +227,15 @@ def test_encode(x1):
         '               :ARG1 (b2 / bbb)))'
     )
 
+    # custom codec
+    class TestCodec(penman.PENMANCodec):
+        TYPE_REL = 'test'
+
+    g = penman.Graph([
+        ('a', 'test', 'alpha')
+    ])
+    assert encode(g, cls=TestCodec) == '(a / alpha)'
+
 def test_encode_with_parameters():
     encode = penman.encode
     g = penman.Graph([
@@ -258,23 +291,13 @@ class TestGraph(object):
 
         # single node one edge (default nodetype)
         g = penman.Graph([('a', 'ARG1', 'b')])
-        assert g.triples() == [('a', 'instance', None), ('a', 'ARG1', 'b')]
-        assert g.top == 'a'
-
-        # node-to-node edge
-        g = penman.Graph([('a', 'ARG1', 'b'), ('b', 'instance', None)])
-        assert g.triples() == [
-            ('a', 'instance', None),
-            ('b', 'instance', None),
-            ('a', 'ARG1', 'b')
-        ]
+        assert g.triples() == [('a', 'ARG1', 'b')]
         assert g.top == 'a'
 
         # first triple determines top
         g = penman.Graph([('b', 'instance', None), ('a', 'ARG1', 'b')])
         assert g.triples() == [
             ('b', 'instance', None),
-            ('a', 'instance', None),
             ('a', 'ARG1', 'b')
         ]
         assert g.top == 'b'
@@ -388,12 +411,39 @@ def test_loads():
 def test_loads_triples():
     assert penman.loads('', triples=True) == []
     assert len(penman.loads('instance(a, alpha)', triples=True)) == 1
-    assert len(penman.loads(
-        'instance(a, alpha)ARG(a, b)', triples=True
-    )) == 2
-    assert len(penman.loads(
-        'instance(a, alpha)^ARG(a, b)', triples=True
-    )) == 1
+    assert len(penman.loads('string(a, "alpha")', triples=True)) == 1
+
+    gs = penman.loads('instance(a, alpha)ARG(a, b)', triples=True)
+    assert len(gs) == 2
+    assert gs[0].triples() == [('a', 'instance', 'alpha')]
+    assert gs[1].triples() == [('a', 'ARG', 'b')]
+
+    gs = penman.loads('instance(a, alpha)^ARG(a, b)', triples=True)
+    assert len(gs) == 1
+    assert gs[0].triples() == [('a', 'instance', 'alpha'), ('a', 'ARG', 'b')]
+
+    class TestCodec(penman.PENMANCodec):
+        TYPE_REL = 'test'
+        TOP_VAR = 'TOP'
+        TOP_REL = 'top'
+    gs = penman.loads(
+        'test(a, alpha)^test(b, beta)^ARG(a, b)^top(TOP, b)',
+        triples=True, cls=TestCodec
+    )
+    assert len(gs) == 1
+    assert gs[0].triples() == [
+        ('a', 'test', 'alpha'),
+        ('b', 'test', 'beta'),
+        ('a', 'ARG', 'b')
+    ]
+    assert gs[0].top == 'b'
+
+    gs = penman.loads(
+        'test(a, alpha)^test(b, beta)^ARG(a, b)',
+        triples=True, cls=TestCodec
+    )
+    assert gs[0].top == 'a'
+
 
 def test_dumps():
     assert penman.dumps([]) == ''
@@ -415,3 +465,11 @@ def test_dumps_triples():
         triples=True
     ) == 'instance(a, None) ^\nARG(a, b)'
 
+    class TestCodec(penman.PENMANCodec):
+        TYPE_REL = 'test'
+        TOP_VAR = 'TOP'
+        TOP_REL = 'top'
+    assert penman.dumps(
+        [penman.Graph([('a', 'ARG', 'b')])],
+        triples=True, cls=TestCodec
+    ) == 'top(TOP, a) ^\nARG(a, b)'

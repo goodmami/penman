@@ -46,7 +46,7 @@ Options:
 #    - PENMANCodec.handle_value(s)
 #    - PENMANCodec.handle_triple(source, relation, target)
 #  * Triple(source, relation, target)
-#  * Graph(data=None, top=None, codec=PENMANCodec)
+#  * Graph(data=None, top=None)
 #    - Graph.top
 #    - Graph.variables()
 #    - Graph.triples(source=None, relation=None, target=None)
@@ -64,7 +64,7 @@ Options:
 import re
 from collections import namedtuple, defaultdict
 
-__version__ = '0.4.0'
+__version__ = '0.5.0-alpha'
 __version_info__ = __version__.replace('.', ' ').replace('-', ' ').split()
 
 class PENMANCodec(object):
@@ -73,6 +73,8 @@ class PENMANCodec(object):
     """
 
     TYPE_REL = 'instance'
+    TOP_VAR = None
+    TOP_REL = 'top'
     NODE_ENTER_RE = re.compile(r'\s*(\()\s*([^\s()\/,]+)\s*')
     NODE_EXIT_RE = re.compile(r'\s*(\))\s*')
     RELATION_RE = re.compile(r'(:[^\s(),]*)\s*')
@@ -118,8 +120,8 @@ class PENMANCodec(object):
             raise DecodeError(
                 'Unexpected end of string.', string=s, pos=len(s)
             )
-        top, triples = data
-        g = Graph(triples, top=top)
+        top, nodes, edges = data
+        g = Graph(nodes + edges, top=top)
         return g
 
     def iterdecode(self, s, triples=False):
@@ -160,8 +162,8 @@ class PENMANCodec(object):
                     raise
                     pos += 1
                 else:
-                    top, ts = data
-                    yield Graph(ts, top=top)
+                    top, nodes, edges = data
+                    yield Graph(nodes + edges, top=top)
                     pos = span[1]
             else:
                 pos += 1
@@ -253,7 +255,7 @@ class PENMANCodec(object):
         return Triple(source, relation, target)
 
     def _decode_triple_conjunction(self, s, pos=0):
-        triples = []
+        top, nodes, edges = None, [], []
         start = None
         while True:
             m = _regex(self.ATOM_RE, s, pos, "a relation/predicate")
@@ -270,18 +272,26 @@ class PENMANCodec(object):
                 m = _regex(self.ATOM_RE, s, pos, 'a float/int/atom')
             pos, tgt = m.end(0), m.group(1)
             # don't "handle" if its a node type (not in this version, at least)
-            if rel != self.TYPE_REL:
-                tgt = self.handle_value(tgt)
-            triples.append(self.handle_triple(var, rel, tgt))
+            if var == self.TOP_VAR and rel == self.TOP_REL:
+                top = tgt
+            elif rel == self.TYPE_REL:
+                nodes.append(self.handle_triple(var, rel, tgt))
+            else:
+                edges.append(
+                    self.handle_triple(var, rel, self.handle_value(tgt))
+                )
             m = _regex(self.NODE_EXIT_RE, s, pos, '")"')
             pos = m.end(1)
-            if m.end(0) >= len(s) or s[m.end(0)] != '^':
+            if m.end(0) < len(s) and s[m.end(0)] == '^':
+                pos = m.end(0) + 1
+            else:
                 break
-        top = triples[0][0] if triples else None
-        return (start, pos), (top, triples)
+        if top is None and nodes:
+            top = nodes[0][0]
+        return (start, pos), (top, nodes, edges)
 
     def _decode_penman_node(self, s, pos=0):
-        triples = []
+        nodes, edges = [], []
 
         strlen = len(s)
         m = _regex(self.NODE_ENTER_RE, s, pos, '"(" and a variable')
@@ -304,8 +314,10 @@ class PENMANCodec(object):
                 if s[pos] == '(':
                     span, data = self._decode_penman_node(s, pos=pos)
                     pos = span[1]
-                    triples.append(self.handle_triple(var, rel, data[0]))
-                    triples.extend(data[1])
+                    subtop, subnodes, subedges = data
+                    nodes.extend(subnodes)
+                    edges.append(self.handle_triple(var, rel, subtop))
+                    edges.extend(subedges)
 
                 # string or other atom value
                 else:
@@ -315,7 +327,7 @@ class PENMANCodec(object):
                     else:
                         m = _regex(self.ATOM_RE, s, pos, 'a float/int/atom')
                         pos, value = m.end(0), m.group(1)
-                    triples.append(
+                    edges.append(
                         self.handle_triple(var, rel, self.handle_value(value))
                     )
 
@@ -329,9 +341,9 @@ class PENMANCodec(object):
         m = _regex(self.NODE_EXIT_RE, s, pos, '")"')
         pos = m.end(1)
 
-        triples = [self.handle_triple(var, self.TYPE_REL, nodetype)] + triples
+        nodes = [self.handle_triple(var, self.TYPE_REL, nodetype)] + nodes
 
-        return (start, pos), (var, triples)
+        return (start, pos), (var, nodes, edges)
 
     def _encode_penman(self, g, top=None):
         if top is None:
@@ -351,8 +363,14 @@ class PENMANCodec(object):
         return _layout(p, top, self, 0, set())
 
     def _encode_triple_conjunction(self, g, top=None):
+        if top is None:
+            top = g.top
+        if self.TOP_VAR is not None and top is not None:
+            top_triple = [(self.TOP_VAR, self.TOP_REL, top)]
+        else:
+            top_triple = []
         return ' ^\n'.join(
-            map('{0[1]}({0[0]}, {0[2]})'.format, g.triples())
+            map('{0[1]}({0[0]}, {0[2]})'.format, top_triple + g.triples())
         )
 
 
@@ -515,7 +533,7 @@ class Graph(object):
     Graph.attributes() methods.
     """
 
-    def __init__(self, data=None, top=None, codec=PENMANCodec()):
+    def __init__(self, data=None, top=None):
         """
         Create a Graph from an iterable of triples.
 
@@ -523,7 +541,6 @@ class Graph(object):
             data: an iterable of triples (Triple objects or 3-tuples)
             top: the node identifier of the top node; if unspecified,
                 the source of the first triple is used
-            codec: the serialization codec used to interpret values
         Example:
 
             >>> Graph([
@@ -533,27 +550,18 @@ class Graph(object):
             ... ])
         """
         self._triples = []
-        self._nodes = []
         self._top = None
-        self._codec = codec
 
-        ntrel = self._codec.TYPE_REL
+        if data is None:
+            data = []
+        else:
+            data = list(data)  # make list (e.g., if its a generator)
+
         if data:
+            self._triples.extend(Triple(*triple) for triple in data)
+            # implicit top: source of first triple
             if top is None:
-                top = data[0][0]  # implicit top: source of first triple
-            ntypes = dict((s, t) for s, r, t in data if r == ntrel)
-            nodes = set(s for s, _, _ in data)
-            for src, rel, tgt in data:
-                # insert node types in order of node appearance
-                if src in nodes:
-                    self._nodes.append((src, ntypes.get(src)))
-                    nodes.remove(src)
-                if tgt in nodes:
-                    self._nodes.append((tgt, ntypes.get(tgt)))
-                    nodes.remove(tgt)
-                # then add triple if not nodetype
-                if rel != ntrel:
-                    self._triples.append(Triple(src, rel, tgt))
+                top = data[0][0]
             self.top = top
 
     def __repr__(self):
@@ -564,7 +572,7 @@ class Graph(object):
         )
 
     def __str__(self):
-        return self._codec.encode(self)
+        return PENMANCodec.encode(self)  # just use the default encoder
 
     @property
     def top(self):
@@ -583,7 +591,7 @@ class Graph(object):
         """
         Return the list of variables (nonterminal node identifiers).
         """
-        return set(v for v, _ in self._nodes)
+        return set(v for v, _, _ in self._triples)
 
     def triples(self, source=None, relation=None, target=None):
         """
@@ -594,11 +602,7 @@ class Graph(object):
             (relation is None or relation == t.relation) and
             (target is None or target == t.target)
         )
-        triples = [
-            Triple(v, self._codec.TYPE_REL, t) for v, t in self._nodes
-        ]
-        triples.extend(self._triples)
-        return list(filter(triplematch, triples))
+        return list(filter(triplematch, self._triples))
 
     def edges(self, source=None, relation=None, target=None):
         """
@@ -664,7 +668,7 @@ def _layout(g, v, codec, offset, seen):
     elif indent is not None and indent is not False:
         offset += indent
     for edge in outedges:
-        if edge.relation == 'instance':
+        if edge.relation == codec.TYPE_REL:
             if edge.target is None:
                 continue
             rel = '/'

@@ -2,6 +2,29 @@
 
 ## [Unreleased][unreleased]
 
+## Fixed
+
+* Properly trim off ^ in triple-conjunction parsing.
+
+## Added
+
+* `TOP_VAR` and `TOP_REL` are added to `PENMANCodec` (these were
+  module-level variables prior to v0.4.0); they are only used for
+  triple-conjunctions. If left as `None`, they will not be printed or
+  interpreted.
+
+## Changed
+
+* Decoupled `Graph` from the codec by removing the `codec` parameter and
+  its usage in the class methods.
+* PENMANCodec returns all node type triples before other edge triples.
+* PENMANCodec reads/writes TOP nodes in triple conjunctions if `TOP_VAR`
+  and `TOP_REL` are set (see above).
+* Default node types are no longer stored as triples. This means a graph
+  like `(a / a :ARG b)` cannot say if `b` is a node or just a symbol.
+  Let's see how far this gets us before re-adding such support.
+
+
 ## [v0.4.0][]
 
 This release is a major rewrite of the serialization mechanism. Now a
