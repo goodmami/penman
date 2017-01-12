@@ -34,7 +34,7 @@ Classes and methods:
 
 ## decode
 
-<a name="decode" href="API.md#decode">:hash:</a>
+<a name="decode" href="API.md#decode">▣</a>
 penman.**decode**(_s, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize PENMAN-serialized *s* into its Graph object
@@ -59,7 +59,7 @@ Example:
 
 ## encode
 
-<a name="encode" href="API.md#encode">:hash:</a>
+<a name="encode" href="API.md#encode">▣</a>
 penman.**encode**(_g, top=None, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize the graph *g* from *top* to PENMAN notation.
@@ -86,7 +86,7 @@ Example:
 
 ## load
 
-<a name="load" href="API.md#load">:hash:</a>
+<a name="load" href="API.md#load">▣</a>
 penman.**load**(_source, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize a list of PENMAN-encoded graphs from *source*.
@@ -105,7 +105,7 @@ Returns:
 
 ## loads
 
-<a name="loads" href="API.md#loads">:hash:</a>
+<a name="loads" href="API.md#loads">▣</a>
 penman.**loads**(_string, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize a list of PENMAN-encoded graphs from *string*.
@@ -124,7 +124,7 @@ Returns:
 
 ## dump
 
-<a name="dump" href="API.md#dump">:hash:</a>
+<a name="dump" href="API.md#dump">▣</a>
 penman.**dump**(_graphs, file, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize each graph in *graphs* to PENMAN and write to *file*.
@@ -140,7 +140,7 @@ Arguments:
 
 ## dumps
 
-<a name="dumps" href="API.md#dumps">:hash:</a>
+<a name="dumps" href="API.md#dumps">▣</a>
 penman.**dumps**(_graphs, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize each graph in *graphs* to the PENMAN format.
@@ -163,7 +163,7 @@ Returns:
 
 Container for Graph edges and node attributes.
 
-<a name="Triple" href="API.md#Triple">:hash:</a>
+<a name="Triple" href="API.md#Triple">▣</a>
 penman.**Triple**(_source, relation, target_)
 
 
@@ -178,7 +178,7 @@ source is a node identifier and the target is a constant. These
 lists can be obtained via the Graph.triples(), Graph.edges(), and
 Graph.attributes() methods.
 
-<a name="Graph" href="API.md#Graph">:hash:</a>
+<a name="Graph" href="API.md#Graph">▣</a>
 penman.**Graph**(_data=None, top=None, codec=PENMANCodec_)
 
 Create a Graph from an iterable of triples.
@@ -202,31 +202,31 @@ Example:
 
 Properties:
 
-* <a name="Graph-top" href="API.md#Graph-top">:hash:</a>
+* <a name="Graph-top" href="API.md#Graph-top">▣</a>
   penman.Graph.**top**
 
   The top variable.
 
 Methods:
 
-* <a name="Graph-variables" href="API.md#Graph-variables">:hash:</a>
+* <a name="Graph-variables" href="API.md#Graph-variables">▣</a>
   penman.Graph.**variables**()
 
   Return the list of variables (nonterminal node identifiers).
 
-* <a name="Graph-triples" href="API.md#Graph-triples">:hash:</a>
+* <a name="Graph-triples" href="API.md#Graph-triples">▣</a>
   penman.Graph.**triples**(_source=None, relation=None, target=None_)
   
   Return triples filtered by their *source*, *relation*, or *target*.
 
-* <a name="Graph-edges" href="API.md#Graph-edges">:hash:</a>
+* <a name="Graph-edges" href="API.md#Graph-edges">▣</a>
   penman.Graph.**edges**(_source=None, relation=None, target=None_)
   
   Return edges filtered by their *source*, *relation*, or *target*.
   
   Edges don't include terminal triples (node types or attributes).
 
-* <a name="Graph-attributes" href="API.md#Graph-attributes">:hash:</a>
+* <a name="Graph-attributes" href="API.md#Graph-attributes">▣</a>
   penman.Graph.**attributes**(_source=None, relation=None, target=None_)
   
   Return attributes filtered by their *source*, *relation*, or *target*.
@@ -238,7 +238,7 @@ Methods:
 
 A parameterized encoder/decoder for graphs in PENMAN notation.
 
-<a name="PENMANCodec" href="API.md#PENMANCodec">:hash:</a>
+<a name="PENMANCodec" href="API.md#PENMANCodec">▣</a>
 penman.**PENMANCodec**(_indent=True_)
 
 Initialize a new codec.
@@ -251,7 +251,7 @@ Arguments:
 
 Methods:
 
-* <a name="PENMANCodec-decode" href="API.md#PENMANCodec-decode">:hash:</a>
+* <a name="PENMANCodec-decode" href="API.md#PENMANCodec-decode">▣</a>
   penman.PENMANCodec.**decode**(_s, triples=False_)
   
   Deserialize PENMAN-notation string *s* into its Graph object.
@@ -276,7 +276,7 @@ Methods:
   <Graph object (top=b) at ...>
   ```
 
-* <a name="PENMANCodec-iterdecode" href="API.md#PENMANCodec-iterdecode">:hash:</a>
+* <a name="PENMANCodec-iterdecode" href="API.md#PENMANCodec-iterdecode">▣</a>
   penman.PENMANCodec.**iterdecode**(_s, triples=False_)
   
   Deserialize PENMAN-notation string *s* into its Graph objects.
@@ -302,7 +302,7 @@ Methods:
   [<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
   ```
 
-* <a name="PENMANCodec-encode" href="API.md#PENMANCodec-encode">:hash:</a>
+* <a name="PENMANCodec-encode" href="API.md#PENMANCodec-encode">▣</a>
   penman.PENMANCodec.**encode**(_g, top=None, triples=False_)
   
   Serialize the graph *g* from *top* to PENMAN notation.
@@ -328,17 +328,17 @@ Methods:
   instance(h, hi)
   ```
 
-* <a name="PENMANCodec-is_relation_inverted" href="API.md#PENMANCodec-is_relation_inverted">:hash:</a>
+* <a name="PENMANCodec-is_relation_inverted" href="API.md#PENMANCodec-is_relation_inverted">▣</a>
   penman.PENMANCodec.**is_relation_inverted**(_relation_)
 
   Return True if *relation* is inverted.
 
-* <a name="PENMANCodec-invert_relation" href="API.md#PENMANCodec-invert_relation">:hash:</a>
+* <a name="PENMANCodec-invert_relation" href="API.md#PENMANCodec-invert_relation">▣</a>
   penman.PENMANCodec.**invert_relation**(_relation_)
 
   Invert or deinvert *relation*.
 
-* <a name="PENMANCodec-handle_triple" href="API.md#PENMANCodec-handle_triple">:hash:</a>
+* <a name="PENMANCodec-handle_triple" href="API.md#PENMANCodec-handle_triple">▣</a>
   penman.PENMANCodec.**handle_triple**(_lhs, relation, rhs_)
 
   Process triples before they are added to the graph.
@@ -365,7 +365,7 @@ Methods:
   * The processed (source, relation, target) triple. By default,
     it is returned as a Triple object.
 
-* <a name="PENMANCodec-triples_to_graph" href="API.md#PENMANCodec-triples_to_graph">:hash:</a>
+* <a name="PENMANCodec-triples_to_graph" href="API.md#PENMANCodec-triples_to_graph">▣</a>
   penman.PENMANCodec.**triples_to_graph**(_triples, top=None_)
 
   Create a Graph from *triples* considering codec configuration.
