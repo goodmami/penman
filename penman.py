@@ -67,7 +67,7 @@ try:
 except NameError:
     basestring = str
 
-__version__ = '0.5.0-alpha'
+__version__ = '0.5.0'
 __version_info__ = __version__.replace('.', ' ').replace('-', ' ').split()
 
 class PENMANCodec(object):
@@ -95,11 +95,11 @@ class PENMANCodec(object):
                 spaces per nesting level
         """
         self.indent = indent
-    
+
     def decode(self, s, triples=False):
         """
         Deserialize PENMAN-notation string *s* into its Graph object.
-       
+
         Args:
             s: a string containing a single PENMAN-serialized graph
             triples: if True, treat *s* as a conjunction of logical triples
@@ -129,7 +129,7 @@ class PENMANCodec(object):
     def iterdecode(self, s, triples=False):
         """
         Deserialize PENMAN-notation string *s* into its Graph objects.
-       
+
         Args:
             s: a string containing zero or more PENMAN-serialized graphs
             triples: if True, treat *s* as a conjunction of logical triples
@@ -255,6 +255,21 @@ class PENMANCodec(object):
         return Triple(source, relation, target)
 
     def triples_to_graph(self, triples, top=None):
+        """
+        Create a Graph from *triples* considering codec configuration.
+
+        The Graph class does not know about information in the codec,
+        so if Graph instantiation depends on special `TYPE_REL` or
+        `TOP_VAR` values, use this function instead of instantiating
+        a Graph object directly. This is also where edge
+        normalization (de-inversion) and value type conversion occur.
+
+        Args:
+            triples: an iterable of (lhs, relation, rhs) triples
+            top: node identifier of the top node
+        Returns:
+            a Graph object
+        """
         inferred_top = triples[0][0] if triples else None
         ts = []
         for triple in triples:
@@ -389,7 +404,7 @@ def _regex(x, s, pos, msg):
 
 class DecodeError(Exception):
     """Raised when decoding PENMAN-notation fails."""
-    
+
     def __init__(self, *args, **kwargs):
         # Python2 doesn't allow parameters like:
         #   (*args, key=val, **kwargs)

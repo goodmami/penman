@@ -263,7 +263,7 @@ Methods:
   
   Returns:
   
-  the Graph object described by *s*
+  * the Graph object described by *s*
   
   Example:
   
@@ -288,7 +288,7 @@ Methods:
   
   Yields:
   
-  valid Graph objects described by *s*
+  * valid Graph objects described by *s*
   
   Example:
   
@@ -316,7 +316,7 @@ Methods:
   
   Returns:
   
-  the PENMAN-serialized string of the Graph *g*
+  * the PENMAN-serialized string of the Graph *g*
   
   Example:
   
@@ -338,30 +338,22 @@ Methods:
 
   Invert or deinvert *relation*.
 
-* <a name="PENMANCodec-handle_value" href="API.md#PENMANCodec-handle_value">:hash:</a>
-  penman.PENMANCodec.**handle_value**(_s_)
-
-  Process relation value *s* before it is used in a triple.
-  
-  Arguments:
-  
-  * `s` - the string value of a non-nodetype relation
-  
-  Returns:
-  
-  the value, converted to float or int if applicable,
-  otherwise the unchanged string
-
 * <a name="PENMANCodec-handle_triple" href="API.md#PENMANCodec-handle_triple">:hash:</a>
   penman.PENMANCodec.**handle_triple**(_lhs, relation, rhs_)
 
   Process triples before they are added to the graph.
-  
+
   Note that *lhs* and *rhs* are as they originally appeared, and
-  may be inverted. By default, this function normalizes all such
-  inversions, and also removes initial colons in relations and
-  sets empty relations to None.
-  
+  may be inverted. Inversions are detected by
+  is_relation_inverted() and de-inverted by invert_relation().
+
+  By default, this function:
+   * removes initial colons on relations
+   * de-inverts all inverted relations
+   * sets empty relations to `None`
+   * casts numeric string targets (post-de-inversion) to their
+     numeric types (e.g. float, int)
+
   Arguments:
   
   * `lhs` - the left hand side of an observed triple
@@ -370,6 +362,26 @@ Methods:
   
   Returns:
   
-  The processed (source, relation, target) triple. By default,
-  it is returned as a Triple object.
+  * The processed (source, relation, target) triple. By default,
+    it is returned as a Triple object.
 
+* <a name="PENMANCodec-triples_to_graph" href="API.md#PENMANCodec-triples_to_graph">:hash:</a>
+  penman.PENMANCodec.**triples_to_graph**(_triples, top=None_)
+
+  Create a Graph from *triples* considering codec configuration.
+
+  The Graph class does not know about information in the codec,
+  so if Graph instantiation depends on special `TYPE_REL` or
+  `TOP_VAR` values, use this function instead of instantiating
+  a Graph object directly. This is also where edge
+  normalization (de-inversion) and value type conversion occur.
+
+  Arguments:
+ 
+  * `triples` - an iterable of (lhs, relation, rhs) triples
+  * `top` - node identifier of the top node
+
+  Returns:
+
+  * a Graph object
+  
