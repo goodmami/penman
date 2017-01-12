@@ -38,7 +38,7 @@ the example [below](#library-usage).
 >>> import penman
 >>> g = penman.decode('(b / bark :ARG0 (d / dog))')
 >>> g.triples()
-[Triple(source='b', relation='instance', target='bark'), Triple(source='b', relation='ARG0', target='d'), Triple(source='d', relation='instance', target='dog')]
+[Triple(source='b', relation='instance', target='bark'), Triple(source='d', relation='instance', target='dog'), Triple(source='b', relation='ARG0', target='d')]
 >>> print(penman.encode(g))
 (b / bark
    :ARG0 (d / dog))
@@ -68,7 +68,7 @@ Options:
   -v, --verbose             verbose mode (may be repeated: -vv, -vvv)
   -i FILE, --input FILE     read graphs from FILE instanced of stdin
   -o FILE, --output FILE    write output to FILE instead of stdout
-  -t, --triples             print graphs as triples
+  -t, --triples             print graphs as triple conjunctions
 
 $ python penman.py <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 (w / want-01

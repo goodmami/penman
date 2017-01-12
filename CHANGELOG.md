@@ -2,6 +2,8 @@
 
 ## [Unreleased][unreleased]
 
+## [v0.5.0][]
+
 ## Fixed
 
 * Properly trim off ^ in triple-conjunction parsing.
@@ -12,17 +14,27 @@
   module-level variables prior to v0.4.0); they are only used for
   triple-conjunctions. If left as `None`, they will not be printed or
   interpreted.
+* `PENMANCodec.triples_to_graph` to instantiate a Graph with awareness
+  of codec configuration (e.g. `TOP_VAR`, `TYPE_REL`, etc.)
+
+## Removed
+
+* `PENMANCodec.handle_value()` - value conversion is now done in
+  `PENMANCodec.handle_triple()`, which has access to relation name, etc.
 
 ## Changed
 
 * Decoupled `Graph` from the codec by removing the `codec` parameter and
-  its usage in the class methods.
-* PENMANCodec returns all node type triples before other edge triples.
-* PENMANCodec reads/writes TOP nodes in triple conjunctions if `TOP_VAR`
-  and `TOP_REL` are set (see above).
+  its usage in the class methods. Graphs can be instantiated with
+  awareness of the codec via the codec's `triples_to_graph()`  method.
+* `PENMANCodec` returns all node type triples before other edge triples.
+* `PENMANCodec` reads/writes TOP nodes in triple conjunctions if
+  `TOP_VAR` and `TOP_REL` are set (see above).
 * Default node types are no longer stored as triples. This means a graph
   like `(a / a :ARG b)` cannot say if `b` is a node or just a symbol.
   Let's see how far this gets us before re-adding such support.
+* `PENMANCodec.handle_triple()` now manages value conversion
+* PENMAN serialization now sorts relations like `sort -V`
 
 
 ## [v0.4.0][]
@@ -111,4 +123,5 @@ First release with very basic functionality.
 [v0.2.0]: ../../releases/tag/v0.2.0
 [v0.3.0]: ../../releases/tag/v0.3.0
 [v0.4.0]: ../../releases/tag/v0.4.0
+[v0.5.0]: ../../releases/tag/v0.5.0
 [README]: README.md

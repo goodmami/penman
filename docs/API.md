@@ -1,7 +1,7 @@
 
 # API documentation for Penman
 
-## Contents
+**Contents**
 
 Module functions:
 
@@ -14,41 +14,42 @@ Module functions:
 
 Classes and methods:
 
-* [Triple](#triple)
-* [Graph](#graph)
+* [Triple](#Triple)
+* [Graph](#Graph)
   - [Graph.top](#Graph-top)
   - [Graph.variables()](#Graph-variables)
   - [Graph.triples()](#Graph-triples)
   - [Graph.edges()](#Graph-edges)
   - [Graph.attributes()](#Graph-attributes)
-* [PENMANCodec](#penmancodec)
+* [PENMANCodec](#PENMANCodec)
   - [PENMANCodec.decode()](#PENMANCodec-decode)
   - [PENMANCodec.iterdecode()](#PENMANCodec-iterdecode)
   - [PENMANCodec.encode()](#PENMANCodec-encode)
   - [PENMANCodec.is_relation_inverted()](#PENMANCodec-is_relation_inverted)
   - [PENMANCodec.invert_relation()](#PENMANCodec-invert_relation)
-  - [PENMANCodec.handle_value()](#PENMANCodec-handle_value)
   - [PENMANCodec.handle_triple()](#PENMANCodec-handle_triple)
+  - [PENMANCodec.triples_to_graph()](#PENMANCodec-triples_to_graph)
 
-## Functions
+# Functions
 
-### decode
+## decode
 
+<a name="decode" href="API.md#decode">:hash:</a>
 penman.**decode**(_s, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize PENMAN-serialized *s* into its Graph object
 
-**Arguments**
+Arguments:
 
 * `s` - a string containing a single PENMAN-serialized graph
 * `cls` - serialization codec class
 * `kwargs` - keyword arguments passed to the constructor of *cls*
 
-**Returns**
+Returns:
 
-the Graph object described by *s*
+* the Graph object described by *s*
 
-**Example**
+Example:
 
 ```python
 >>> decode('(b / bark :ARG1 (d / dog))')
@@ -56,13 +57,14 @@ the Graph object described by *s*
 ```
 
 
-### encode
+## encode
 
+<a name="encode" href="API.md#encode">:hash:</a>
 penman.**encode**(_g, top=None, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize the graph *g* from *top* to PENMAN notation.
 
-**Arguments**
+Arguments:
 
 * `g` - the Graph object
 * `top` - the node identifier for the top of the serialized graph; if
@@ -70,11 +72,11 @@ Serialize the graph *g* from *top* to PENMAN notation.
 * `cls` - serialization codec class
 * `kwargs` - keyword arguments passed to the constructor of *cls*
 
-**Returns**
+Returns:
 
-the PENMAN-serialized string of the Graph *g*
+* the PENMAN-serialized string of the Graph *g*
 
-**Example**
+Example:
 
 ```python
 >>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]))
@@ -82,49 +84,52 @@ the PENMAN-serialized string of the Graph *g*
 ```
 
 
-### load
+## load
 
+<a name="load" href="API.md#load">:hash:</a>
 penman.**load**(_source, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize a list of PENMAN-encoded graphs from *source*.
 
-**Arguments**
+Arguments:
 
 * `source` - a filename or file-like object to read from
 * `triples` - if True, read graphs as triples instead of as PENMAN
 * `cls` - serialization codec class
 * `kwargs` - keyword arguments passed to the constructor of *cls*
 
-**Returns**
+Returns:
 
-a list of Graph objects
+* a list of Graph objects
 
 
-### loads
+## loads
 
+<a name="loads" href="API.md#loads">:hash:</a>
 penman.**loads**(_string, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize a list of PENMAN-encoded graphs from *string*.
 
-**Arguments**
+Arguments:
 
 * `string` - a string containing graph data
 * `triples` - if True, read graphs as triples instead of as PENMAN
 * `cls` - serialization codec class
 * `kwargs` - keyword arguments passed to the constructor of *cls*
 
-**Returns**
+Returns:
 
-a list of Graph objects
+* a list of Graph objects
 
 
-### dump
+## dump
 
+<a name="dump" href="API.md#dump">:hash:</a>
 penman.**dump**(_graphs, file, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize each graph in *graphs* to PENMAN and write to *file*.
 
-**Arguments**
+Arguments:
 
 * `graphs` - an iterable of Graph objects
 * `file` - a filename or file-like object to write to
@@ -133,34 +138,36 @@ Serialize each graph in *graphs* to PENMAN and write to *file*.
 * `kwargs` - keyword arguments passed to the constructor of *cls*
 
 
-### dumps
+## dumps
 
+<a name="dumps" href="API.md#dumps">:hash:</a>
 penman.**dumps**(_graphs, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize each graph in *graphs* to the PENMAN format.
 
-**Arguments**
+Arguments:
 
 * `graphs` - an iterable of Graph objects
 * `triples` - if True, write graphs as triples instead of as PENMAN
 
-**Returns**
+Returns:
 
-the string of serialized graphs
-
-
-
-##  Classes
+* the string of serialized graphs
 
 
-### Triple
+
+#  Classes
+
+
+## Triple
 
 Container for Graph edges and node attributes.
 
+<a name="Triple" href="API.md#Triple">:hash:</a>
 penman.**Triple**(_source, relation, target_)
 
 
-### Graph
+## Graph
 
 A basic class for modeling a rooted, directed acyclic graph.
 
@@ -171,18 +178,19 @@ source is a node identifier and the target is a constant. These
 lists can be obtained via the Graph.triples(), Graph.edges(), and
 Graph.attributes() methods.
 
+<a name="Graph" href="API.md#Graph">:hash:</a>
 penman.**Graph**(_data=None, top=None, codec=PENMANCodec_)
 
 Create a Graph from an iterable of triples.
 
-**Arguments**
+Arguments:
 
 * `data` - an iterable of triples (Triple objects or 3-tuples)
 * `top` - the node identifier of the top node; if unspecified,
           the source of the first triple is used
 * `codec` - the serialization codec used to interpret values
 
-**Example**
+Example:
 
 ```python
 >>> Graph([
@@ -192,193 +200,176 @@ Create a Graph from an iterable of triples.
 ... ])
 ```
 
-#### Properties
+Properties:
 
-<a name="Graph-top" href="API.md#Graph-top">#</a>
-penman.Graph.**top**
+* <a name="Graph-top" href="API.md#Graph-top">:hash:</a>
+  penman.Graph.**top**
 
-The top variable.
+  The top variable.
 
-#### Methods
+Methods:
 
-<a name="Graph-variables" href="API.md#Graph-variables">#</a>
-penman.Graph.**variables**()
+* <a name="Graph-variables" href="API.md#Graph-variables">:hash:</a>
+  penman.Graph.**variables**()
 
-Return the list of variables (nonterminal node identifiers).
+  Return the list of variables (nonterminal node identifiers).
 
---
+* <a name="Graph-triples" href="API.md#Graph-triples">:hash:</a>
+  penman.Graph.**triples**(_source=None, relation=None, target=None_)
+  
+  Return triples filtered by their *source*, *relation*, or *target*.
 
-<a name="Graph-triples" href="API.md#Graph-triples">#</a>
-penman.Graph.**triples**(_source=None, relation=None, target=None_)
+* <a name="Graph-edges" href="API.md#Graph-edges">:hash:</a>
+  penman.Graph.**edges**(_source=None, relation=None, target=None_)
+  
+  Return edges filtered by their *source*, *relation*, or *target*.
+  
+  Edges don't include terminal triples (node types or attributes).
 
-Return triples filtered by their *source*, *relation*, or *target*.
-
---
-
-<a name="Graph-edges" href="API.md#Graph-edges">#</a>
-penman.Graph.**edges**(_source=None, relation=None, target=None_)
-
-Return edges filtered by their *source*, *relation*, or *target*.
-
-Edges don't include terminal triples (node types or attributes).
-
---
-
-<a name="Graph-attributes" href="API.md#Graph-attributes">#</a>
-penman.Graph.**attributes**(_source=None, relation=None, target=None_)
-
-Return attributes filtered by their *source*, *relation*, or *target*.
-
-Attributes don't include triples where the target is a nonterminal.
+* <a name="Graph-attributes" href="API.md#Graph-attributes">:hash:</a>
+  penman.Graph.**attributes**(_source=None, relation=None, target=None_)
+  
+  Return attributes filtered by their *source*, *relation*, or *target*.
+  
+  Attributes don't include triples where the target is a nonterminal.
 
 
-### PENMANCodec
+## PENMANCodec
 
 A parameterized encoder/decoder for graphs in PENMAN notation.
 
+<a name="PENMANCodec" href="API.md#PENMANCodec">:hash:</a>
 penman.**PENMANCodec**(_indent=True_)
 
 Initialize a new codec.
 
-**Arguments**
+Arguments:
 
 * `indent` - if True, adaptively indent; if False or None, don't
              indent; if a non-negative integer, indent that many
              spaces per nesting level
 
-#### Methods
+Methods:
 
-<a name="PENMANCodec-decode" href="API.md#PENMANCodec-decode">#</a>
-penman.PENMANCodec.**decode**(_s, triples=False_)
+* <a name="PENMANCodec-decode" href="API.md#PENMANCodec-decode">:hash:</a>
+  penman.PENMANCodec.**decode**(_s, triples=False_)
+  
+  Deserialize PENMAN-notation string *s* into its Graph object.
+  
+  Arguments:
+  
+  * `s` - a string containing a single PENMAN-serialized graph
+  * `triples` - if True, treat *s* as a conjunction of logical triples
+  
+  Returns:
+  
+  the Graph object described by *s*
+  
+  Example:
+  
+  ```python
+  >>> PENMANCodec.decode('(b / bark :ARG1 (d / dog))')
+  <Graph object (top=b) at ...>
+  >>> PENMANCodec.decode(
+  ...     'instance(b, bark) ^ instance(d, dog) ^ ARG1(b, d)'
+  ... )
+  <Graph object (top=b) at ...>
+  ```
 
-Deserialize PENMAN-notation string *s* into its Graph object.
+* <a name="PENMANCodec-iterdecode" href="API.md#PENMANCodec-iterdecode">:hash:</a>
+  penman.PENMANCodec.**iterdecode**(_s, triples=False_)
+  
+  Deserialize PENMAN-notation string *s* into its Graph objects.
+  
+  Arguments:
+  
+  * `s` - a string containing zero or more PENMAN-serialized graphs
+  * `triples` - if True, treat *s* as a conjunction of logical triples
+  
+  Yields:
+  
+  valid Graph objects described by *s*
+  
+  Example:
+  
+  ```python
+  >>> list(PENMANCodec.iterdecode('(h / hello)(g / goodbye)'))
+  [<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
+  >>> list(PENMANCodec.iterdecode(
+  ...     'instance(h, hello)\n'
+  ...     'instance(g, goodbye)'
+  ... ))
+  [<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
+  ```
 
-**Arguments**
+* <a name="PENMANCodec-encode" href="API.md#PENMANCodec-encode">:hash:</a>
+  penman.PENMANCodec.**encode**(_g, top=None, triples=False_)
+  
+  Serialize the graph *g* from *top* to PENMAN notation.
+  
+  Arguments:
+  
+  * `g` - the Graph object
+  * `top` - the node identifier for the top of the serialized
+            graph; if unset, the original top of *g* is used
+  * `triples` - if True, serialize as a conjunction of logical triples
+  
+  Returns:
+  
+  the PENMAN-serialized string of the Graph *g*
+  
+  Example:
+  
+  ```python
+  >>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]))
+  (h / hi)
+  >>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]),
+  ...                    triples=True)
+  instance(h, hi)
+  ```
 
-* `s` - a string containing a single PENMAN-serialized graph
-* `triples` - if True, treat *s* as a conjunction of logical triples
+* <a name="PENMANCodec-is_relation_inverted" href="API.md#PENMANCodec-is_relation_inverted">:hash:</a>
+  penman.PENMANCodec.**is_relation_inverted**(_relation_)
 
-**Returns**
+  Return True if *relation* is inverted.
 
-the Graph object described by *s*
+* <a name="PENMANCodec-invert_relation" href="API.md#PENMANCodec-invert_relation">:hash:</a>
+  penman.PENMANCodec.**invert_relation**(_relation_)
 
-**Example**
+  Invert or deinvert *relation*.
 
-```python
->>> PENMANCodec.decode('(b / bark :ARG1 (d / dog))')
-<Graph object (top=b) at ...>
->>> PENMANCodec.decode(
-...     'instance(b, bark) ^ instance(d, dog) ^ ARG1(b, d)'
-... )
-<Graph object (top=b) at ...>
-```
+* <a name="PENMANCodec-handle_value" href="API.md#PENMANCodec-handle_value">:hash:</a>
+  penman.PENMANCodec.**handle_value**(_s_)
 
---
+  Process relation value *s* before it is used in a triple.
+  
+  Arguments:
+  
+  * `s` - the string value of a non-nodetype relation
+  
+  Returns:
+  
+  the value, converted to float or int if applicable,
+  otherwise the unchanged string
 
-<a name="PENMANCodec-iterdecode" href="API.md#PENMANCodec-iterdecode">#</a>
-penman.PENMANCodec.**iterdecode**(_s, triples=False_)
+* <a name="PENMANCodec-handle_triple" href="API.md#PENMANCodec-handle_triple">:hash:</a>
+  penman.PENMANCodec.**handle_triple**(_lhs, relation, rhs_)
 
-Deserialize PENMAN-notation string *s* into its Graph objects.
-
-**Arguments**
-
-* `s` - a string containing zero or more PENMAN-serialized graphs
-* `triples` - if True, treat *s* as a conjunction of logical triples
-
-**Yields**
-
-valid Graph objects described by *s*
-
-**Example**
-
-```python
->>> list(PENMANCodec.iterdecode('(h / hello)(g / goodbye)'))
-[<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
->>> list(PENMANCodec.iterdecode(
-...     'instance(h, hello)\n'
-...     'instance(g, goodbye)'
-... ))
-[<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
-```
-
---
-
-<a name="PENMANCodec-encode" href="API.md#PENMANCodec-encode">#</a>
-penman.PENMANCodec.**encode**(_g, top=None, triples=False_)
-
-Serialize the graph *g* from *top* to PENMAN notation.
-
-**Arguments**
-
-* `g` - the Graph object
-* `top` - the node identifier for the top of the serialized
-          graph; if unset, the original top of *g* is used
-* `triples` - if True, serialize as a conjunction of logical triples
-
-**Returns**
-
-the PENMAN-serialized string of the Graph *g*
-
-**Example**
-
-```python
->>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]))
-(h / hi)
->>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]),
-...                    triples=True)
-instance(h, hi)
-```
-
---
-
-<a name="PENMANCodec-is_relation_inverted" href="API.md#PENMANCodec-is_relation_inverted">#</a>
-penman.PENMANCodec.**is_relation_inverted**(_relation_)
-
-Return True if *relation* is inverted.
-
---
-
-<a name="PENMANCodec-invert_relation" href="API.md#PENMANCodec-invert_relation">#</a>
-penman.PENMANCodec.**invert_relation**(_relation_)
-
-Invert or deinvert *relation*.
-
---
-
-<a name="PENMANCodec-handle_value" href="API.md#PENMANCodec-handle_value">#</a>
-penman.PENMANCodec.**handle_value**(_s_)
-
-Process relation value *s* before it is used in a triple.
-
-**Arguments**
-
-* `s` - the string value of a non-nodetype relation
-
-**Returns**
-
-the value, converted to float or int if applicable,
-otherwise the unchanged string
-
---
-
-<a name="PENMANCodec-handle_triple" href="API.md#PENMANCodec-handle_triple">#</a>
-penman.PENMANCodec.**handle_triple**(_lhs, relation, rhs_)
-
-Process triples before they are added to the graph.
-
-Note that *lhs* and *rhs* are as they originally appeared, and
-may be inverted. By default, this function normalizes all such
-inversions, and also removes initial colons in relations and
-sets empty relations to None.
-
-**Arguments**
-
-* `lhs` - the left hand side of an observed triple
-* `relation` - the triple relation (possibly inverted)
-* `rhs` - the right hand side of an observed triple
-
-**Returns**
-
-The processed (source, relation, target) triple. By default,
-it is returned as a Triple object.
+  Process triples before they are added to the graph.
+  
+  Note that *lhs* and *rhs* are as they originally appeared, and
+  may be inverted. By default, this function normalizes all such
+  inversions, and also removes initial colons in relations and
+  sets empty relations to None.
+  
+  Arguments:
+  
+  * `lhs` - the left hand side of an observed triple
+  * `relation` - the triple relation (possibly inverted)
+  * `rhs` - the right hand side of an observed triple
+  
+  Returns:
+  
+  The processed (source, relation, target) triple. By default,
+  it is returned as a Triple object.
 

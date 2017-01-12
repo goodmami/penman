@@ -30,8 +30,7 @@ Options:
   -v, --verbose             verbose mode (may be repeated: -vv, -vvv)
   -i FILE, --input FILE     read graphs from FILE instanced of stdin
   -o FILE, --output FILE    write output to FILE instead of stdout
-  -t, --triples             print graphs as triples
-
+  -t, --triples             print graphs as triple conjunctions
 '''
 
 # API overview:
@@ -43,8 +42,8 @@ Options:
 #    - PENMANCodec.encode(g, top=None)
 #    - PENMANCodec.is_relation_inverted(relation)
 #    - PENMANCodec.invert_relation(relation)
-#    - PENMANCodec.handle_value(s)
 #    - PENMANCodec.handle_triple(source, relation, target)
+#    - PENMANCodec.triples_to_graph(triples, top=None)
 #  * Triple(source, relation, target)
 #  * Graph(data=None, top=None)
 #    - Graph.top
@@ -63,6 +62,10 @@ Options:
 
 import re
 from collections import namedtuple, defaultdict
+try:
+    basestring
+except NameError:
+    basestring = str
 
 __version__ = '0.5.0-alpha'
 __version_info__ = __version__.replace('.', ' ').replace('-', ' ').split()
@@ -121,8 +124,7 @@ class PENMANCodec(object):
                 'Unexpected end of string.', string=s, pos=len(s)
             )
         top, nodes, edges = data
-        g = Graph(nodes + edges, top=top)
-        return g
+        return self.triples_to_graph(nodes + edges, top=top)
 
     def iterdecode(self, s, triples=False):
         """
@@ -163,7 +165,7 @@ class PENMANCodec(object):
                     pos += 1
                 else:
                     top, nodes, edges = data
-                    yield Graph(nodes + edges, top=top)
+                    yield self.triples_to_graph(nodes + edges, top=top)
                     pos = span[1]
             else:
                 pos += 1
@@ -207,34 +209,20 @@ class PENMANCodec(object):
         else:
             return (relation or '') + '-of'
 
-    def handle_value(self, s):
-        """
-        Process relation value *s* before it is used in a triple.
-
-        Args:
-            s: the string value of a non-nodetype relation
-        Returns:
-            the value, converted to float or int if applicable,
-            otherwise the unchanged string
-        """
-        if s.startswith('"'):
-            value = s
-        elif re.match(r'-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+', s):
-            value = float(s)
-        elif re.match(r'-?\d+', s):
-            value = int(s)
-        else:
-            value = s
-        return value
-
     def handle_triple(self, lhs, relation, rhs):
         """
         Process triples before they are added to the graph.
 
         Note that *lhs* and *rhs* are as they originally appeared, and
-        may be inverted. By default, this function normalizes all such
-        inversions, and also removes initial colons in relations and
-        sets empty relations to None.
+        may be inverted. Inversions are detected by
+        is_relation_inverted() and de-inverted by invert_relation().
+
+        By default, this function:
+         * removes initial colons on relations
+         * de-inverts all inverted relations
+         * sets empty relations to `None`
+         * casts numeric string targets (post-de-inversion) to their
+           numeric types (e.g. float, int)
 
         Args:
             lhs: the left hand side of an observed triple
@@ -245,14 +233,37 @@ class PENMANCodec(object):
             it is returned as a Triple object.
         """
         relation = relation.replace(':', '', 1)  # remove leading :
+
         if self.is_relation_inverted(relation):  # deinvert
             source, target = rhs, lhs
             relation = self.invert_relation(relation)
         else:
             source, target = lhs, rhs
+
+        if isinstance(target, basestring):
+            if target.startswith('"'):
+                target = target  # strip quotes?
+            elif re.match(
+                    r'-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+', target):
+                target = float(target)
+            elif re.match(r'-?\d+', target):
+                target = int(target)
+
         if relation == '':  # set empty relations to None
             relation = None
+
         return Triple(source, relation, target)
+
+    def triples_to_graph(self, triples, top=None):
+        inferred_top = triples[0][0] if triples else None
+        ts = []
+        for triple in triples:
+            if triple[0] == self.TOP_VAR and triple[1] == self.TOP_REL:
+                inferred_top = triple[2]
+            else:
+                ts.append(self.handle_triple(*triple))
+        return Graph(ts, top=top or inferred_top)
+
 
     def _decode_triple_conjunction(self, s, pos=0):
         top, nodes, edges = None, [], []
@@ -271,15 +282,12 @@ class PENMANCodec(object):
             else:
                 m = _regex(self.ATOM_RE, s, pos, 'a float/int/atom')
             pos, tgt = m.end(0), m.group(1)
-            # don't "handle" if its a node type (not in this version, at least)
             if var == self.TOP_VAR and rel == self.TOP_REL:
                 top = tgt
             elif rel == self.TYPE_REL:
-                nodes.append(self.handle_triple(var, rel, tgt))
+                nodes.append((var, rel, tgt))
             else:
-                edges.append(
-                    self.handle_triple(var, rel, self.handle_value(tgt))
-                )
+                edges.append((var, rel, tgt))
             m = _regex(self.NODE_EXIT_RE, s, pos, '")"')
             pos = m.end(1)
             if m.end(0) < len(s) and s[m.end(0)] == '^':
@@ -316,7 +324,7 @@ class PENMANCodec(object):
                     pos = span[1]
                     subtop, subnodes, subedges = data
                     nodes.extend(subnodes)
-                    edges.append(self.handle_triple(var, rel, subtop))
+                    edges.append((var, rel, subtop))
                     edges.extend(subedges)
 
                 # string or other atom value
@@ -327,9 +335,7 @@ class PENMANCodec(object):
                     else:
                         m = _regex(self.ATOM_RE, s, pos, 'a float/int/atom')
                         pos, value = m.end(0), m.group(1)
-                    edges.append(
-                        self.handle_triple(var, rel, self.handle_value(value))
-                    )
+                    edges.append((var, rel, value))
 
             elif s[pos].isspace():
                 pos += 1
@@ -341,7 +347,7 @@ class PENMANCodec(object):
         m = _regex(self.NODE_EXIT_RE, s, pos, '")"')
         pos = m.end(1)
 
-        nodes = [self.handle_triple(var, self.TYPE_REL, nodetype)] + nodes
+        nodes = [(var, self.TYPE_REL, nodetype)] + nodes
 
         return (start, pos), (var, nodes, edges)
 
@@ -659,8 +665,9 @@ def _layout(g, v, codec, offset, seen):
     branches = []
     outedges = sorted(
         g[v],
-        key=lambda e: (-(e.relation == codec.TYPE_REL),
-                       codec.is_relation_inverted(e.relation))
+        key=lambda e: ([-(e.relation == codec.TYPE_REL),
+                        codec.is_relation_inverted(e.relation)] +
+                       _relation_sort_key(e.relation))
     )
     head = '({}'.format(v)
     if indent is True:
@@ -684,6 +691,12 @@ def _layout(g, v, codec, offset, seen):
     return head + tail
 
 
+def _relation_sort_key(r):
+    if r is not None:
+        return [int(t) if t.isdigit() else t for t in re.split(r'([0-9]+)', r)]
+    return []
+
+
 def _main():
     import sys
     from docopt import docopt
@@ -693,7 +706,7 @@ def _main():
     data = load(infile)
 
     outfile = args['--output'] or sys.stdout
-    dump(outfile, data, triples=args['--triples'])
+    dump(data, outfile, triples=args['--triples'])
 
 
 if __name__ == '__main__':
