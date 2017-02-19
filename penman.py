@@ -183,10 +183,10 @@ class PENMANCodec(object):
             the PENMAN-serialized string of the Graph *g*
         Example:
 
-            >>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]))
+            >>> PENMANCodec().encode(Graph([('h', 'instance', 'hi')]))
             (h / hi)
-            >>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]),
-            ...                    triples=True)
+            >>> PENMANCodec().encode(Graph([('h', 'instance', 'hi')]),
+            ...                      triples=True)
             instance(h, hi)
         """
         if triples:
@@ -461,7 +461,7 @@ def encode(g, top=None, cls=PENMANCodec, **kwargs):
         the PENMAN-serialized string of the Graph *g*
     Example:
 
-        >>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]))
+        >>> encode(Graph([('h', 'instance', 'hi')]))
         (h / hi)
     """
     codec = cls(**kwargs)
@@ -593,7 +593,7 @@ class Graph(object):
         )
 
     def __str__(self):
-        return PENMANCodec.encode(self)  # just use the default encoder
+        return encode(self)  # just use the default encoder
 
     @property
     def top(self):
