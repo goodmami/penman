@@ -25,8 +25,23 @@ def x1():
         ]
     )
 
+@pytest.fixture
+def x2():
+    return (
+        '(10000 / _bark_v_1\n'
+        '       :ARG1 (10001 / _dog_n_1\n'
+        '                    :RSTR-of (10002 / udef_q)))',
+        [
+            (10000, 'instance', '_bark_v_1'),
+            (10001, 'instance', '_dog_n_1'),
+            (10002, 'instance', 'udef_q'),
+            (10000, 'ARG1', 10001),
+            (10002, 'RSTR', 10001)
+        ]
+    )
 
-def test_decode(x1):
+
+def test_decode(x1, x2):
     decode = penman.decode
 
     # unlabeled single node
@@ -103,6 +118,7 @@ def test_decode(x1):
 
     # fuller example
     assert decode(x1[0]).triples() == x1[1]
+    assert decode(x2[0]).triples() == x2[1]
 
     # invalid strings
     with pytest.raises(penman.DecodeError):
@@ -137,7 +153,7 @@ def test_iterdecode():
     # assert len(list(codec.iterdecode('(h / hello'))) == 0
     # assert len(list(codec.iterdecode('(h / hello)(g / goodbye'))) == 1
 
-def test_encode(x1):
+def test_encode(x1, x2):
     encode = penman.encode
 
     # unlabeled single node
@@ -209,6 +225,7 @@ def test_encode(x1):
     assert encode(g) == '(a :ARG 15)'
 
     assert encode(penman.Graph(x1[1])) == x1[0]
+    assert encode(penman.Graph(x2[1])) == x2[0]
 
     # reentrancy under inversion
     g = penman.Graph([
@@ -302,20 +319,26 @@ class TestGraph(object):
         ]
         assert g.top == 'b'
 
-    def test_top(self, x1):
+    def test_str(self, x1, x2):
+        assert str(penman.Graph(x1[1])) == x1[0]
+        assert str(penman.Graph(x2[1])) == x2[0]
+
+    def test_top(self, x1, x2):
         assert penman.Graph().top is None
         assert penman.Graph([('a', 'instance', None)]).top == 'a'
         assert penman.Graph(
             [('b', 'instance', None), ('a', 'ARG', 'b')]
         ).top == 'b'
         assert penman.Graph(x1[1]).top == 'e2'
+        assert penman.Graph(x2[1]).top == 10000
 
-    def test_variables(self, x1):
+    def test_variables(self, x1, x2):
         assert penman.Graph().variables() == set()
         assert penman.Graph([('a', 'ARG', 'b')]).variables() == set(['a'])
         assert penman.Graph(x1[1]).variables() == set(['e2', 'x1', '_1', 'e3'])
+        assert penman.Graph(x2[1]).variables() == set([10000, 10001, 10002])
 
-    def test_triples(self, x1):
+    def test_triples(self, x1, x2):
         assert penman.Graph().triples() == []
         g = penman.Graph(x1[1])
         assert g.triples() == [
@@ -345,8 +368,20 @@ class TestGraph(object):
             ('_1', 'instance', 'proper_q'),
             ('e3', 'instance', '_sleep_v_1'),
         ]
+        g = penman.Graph(x2[1])
+        assert g.triples() == [
+            (10000, 'instance', '_bark_v_1'),
+            (10001, 'instance', '_dog_n_1'),
+            (10002, 'instance', 'udef_q'),
+            (10000, 'ARG1', 10001),
+            (10002, 'RSTR', 10001)
+        ]
+        assert g.triples(source=10000) == [
+            (10000, 'instance', '_bark_v_1'),
+            (10000, 'ARG1', 10001),
+        ]
 
-    def test_edges(self, x1):
+    def test_edges(self, x1, x2):
         assert penman.Graph().edges() == []
         g = penman.Graph(x1[1])
         assert g.edges() == [
@@ -368,8 +403,13 @@ class TestGraph(object):
         assert g.edges(relation='RSTR') == [
             ('_1', 'RSTR', 'x1')
         ]
+        g = penman.Graph(x2[1])
+        assert g.edges() == [
+            (10000, 'ARG1', 10001),
+            (10002, 'RSTR', 10001)
+        ]
 
-    def test_attributes(self, x1):
+    def test_attributes(self, x1, x2):
         assert penman.Graph().attributes() == []
         g = penman.Graph(x1[1])
         assert g.attributes() == [
@@ -391,6 +431,12 @@ class TestGraph(object):
             ('x1', 'instance', 'named'),
             ('_1', 'instance', 'proper_q'),
             ('e3', 'instance', '_sleep_v_1'),
+        ]
+        g = penman.Graph(x2[1])
+        assert g.attributes() == [
+            (10000, 'instance', '_bark_v_1'),
+            (10001, 'instance', '_dog_n_1'),
+            (10002, 'instance', 'udef_q'),
         ]
 
 def test_loads():

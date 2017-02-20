@@ -2,13 +2,25 @@
 
 ## [Unreleased][unreleased]
 
+### Fixed
+
+* Numeric conversion in `PENMANCodec.handle_triple()` now happens to
+  both sources and targets, and `handle_triple()` is now run on the top,
+  as well. Fixes #4
+* `Graph.__str__()` now initializes a default codec for serialization.
+
+### Added
+### Removed
+### Changed
+### Deprecated
+
 ## [v0.5.0][]
 
-## Fixed
+### Fixed
 
 * Properly trim off ^ in triple-conjunction parsing.
 
-## Added
+### Added
 
 * `TOP_VAR` and `TOP_REL` are added to `PENMANCodec` (these were
   module-level variables prior to v0.4.0); they are only used for
@@ -17,12 +29,12 @@
 * `PENMANCodec.triples_to_graph` to instantiate a Graph with awareness
   of codec configuration (e.g. `TOP_VAR`, `TYPE_REL`, etc.)
 
-## Removed
+### Removed
 
 * `PENMANCodec.handle_value()` - value conversion is now done in
   `PENMANCodec.handle_triple()`, which has access to relation name, etc.
 
-## Changed
+### Changed
 
 * Decoupled `Graph` from the codec by removing the `codec` parameter and
   its usage in the class methods. Graphs can be instantiated with

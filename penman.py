@@ -28,7 +28,7 @@ Options:
   -h, --help                display this help and exit
   -V, --version             display the version and exit
   -v, --verbose             verbose mode (may be repeated: -vv, -vvv)
-  -i FILE, --input FILE     read graphs from FILE instanced of stdin
+  -i FILE, --input FILE     read graphs from FILE instead of stdin
   -o FILE, --output FILE    write output to FILE instead of stdout
   -t, --triples             print graphs as triple conjunctions
 '''
@@ -107,9 +107,10 @@ class PENMANCodec(object):
             the Graph object described by *s*
         Example:
 
-            >>> PENMANCodec.decode('(b / bark :ARG1 (d / dog))')
+            >>> codec = PENMANCodec()
+            >>> codec.decode('(b / bark :ARG1 (d / dog))')
             <Graph object (top=b) at ...>
-            >>> PENMANCodec.decode(
+            >>> codec.decode(
             ...     'instance(b, bark) ^ instance(d, dog) ^ ARG1(b, d)'
             ... )
             <Graph object (top=b) at ...>
@@ -137,9 +138,10 @@ class PENMANCodec(object):
             valid Graph objects described by *s*
         Example:
 
-            >>> list(PENMANCodec.iterdecode('(h / hello)(g / goodbye)'))
+            >>> codec = PENMANCodec()
+            >>> list(codec.iterdecode('(h / hello)(g / goodbye)'))
             [<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
-            >>> list(PENMANCodec.iterdecode(
+            >>> list(codec.iterdecode(
             ...     'instance(h, hello)\n'
             ...     'instance(g, goodbye)'
             ... ))
@@ -183,9 +185,10 @@ class PENMANCodec(object):
             the PENMAN-serialized string of the Graph *g*
         Example:
 
-            >>> PENMANCodec().encode(Graph([('h', 'instance', 'hi')]))
+            >>> codec = PENMANCodec()
+            >>> codec.encode(Graph([('h', 'instance', 'hi')]))
             (h / hi)
-            >>> PENMANCodec().encode(Graph([('h', 'instance', 'hi')]),
+            >>> codec.encode(Graph([('h', 'instance', 'hi')]),
             ...                      triples=True)
             instance(h, hi)
         """
@@ -221,8 +224,8 @@ class PENMANCodec(object):
          * removes initial colons on relations
          * de-inverts all inverted relations
          * sets empty relations to `None`
-         * casts numeric string targets (post-de-inversion) to their
-           numeric types (e.g. float, int)
+         * casts numeric string sources and targets to their numeric
+           types (e.g. float, int)
 
         Args:
             lhs: the left hand side of an observed triple
@@ -240,14 +243,8 @@ class PENMANCodec(object):
         else:
             source, target = lhs, rhs
 
-        if isinstance(target, basestring):
-            if target.startswith('"'):
-                target = target  # strip quotes?
-            elif re.match(
-                    r'-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+', target):
-                target = float(target)
-            elif re.match(r'-?\d+', target):
-                target = int(target)
+        source = _default_cast(source)
+        target = _default_cast(target)
 
         if relation == '':  # set empty relations to None
             relation = None
@@ -277,6 +274,7 @@ class PENMANCodec(object):
                 inferred_top = triple[2]
             else:
                 ts.append(self.handle_triple(*triple))
+        top = self.handle_triple(self.TOP_VAR, self.TOP_REL, top).target
         return Graph(ts, top=top or inferred_top)
 
 
@@ -400,6 +398,18 @@ def _regex(x, s, pos, msg):
     if m is None:
         raise DecodeError('Expected {}'.format(msg), string=s, pos=pos)
     return m
+
+
+def _default_cast(x):
+    if isinstance(x, basestring):
+        if x.startswith('"'):
+            x = x  # strip quotes?
+        elif re.match(
+                r'-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+', x):
+            x = float(x)
+        elif re.match(r'-?\d+', x):
+            x = int(x)
+    return x
 
 
 class DecodeError(Exception):
@@ -593,7 +603,7 @@ class Graph(object):
         )
 
     def __str__(self):
-        return encode(self)  # just use the default encoder
+        return PENMANCodec().encode(self)  # just use the default encoder
 
     @property
     def top(self):
@@ -718,9 +728,9 @@ def _main():
     args = docopt(USAGE, version='Penman {}'.format(__version__))
 
     infile = args['--input'] or sys.stdin
-    data = load(infile)
-
     outfile = args['--output'] or sys.stdout
+
+    data = load(infile)
     dump(data, outfile, triples=args['--triples'])
 
 
