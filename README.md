@@ -59,14 +59,10 @@ An API and utility for working with graphs in PENMAN notation.
 
 Usage: penman.py [-h|--help] [-V|--version] [options]
 
-Arguments:
-  FILE                      the input file
-
 Options:
   -h, --help                display this help and exit
   -V, --version             display the version and exit
-  -v, --verbose             verbose mode (may be repeated: -vv, -vvv)
-  -i FILE, --input FILE     read graphs from FILE instanced of stdin
+  -i FILE, --input FILE     read graphs from FILE instead of stdin
   -o FILE, --output FILE    write output to FILE instead of stdout
   -t, --triples             print graphs as triple conjunctions
 

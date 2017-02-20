@@ -21,13 +21,9 @@ An API and utility for working with graphs in PENMAN notation.
 
 Usage: penman.py [-h|--help] [-V|--version] [options]
 
-Arguments:
-  FILE                      the input file
-
 Options:
   -h, --help                display this help and exit
   -V, --version             display the version and exit
-  -v, --verbose             verbose mode (may be repeated: -vv, -vvv)
   -i FILE, --input FILE     read graphs from FILE instead of stdin
   -o FILE, --output FILE    write output to FILE instead of stdout
   -t, --triples             print graphs as triple conjunctions
@@ -259,7 +255,8 @@ class PENMANCodec(object):
         so if Graph instantiation depends on special `TYPE_REL` or
         `TOP_VAR` values, use this function instead of instantiating
         a Graph object directly. This is also where edge
-        normalization (de-inversion) and value type conversion occur.
+        normalization (de-inversion) and value type conversion occur
+        (via handle_triple()).
 
         Args:
             triples: an iterable of (lhs, relation, rhs) triples

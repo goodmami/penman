@@ -79,7 +79,7 @@ Returns:
 Example:
 
 ```python
->>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]))
+>>> encode(Graph([('h', 'instance', 'hi')]))
 (h / hi)
 ```
 
@@ -268,9 +268,10 @@ Methods:
   Example:
   
   ```python
-  >>> PENMANCodec.decode('(b / bark :ARG1 (d / dog))')
+  >>> codec = PENMANCodec()
+  >>> codec.decode('(b / bark :ARG1 (d / dog))')
   <Graph object (top=b) at ...>
-  >>> PENMANCodec.decode(
+  >>> codec.decode(
   ...     'instance(b, bark) ^ instance(d, dog) ^ ARG1(b, d)'
   ... )
   <Graph object (top=b) at ...>
@@ -293,9 +294,10 @@ Methods:
   Example:
   
   ```python
-  >>> list(PENMANCodec.iterdecode('(h / hello)(g / goodbye)'))
+  >>> codec = PENMANCodec()
+  >>> list(codec.iterdecode('(h / hello)(g / goodbye)'))
   [<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
-  >>> list(PENMANCodec.iterdecode(
+  >>> list(codec.iterdecode(
   ...     'instance(h, hello)\n'
   ...     'instance(g, goodbye)'
   ... ))
@@ -321,9 +323,10 @@ Methods:
   Example:
   
   ```python
-  >>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]))
+  >>> codec = PENMANCodec()
+  >>> codec.encode(Graph([('h', 'instance', 'hi')]))
   (h / hi)
-  >>> PENMANCodec.encode(Graph([('h', 'instance', 'hi')]),
+  >>> codec.encode(Graph([('h', 'instance', 'hi')]),
   ...                    triples=True)
   instance(h, hi)
   ```
@@ -351,8 +354,8 @@ Methods:
    * removes initial colons on relations
    * de-inverts all inverted relations
    * sets empty relations to `None`
-   * casts numeric string targets (post-de-inversion) to their
-     numeric types (e.g. float, int)
+   * casts numeric string sources and targets to their numeric
+     types (e.g. float, int)
 
   Arguments:
   
@@ -374,7 +377,8 @@ Methods:
   so if Graph instantiation depends on special `TYPE_REL` or
   `TOP_VAR` values, use this function instead of instantiating
   a Graph object directly. This is also where edge
-  normalization (de-inversion) and value type conversion occur.
+  normalization (de-inversion) and value type conversion occur
+  (via handle_triple()).
 
   Arguments:
  

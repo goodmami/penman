@@ -8,6 +8,8 @@
   both sources and targets, and `handle_triple()` is now run on the top,
   as well. Fixes #4
 * `Graph.__str__()` now initializes a default codec for serialization.
+* Incorrect script usage fixed in README.md and from `penman.py --help`
+* Updated documentation
 
 ### Added
 ### Removed
