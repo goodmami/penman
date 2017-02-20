@@ -63,7 +63,7 @@ try:
 except NameError:
     basestring = str
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 __version_info__ = __version__.replace('.', ' ').replace('-', ' ').split()
 
 class PENMANCodec(object):

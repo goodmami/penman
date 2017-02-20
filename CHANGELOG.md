@@ -3,6 +3,15 @@
 ## [Unreleased][unreleased]
 
 ### Fixed
+### Added
+### Removed
+### Changed
+### Deprecated
+
+
+## [v0.5.1][]
+
+### Fixed
 
 * Numeric conversion in `PENMANCodec.handle_triple()` now happens to
   both sources and targets, and `handle_triple()` is now run on the top,
@@ -11,10 +20,6 @@
 * Incorrect script usage fixed in README.md and from `penman.py --help`
 * Updated documentation
 
-### Added
-### Removed
-### Changed
-### Deprecated
 
 ## [v0.5.0][]
 
@@ -138,4 +143,5 @@ First release with very basic functionality.
 [v0.3.0]: ../../releases/tag/v0.3.0
 [v0.4.0]: ../../releases/tag/v0.4.0
 [v0.5.0]: ../../releases/tag/v0.5.0
+[v0.5.1]: ../../releases/tag/v0.5.1
 [README]: README.md
