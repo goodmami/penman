@@ -253,6 +253,15 @@ def test_encode(x1, x2):
     ])
     assert encode(g, cls=TestCodec) == '(a / alpha)'
 
+    # disconnected graph
+    g = penman.Graph([
+        ('a', 'instance', 'alpha'),
+        ('b', 'instance', 'beta')
+    ])
+    with pytest.raises(penman.EncodeError):
+        encode(g)
+
+
 def test_encode_with_parameters():
     encode = penman.encode
     g = penman.Graph([

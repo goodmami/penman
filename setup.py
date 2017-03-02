@@ -11,7 +11,7 @@ long_description = (
 
 setup(
     name='Penman',
-    version='0.5.1',
+    version='0.6.0-pre1',
     description='PENMAN notation for graphs (e.g. AMR).',
     long_description=long_description,
     url='https://github.com/goodmami/penman',

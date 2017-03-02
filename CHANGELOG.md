@@ -3,9 +3,40 @@
 ## [Unreleased][unreleased]
 
 ### Fixed
+
+* By default, always preserve relation order when given (fixes #6)
+* `__version_info__` now gives integers for numeric parts
+
 ### Added
+
+* `PenmanError` as a exception base class
+* `EncodeError` for errors during encoding; derived from `PenmanError`
+* Functions for ordering relations (these behave like `sorted()`, in
+  that they take and return a list). Note that the type relation (given
+  by `codec.TYPE_REL`), if present, always appears first, regardless of
+  the sorting method.
+  - `original_order` - the default; return the list as-is
+  - `out_first_order` - sort all true orientations before inverted
+    orientations; otherwise order is retained
+  - `alphanum_order` - former default; sort relations alphabetically
+    with embedded integers sorted numerically (like `sort -V`)
+* Added disclaimer to `README.md` saying that this module is not
+  affiliated with ISI, the PENMAN project, or the AMR project
+* `Triple` objects can now have an `inverted` attribute that can be
+  given as a fourth instantiation parameter. The object is still treated
+  as a 3-tuple, so `src, rel, tgt = triple` still works (and `triple[3]`
+  will not get the inversion status; use `triple.inverted`). Valid
+  values are `False` (true orientation), `True` (inverted orientation),
+  and `None` (no orientation specified).
+
 ### Removed
 ### Changed
+
+* `DecodeError` now derives from `PenmanError`
+* `PENMANCodec` now takes a `relation_sort` parameter whose value is a
+  function that sorts `Triple` objects (see **Added** above)
+* Updated the PEG definition in `README.md`, and accompanying prose.
+
 ### Deprecated
 
 

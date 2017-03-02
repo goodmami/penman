@@ -85,9 +85,14 @@ and what I'm calling "PENMAN notation" is more accurately "Sentence Plan
 Language" (SPL; [Kaspar 1989]), but I'll stick with "PENMAN notation"
 because it may be a more familiar name to modern users and it also sounds
 less specific to sentence representations, e.g., in case someone wants to
-use the format to encode arbitrary graphs. A [PEG][] definition for the
-notation is given below (for simplicity, whitespace is not explicitly
-included; assume all nonterminals can be surrounded by `/\s+/`):
+use the format to encode arbitrary graphs.
+
+This module expands the notation slightly to allow for untyped nodes
+(e.g., `(x)`) and anonymous relations (e.g., `(x : (y))`). It is also
+very permissive for the form of node identifiers (and other atoms). A
+[PEG][]\* definition for the notation is given below (for simplicity,
+whitespace is not explicitly included; assume all nonterminals can be
+surrounded by `/\s+/`):
 
 ```ruby
 Start    <- Node
@@ -95,19 +100,37 @@ Node     <- '(' NodeData ')'
 NodeData <- Variable ('/' NodeType)? Edge*
 NodeType <- Atom
 Variable <- Atom
-Edge     <- Relation (Node / Value)
+Edge     <- Relation Value
 Relation <- /:[^\s(]*/
-Value    <- String / Float / Integer / Atom
+Value    <- Node | String | Float | Integer | Atom
 String   <- /"[^"\\]*(?:\\.[^"\\]*)*"/
 Atom     <- /[^\s)\/]+/
-Float    <- /-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+/
-Integer  <- /-?\d+/
+Float    <- /[-+]?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+/
+Integer  <- /[-+]?\d+/
 ```
+
+\* *Note: I use `|` above for ordered-choice instead of `/` so that `/`
+can be used to surround regular expressions.*
+
+A more restricted variant of the grammar for AMR might make the `('/'
+NodeType)` group required, and NodeTypes (maybe renamed "Concepts")
+could be given as a disjunction of allowed names. Similarly, Relations
+could be a disjunction of allowed names and possible inversions, or
+otherwise require at least one character after `:`. It might also
+restrict Variables to a form like `/\w+\d*/` and also restrict Atom
+values in some way. See also [Nathan Schneider's PEG for
+AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
+
+### Disclaimer
+
+This project is not affiliated with [ISI], the [PENMAN] project, or the
+[AMR] project.
 
 [PENMAN]: http://www.isi.edu/natural-language/penman/penman.html
 [AMR]: http://amr.isi.edu/
 [Kasper 1989]: http://www.aclweb.org/anthology/H89-1022
 [PEG]: https://en.wikipedia.org/wiki/Parsing_expression_grammar
+[ISI]: http://isi.edu/
 
 [documentation]: docs/API.md
 [PENMANCodec]: docs/API.md#penmancodec

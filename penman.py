@@ -63,8 +63,30 @@ try:
 except NameError:
     basestring = str
 
-__version__ = '0.5.1'
-__version_info__ = __version__.replace('.', ' ').replace('-', ' ').split()
+__version__ = '0.6.0-pre1'
+__version_info__ = [
+    int(x) if x.isdigit() else x
+    for x in re.findall(r'[0-9]+|[^0-9\.-]+', __version__)
+]
+
+
+def original_order(triples):
+    return triples
+
+
+def out_first_order(triples):
+    return sorted(triples, key=lambda t: t.inverted)
+
+
+def alphanum_order(triples):
+    return sorted(
+        triples,
+        key=lambda t: [
+            int(t) if t.isdigit() else t
+            for t in re.split(r'([0-9]+)', t.relation or '')
+        ]
+    )
+
 
 class PENMANCodec(object):
     """
@@ -81,7 +103,7 @@ class PENMANCodec(object):
     STRING_RE = re.compile(r'("[^"\\]*(?:\\.[^"\\]*)*")\s*')
     COMMA_RE = re.compile(r'\s*,\s*')
 
-    def __init__(self, indent=True):
+    def __init__(self, indent=True, relation_sort=original_order):
         """
         Initialize a new codec.
 
@@ -89,8 +111,12 @@ class PENMANCodec(object):
             indent: if True, adaptively indent; if False or None, don't
                 indent; if a non-negative integer, indent that many
                 spaces per nesting level
+            relation_sort: when encoding, sort the relations on each
+                node according to this function; by default, the
+                original order is maintained
         """
         self.indent = indent
+        self.relation_sort = relation_sort
 
     def decode(self, s, triples=False):
         """
@@ -107,7 +133,8 @@ class PENMANCodec(object):
             >>> codec.decode('(b / bark :ARG1 (d / dog))')
             <Graph object (top=b) at ...>
             >>> codec.decode(
-            ...     'instance(b, bark) ^ instance(d, dog) ^ ARG1(b, d)'
+            ...     'instance(b, bark) ^ instance(d, dog) ^ ARG1(b, d)',
+            ...     triples=True
             ... )
             <Graph object (top=b) at ...>
         """
@@ -234,10 +261,10 @@ class PENMANCodec(object):
         relation = relation.replace(':', '', 1)  # remove leading :
 
         if self.is_relation_inverted(relation):  # deinvert
-            source, target = rhs, lhs
+            source, target, inverted = rhs, lhs, True
             relation = self.invert_relation(relation)
         else:
-            source, target = lhs, rhs
+            source, target, inverted = lhs, rhs, False
 
         source = _default_cast(source)
         target = _default_cast(target)
@@ -245,7 +272,7 @@ class PENMANCodec(object):
         if relation == '':  # set empty relations to None
             relation = None
 
-        return Triple(source, relation, target)
+        return Triple(source, relation, target, inverted)
 
     def triples_to_graph(self, triples, top=None):
         """
@@ -362,21 +389,101 @@ class PENMANCodec(object):
         return (start, pos), (var, nodes, edges)
 
     def _encode_penman(self, g, top=None):
+        """
+        Walk graph g and find a spanning dag, then serialize the result.
+
+        First, depth-first traversal of preferred orientations (whether
+        true or inverted) to create graph p.
+
+        If any triples remain, select the first remaining triple whose
+        source in the dispreferred orientation exists in p, where
+        'first' is determined by the order of inserted nodes (i.e. a
+        topological sort). Add this triple, then repeat the depth-first
+        traversal of preferred orientations from its target. Repeat
+        until no triples remain, or raise an error if there are no
+        candidates in the dispreferred orientation (which likely means
+        the graph is disconnected).
+        """
         if top is None:
             top = g.top
-        ts = defaultdict(list)
-        remaining = set()
+        remaining = set(g.triples())
         variables = g.variables()
-        for idx, t in enumerate(g.triples()):
-            ts[t.source].append((t, t, 0.0, idx))
-            if t.target in variables:
-                invrel = self.invert_relation(t.relation)
-                ts[t.target].append(
-                    (Triple(t.target, invrel, t.source), t, 1.0, idx)
-                )
-            remaining.add(t)
-        p = _walk(ts, top, remaining)
-        return _layout(p, top, self, 0, set())
+        store = defaultdict(lambda: ([], []))  # (preferred, dispreferred)
+        for t in g.triples():
+            if t.inverted:
+                store[t.target][0].append(t)
+                store[t.source][1].append(Triple(*t, inverted=False))
+            else:
+                store[t.source][0].append(t)
+                store[t.target][1].append(Triple(*t, inverted=True))
+
+        p = defaultdict(list)
+        topolist = [top]
+
+        def _update(t):
+            src, tgt = (t[2], t[0]) if t.inverted else (t[0], t[2])
+            p[src].append(t)
+            remaining.remove(t)
+            if tgt in variables and t.relation != self.TYPE_REL:
+                topolist.append(tgt)
+                return tgt
+            return None
+
+        def _explore_preferred(src):
+            ts = store.get(src, ([], []))[0]
+            for t in ts:
+                if t in remaining:
+                    tgt = _update(t)
+                    if tgt is not None:
+                        _explore_preferred(tgt)
+            ts[:] = []  # clear explored list
+
+        _explore_preferred(top)
+
+        while remaining:
+            flip_candidates = [store.get(v, ([],[]))[1] for v in topolist]
+            for fc in flip_candidates:
+                fc[:] = [c for c in fc if c in remaining]  # clear superfluous
+            if not any(len(fc) > 0 for fc in flip_candidates):
+                raise EncodeError('Invalid graph; possibly disconnected.')
+            c = next(c for fc in flip_candidates for c in fc)
+            tgt = _update(c)
+            if tgt is not None:
+                _explore_preferred(tgt)
+
+        return self._layout(p, top, 0, set())
+
+    def _layout(self, g, src, offset, seen):
+        indent = self.indent
+        if src not in g or len(g.get(src, [])) == 0 or src in seen:
+            return src
+        seen.add(src)
+        branches = []
+        outedges = self.relation_sort(g[src])
+        head = '({}'.format(src)
+        if indent is True:
+            offset += len(head) + 1  # + 1 for space after src (added later)
+        elif indent is not None and indent is not False:
+            offset += indent
+        for t in outedges:
+            if t.relation == self.TYPE_REL:
+                if t.target is not None:
+                    branches = ['/ ' + t.target] + branches  # always first
+            else:
+                if t.inverted:
+                    tgt = t.source
+                    rel = self.invert_relation(t.relation)
+                else:
+                    tgt = t.target
+                    rel = t.relation or ''
+                inner_offset = (len(rel) + 2) if indent is True else 0
+                branch = self._layout(g, tgt, offset + inner_offset, seen)
+                branches.append(':{} {}'.format(rel, branch))
+        if branches:
+            head += ' '
+        delim = ' ' if (indent is None or indent is False) else '\n'
+        tail = (delim + (' ' * offset)).join(branches) + ')'
+        return head + tail
 
     def _encode_triple_conjunction(self, g, top=None):
         if top is None:
@@ -409,7 +516,15 @@ def _default_cast(x):
     return x
 
 
-class DecodeError(Exception):
+class PenmanError(Exception):
+    """Base class for errors in the Penman package."""
+
+
+class EncodeError(PenmanError):
+    """Raises when encoding PENMAN-notation fails."""
+
+
+class DecodeError(PenmanError):
     """Raised when decoding PENMAN-notation fails."""
 
     def __init__(self, *args, **kwargs):
@@ -548,6 +663,13 @@ def dumps(graphs, triples=False, cls=PENMANCodec, **kwargs):
 
 class Triple(namedtuple('Triple', ('source', 'relation', 'target'))):
     """Container for Graph edges and node attributes."""
+    def __new__(cls, source, relation, target, inverted=None):
+        t = super(Triple, cls).__new__(
+            cls, source, relation, target
+        )
+        t.inverted = inverted
+        return t
+
 
 class Graph(object):
     """
@@ -586,7 +708,10 @@ class Graph(object):
             data = list(data)  # make list (e.g., if its a generator)
 
         if data:
-            self._triples.extend(Triple(*triple) for triple in data)
+            self._triples.extend(
+                Triple(*t, inverted=getattr(t, 'inverted', None))
+                for t in data
+            )
             # implicit top: source of first triple
             if top is None:
                 top = data[0][0]
@@ -661,62 +786,6 @@ class Graph(object):
         variables = self.variables()
         attrs = [t for t in self.triples() if t.target not in variables]
         return list(filter(attrmatch, attrs))
-
-def _walk(graph, top, remaining):
-    path = defaultdict(list)
-    candidates = [
-        # e, t, w, o = edge, triple, weight, original-order
-        (e, t, w, o) for e, t, w, o in graph.get(top, []) if t in remaining
-    ]
-    candidates.sort(key=lambda c: (c[2], c[3]), reverse=True)
-    while candidates:
-        edge, triple, _, _ = candidates.pop()
-        if triple in remaining:
-            path[edge.source].append(edge)
-            remaining.remove(triple)
-            candidates.extend(graph.get(edge.target, []))
-            candidates.sort(key=lambda c: c[2], reverse=True)
-    return path
-
-
-def _layout(g, v, codec, offset, seen):
-    indent = codec.indent
-    if v not in g or len(g.get(v, [])) == 0 or v in seen:
-        return v
-    seen.add(v)
-    branches = []
-    outedges = sorted(
-        g[v],
-        key=lambda e: ([-(e.relation == codec.TYPE_REL),
-                        codec.is_relation_inverted(e.relation)] +
-                       _relation_sort_key(e.relation))
-    )
-    head = '({}'.format(v)
-    if indent is True:
-        offset += len(head) + 1  # + 1 for space after v (added later)
-    elif indent is not None and indent is not False:
-        offset += indent
-    for edge in outedges:
-        if edge.relation == codec.TYPE_REL:
-            if edge.target is None:
-                continue
-            rel = '/'
-        else:
-            rel = ':' + (edge.relation or '')
-        inner_offset = (len(rel) + 1) if indent is True else 0
-        branch = _layout(g, edge.target, codec, offset + inner_offset, seen)
-        branches.append('{} {}'.format(rel, branch))
-    if branches:
-        head += ' '
-    delim = ' ' if (indent is None or indent is False) else '\n'
-    tail = (delim + (' ' * offset)).join(branches) + ')'
-    return head + tail
-
-
-def _relation_sort_key(r):
-    if r is not None:
-        return [int(t) if t.isdigit() else t for t in re.split(r'([0-9]+)', r)]
-    return []
 
 
 def _main():
