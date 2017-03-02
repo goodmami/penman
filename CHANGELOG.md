@@ -28,6 +28,7 @@
   will not get the inversion status; use `triple.inverted`). Valid
   values are `False` (true orientation), `True` (inverted orientation),
   and `None` (no orientation specified).
+* `--indent` option for commandline usage
 
 ### Removed
 ### Changed

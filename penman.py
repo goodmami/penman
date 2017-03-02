@@ -27,6 +27,7 @@ Options:
   -i FILE, --input FILE     read graphs from FILE instead of stdin
   -o FILE, --output FILE    write output to FILE instead of stdout
   -t, --triples             print graphs as triple conjunctions
+  --indent N                indent N spaces per level ("no" for no newlines)
 '''
 
 # API overview:
@@ -63,7 +64,7 @@ try:
 except NameError:
     basestring = str
 
-__version__ = '0.6.0-pre1'
+__version__ = '0.6.0-pre2'
 __version_info__ = [
     int(x) if x.isdigit() else x
     for x in re.findall(r'[0-9]+|[^0-9\.-]+', __version__)
@@ -796,8 +797,21 @@ def _main():
     infile = args['--input'] or sys.stdin
     outfile = args['--output'] or sys.stdout
 
+    indent = True
+    if args['--indent']:
+        if args['--indent'].lower() in ("no", "none", "false"):
+            indent = False
+        else:
+            try:
+                indent = int(args['--indent'])
+                if indent < 0:
+                    raise ValueError
+            except ValueError:
+                sys.exit('error: --indent value must be "no" or a '
+                         ' positive integer')
+
     data = load(infile)
-    dump(data, outfile, triples=args['--triples'])
+    dump(data, outfile, triples=args['--triples'], indent=indent)
 
 
 if __name__ == '__main__':
