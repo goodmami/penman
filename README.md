@@ -65,6 +65,8 @@ Options:
   -i FILE, --input FILE     read graphs from FILE instead of stdin
   -o FILE, --output FILE    write output to FILE instead of stdout
   -t, --triples             print graphs as triple conjunctions
+  --indent N                indent N spaces per level ("no" for no newlines)
+  --amr                     use AMR codec instead of generic PENMAN one
 
 $ python penman.py <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 (w / want-01
@@ -117,9 +119,10 @@ NodeType)` group required, and NodeTypes (maybe renamed "Concepts")
 could be given as a disjunction of allowed names. Similarly, Relations
 could be a disjunction of allowed names and possible inversions, or
 otherwise require at least one character after `:`. It might also
-restrict Variables to a form like `/\w+\d*/` and also restrict Atom
-values in some way. See also [Nathan Schneider's PEG for
-AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
+restrict Variables to a form like `/[a-z]+\d*/` and also restrict Atom
+values in some way. The included `AMRCodec` employs most of these
+restrictions and raises `DecodeError`s for graphs it deems invalid. See
+also [Nathan Schneider's PEG for AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
 
 ### Disclaimer
 

@@ -28,6 +28,7 @@ Options:
   -o FILE, --output FILE    write output to FILE instead of stdout
   -t, --triples             print graphs as triple conjunctions
   --indent N                indent N spaces per level ("no" for no newlines)
+  --amr                     use AMR codec instead of generic PENMAN one
 '''
 
 # API overview:
@@ -789,6 +790,53 @@ class Graph(object):
         return list(filter(attrmatch, attrs))
 
 
+class AMRCodec(PENMANCodec):
+    """
+    An AMR codec for graphs in PENMAN notation.
+    """
+    TYPE_REL = 'instance'
+    TOP_VAR = None
+    TOP_REL = 'top'
+    # vars: [a-z]+\d* ; first relation must be node type
+    NODE_ENTER_RE = re.compile(r'\s*(\()\s*([a-z]+\d*)\s*(?=\/)')
+    # only non-anonymous relations
+    RELATION_RE = re.compile(r'(:[^\s(),]+)\s*')
+
+    _inversions = {
+        TYPE_REL: None,  # don't allow inverted types
+        'domain': 'mod',
+        'consist-of': 'consist-of-of',
+        'prep-on-behalf-of': 'prep-on-behalf-of-of',
+        'prep-out-of': 'prep-out-of-of',
+    }
+    _deinversions = {
+        'mod': 'domain',
+    }
+
+    def is_relation_inverted(self, relation):
+        """
+        Return True if *relation* is inverted.
+        """
+        return (
+            relation in self._deinversions or
+            (relation.endswith('-of') and relation not in self._inversions)
+        )
+
+    def invert_relation(self, relation):
+        """
+        Invert or deinvert *relation*.
+        """
+        if self.is_relation_inverted(relation):
+            rel = self._deinversions.get(relation, relation[:-3])
+        else:
+            rel = self._inversions.get(relation, relation + '-of')
+        if rel is None:
+            raise PenmanError(
+                'Cannot (de)invert {}; not allowed'.format(relation)
+            )
+        return rel
+
+
 def _main():
     import sys
     from docopt import docopt
@@ -796,6 +844,8 @@ def _main():
 
     infile = args['--input'] or sys.stdin
     outfile = args['--output'] or sys.stdout
+
+    codec = AMRCodec if args['--amr'] else PENMANCodec
 
     indent = True
     if args['--indent']:
@@ -810,8 +860,8 @@ def _main():
                 sys.exit('error: --indent value must be "no" or a '
                          ' positive integer')
 
-    data = load(infile)
-    dump(data, outfile, triples=args['--triples'], indent=indent)
+    data = load(infile, cls=codec)
+    dump(data, outfile, triples=args['--triples'], cls=codec, indent=indent)
 
 
 if __name__ == '__main__':

@@ -29,6 +29,7 @@
   values are `False` (true orientation), `True` (inverted orientation),
   and `None` (no orientation specified).
 * `--indent` option for commandline usage
+* `AMRCodec` with a more restrictive grammar and special inversions
 
 ### Removed
 ### Changed

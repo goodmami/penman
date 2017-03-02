@@ -123,9 +123,13 @@ def test_decode(x1, x2):
     # invalid strings
     with pytest.raises(penman.DecodeError):
         decode('(')
+    with pytest.raises(penman.DecodeError):
         decode('(a')
+    with pytest.raises(penman.DecodeError):
         decode('(a /')
+    with pytest.raises(penman.DecodeError):
         decode('(a / alpha')
+    with pytest.raises(penman.DecodeError):
         decode('(a b)')
 
     # custom codec
@@ -528,3 +532,62 @@ def test_dumps_triples():
         [penman.Graph([('a', 'ARG', 'b')])],
         triples=True, cls=TestCodec
     ) == 'top(TOP, a) ^\nARG(a, b)'
+
+def test_AMRCodec():
+    c = penman.AMRCodec()
+
+    assert c.invert_relation('ARG0') == 'ARG0-of'
+    assert c.invert_relation('ARG0-of') == 'ARG0'
+    assert c.invert_relation('domain') == 'mod'
+    assert c.invert_relation('mod') == 'domain'
+    assert c.invert_relation('consist-of') == 'consist-of-of'
+    assert c.invert_relation('consist-of-of') == 'consist-of'
+
+    with pytest.raises(penman.PenmanError):
+        c.invert_relation('instance')
+
+    assert c.encode(penman.Graph([
+        ('w', 'instance', 'want-01'), ('w', 'ARG0', 'b'), ('w', 'ARG1', 'g'),
+        ('b', 'instance', 'boy'), ('g', 'instance', 'go'), ('g', 'ARG0', 'b')
+    ])) == (
+        '(w / want-01\n'
+        '   :ARG0 (b / boy)\n'
+        '   :ARG1 (g / go\n'
+        '            :ARG0 b))'
+    )
+
+    g = penman.Graph([('g', 'instance', 'gold'), ('g', 'consist-of-of', 'r'),
+                      ('r', 'instance', 'ring')])
+    assert c.encode(g) == (
+        '(g / gold\n'
+        '   :consist-of-of (r / ring))'
+    )
+    assert c.encode(g, top='r') == (
+        '(r / ring\n'
+        '   :consist-of (g / gold))'
+    )
+
+    g = penman.Graph([('w', 'instance', 'white'), ('w', 'domain', 'c'),
+                      ('c', 'instance', 'cat')])
+    assert c.encode(g) == (
+        '(w / white\n'
+        '   :domain (c / cat))'
+    )
+    assert c.encode(g, top='c') == (
+        '(c / cat\n'
+        '   :mod (w / white))'
+    )
+
+
+    assert c.decode('(g / go)').triples() == [('g', 'instance', 'go')]
+
+    with pytest.raises(penman.DecodeError):
+        c.decode('(g)')  # no concept or relations
+    with pytest.raises(penman.DecodeError):
+        c.decode('(g :ARG0 b)')  # no concept
+    with pytest.raises(penman.DecodeError):
+        c.decode('(g :ARG0 (b / boy) / go)')  # concept after relations
+    with pytest.raises(penman.DecodeError):
+        c.decode('(1 / one)')  # bad variable form
+    with pytest.raises(penman.DecodeError):
+        c.decode('(g / go : (b / boy))')  # anonymous relation
