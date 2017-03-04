@@ -11,10 +11,17 @@ Module functions:
 * [loads()](#loads)
 * [dump()](#dump)
 * [dumps()](#dumps)
+* [original_order()](#original_order)
+* [out_first_order()](#out_first_order)
+* [alphanum_order()](#alphanum_order)
 
 Classes and methods:
 
 * [Triple](#Triple)
+  - [Triple.source](#Triple-source)
+  - [Triple.relation](#Triple-relation)
+  - [Triple.target](#Triple-target)
+  - [Triple.inverted](#Triple-inverted)
 * [Graph](#Graph)
   - [Graph.top](#Graph-top)
   - [Graph.variables()](#Graph-variables)
@@ -29,12 +36,13 @@ Classes and methods:
   - [PENMANCodec.invert_relation()](#PENMANCodec-invert_relation)
   - [PENMANCodec.handle_triple()](#PENMANCodec-handle_triple)
   - [PENMANCodec.triples_to_graph()](#PENMANCodec-triples_to_graph)
+* [AMRCodec](#AMRCodec)
 
-# Functions
+# Serialization Functions
 
 ## decode
 
-<a name="decode" href="API.md#decode">▣</a>
+<a name="decode" href="API#decode">▣</a>
 penman.**decode**(_s, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize PENMAN-serialized *s* into its Graph object
@@ -59,7 +67,7 @@ Example:
 
 ## encode
 
-<a name="encode" href="API.md#encode">▣</a>
+<a name="encode" href="API#encode">▣</a>
 penman.**encode**(_g, top=None, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize the graph *g* from *top* to PENMAN notation.
@@ -86,7 +94,7 @@ Example:
 
 ## load
 
-<a name="load" href="API.md#load">▣</a>
+<a name="load" href="API#load">▣</a>
 penman.**load**(_source, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize a list of PENMAN-encoded graphs from *source*.
@@ -105,7 +113,7 @@ Returns:
 
 ## loads
 
-<a name="loads" href="API.md#loads">▣</a>
+<a name="loads" href="API#loads">▣</a>
 penman.**loads**(_string, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize a list of PENMAN-encoded graphs from *string*.
@@ -124,7 +132,7 @@ Returns:
 
 ## dump
 
-<a name="dump" href="API.md#dump">▣</a>
+<a name="dump" href="API#dump">▣</a>
 penman.**dump**(_graphs, file, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize each graph in *graphs* to PENMAN and write to *file*.
@@ -140,7 +148,7 @@ Arguments:
 
 ## dumps
 
-<a name="dumps" href="API.md#dumps">▣</a>
+<a name="dumps" href="API#dumps">▣</a>
 penman.**dumps**(_graphs, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize each graph in *graphs* to the PENMAN format.
@@ -155,6 +163,39 @@ Returns:
 * the string of serialized graphs
 
 
+# Helper Functions
+
+The [original_order()](#original_order),
+[out_first_order()](#out_first_order), and
+[alphanum_order()](#alphanum_order) functions are used during
+serialization to sort the relations on a node. By default, the observed
+order during decoding or graph construction is used, but if a particular
+order is to be used an appropriate function may be passed as the
+`relation_sort` parameter to a `PENMANCodec` instantiation.
+
+## original_order
+<a name="original_order" href="API#original_order">▣</a>
+penman.**original_order**(_triples_)
+
+Return a list of *triples* in the original order.
+
+
+## out_first_order
+<a name="out_first_order" href="API#out_first_order">▣</a>
+penman.**out_first_order**(_triples_)
+
+Sort a list of *triples* so outward (true) edges appear first.
+
+
+## alphanum_order
+<a name="alphanum_order" href="API#alphanum_order">▣</a>
+penman.**alphanum_order**(_triples_)
+
+Sort a list of *triples* by relation name.
+
+Embedded integers are sorted numerically, but otherwise the sorting
+is alphabetic.
+
 
 #  Classes
 
@@ -163,8 +204,43 @@ Returns:
 
 Container for Graph edges and node attributes.
 
-<a name="Triple" href="API.md#Triple">▣</a>
-penman.**Triple**(_source, relation, target_)
+<a name="Triple" href="API#Triple">▣</a>
+penman.**Triple**(_source, relation, target, inverted=None_)
+
+The final parameter, `inverted`, is optional, and when set it exists as
+an attribute of the Triple object, but not as part of the 3-tuple data.
+It is used to store the intended or original orientation of the triple
+(i.e. whether it was true or inverted). If unset, preference during
+serialization is for a true orientation.
+
+Properties:
+
+* <a name="Triple-source" href="API#Triple-source">▣</a>
+  penman.Triple.**source**
+
+  The source node of the triple. Only get-access is supported. It can
+  also be accessed by index: `triple[0]`.
+
+* <a name="Triple-relation" href="API#Triple-relation">▣</a>
+  penman.Triple.**relation**
+
+  The relation name of the triple. Only get-access is supported. It can
+  also be accessed by index: `triple[1]`.
+
+* <a name="Triple-target" href="API#Triple-target">▣</a>
+  penman.Triple.**target**
+
+  The target node of the triple. Only get-access is supported. It can
+  also be accessed by index: `triple[2]`.
+
+* <a name="Triple-inverted" href="API#Triple-inverted">▣</a>
+  penman.Triple.**inverted**
+
+  The intended or observed orientation of the triple. If `True`, the
+  triple was or should be inverted (e.g., `(a :rel b)` was or should be
+  serialized as `(b :rel-of a)`). Both get and set of this property are
+  supported, and valid values are `True`, `False`, and `None`. This
+  property cannot be accessed by an index.
 
 
 ## Graph
@@ -178,7 +254,7 @@ source is a node identifier and the target is a constant. These
 lists can be obtained via the Graph.triples(), Graph.edges(), and
 Graph.attributes() methods.
 
-<a name="Graph" href="API.md#Graph">▣</a>
+<a name="Graph" href="API#Graph">▣</a>
 penman.**Graph**(_data=None, top=None, codec=PENMANCodec_)
 
 Create a Graph from an iterable of triples.
@@ -202,31 +278,35 @@ Example:
 
 Properties:
 
-* <a name="Graph-top" href="API.md#Graph-top">▣</a>
+* <a name="Graph-top" href="API#Graph-top">▣</a>
   penman.Graph.**top**
 
   The top variable.
 
+  Both get and set actions are supported. During set (e.g.
+  `g.top = 'a'`), the value is checked to ensure it is a valid node in
+  the graph.
+
 Methods:
 
-* <a name="Graph-variables" href="API.md#Graph-variables">▣</a>
+* <a name="Graph-variables" href="API#Graph-variables">▣</a>
   penman.Graph.**variables**()
 
   Return the list of variables (nonterminal node identifiers).
 
-* <a name="Graph-triples" href="API.md#Graph-triples">▣</a>
+* <a name="Graph-triples" href="API#Graph-triples">▣</a>
   penman.Graph.**triples**(_source=None, relation=None, target=None_)
   
   Return triples filtered by their *source*, *relation*, or *target*.
 
-* <a name="Graph-edges" href="API.md#Graph-edges">▣</a>
+* <a name="Graph-edges" href="API#Graph-edges">▣</a>
   penman.Graph.**edges**(_source=None, relation=None, target=None_)
   
   Return edges filtered by their *source*, *relation*, or *target*.
   
   Edges don't include terminal triples (node types or attributes).
 
-* <a name="Graph-attributes" href="API.md#Graph-attributes">▣</a>
+* <a name="Graph-attributes" href="API#Graph-attributes">▣</a>
   penman.Graph.**attributes**(_source=None, relation=None, target=None_)
   
   Return attributes filtered by their *source*, *relation*, or *target*.
@@ -238,8 +318,8 @@ Methods:
 
 A parameterized encoder/decoder for graphs in PENMAN notation.
 
-<a name="PENMANCodec" href="API.md#PENMANCodec">▣</a>
-penman.**PENMANCodec**(_indent=True_)
+<a name="PENMANCodec" href="API#PENMANCodec">▣</a>
+penman.**PENMANCodec**(_indent=True, relation_sort=original_order_)
 
 Initialize a new codec.
 
@@ -248,10 +328,11 @@ Arguments:
 * `indent` - if True, adaptively indent; if False or None, don't
              indent; if a non-negative integer, indent that many
              spaces per nesting level
+* `relation_sort` - the function used to sort relations on a node
 
 Methods:
 
-* <a name="PENMANCodec-decode" href="API.md#PENMANCodec-decode">▣</a>
+* <a name="PENMANCodec-decode" href="API#PENMANCodec-decode">▣</a>
   penman.PENMANCodec.**decode**(_s, triples=False_)
   
   Deserialize PENMAN-notation string *s* into its Graph object.
@@ -277,7 +358,7 @@ Methods:
   <Graph object (top=b) at ...>
   ```
 
-* <a name="PENMANCodec-iterdecode" href="API.md#PENMANCodec-iterdecode">▣</a>
+* <a name="PENMANCodec-iterdecode" href="API#PENMANCodec-iterdecode">▣</a>
   penman.PENMANCodec.**iterdecode**(_s, triples=False_)
   
   Deserialize PENMAN-notation string *s* into its Graph objects.
@@ -304,7 +385,7 @@ Methods:
   [<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
   ```
 
-* <a name="PENMANCodec-encode" href="API.md#PENMANCodec-encode">▣</a>
+* <a name="PENMANCodec-encode" href="API#PENMANCodec-encode">▣</a>
   penman.PENMANCodec.**encode**(_g, top=None, triples=False_)
   
   Serialize the graph *g* from *top* to PENMAN notation.
@@ -331,17 +412,17 @@ Methods:
   instance(h, hi)
   ```
 
-* <a name="PENMANCodec-is_relation_inverted" href="API.md#PENMANCodec-is_relation_inverted">▣</a>
+* <a name="PENMANCodec-is_relation_inverted" href="API#PENMANCodec-is_relation_inverted">▣</a>
   penman.PENMANCodec.**is_relation_inverted**(_relation_)
 
   Return True if *relation* is inverted.
 
-* <a name="PENMANCodec-invert_relation" href="API.md#PENMANCodec-invert_relation">▣</a>
+* <a name="PENMANCodec-invert_relation" href="API#PENMANCodec-invert_relation">▣</a>
   penman.PENMANCodec.**invert_relation**(_relation_)
 
   Invert or deinvert *relation*.
 
-* <a name="PENMANCodec-handle_triple" href="API.md#PENMANCodec-handle_triple">▣</a>
+* <a name="PENMANCodec-handle_triple" href="API#PENMANCodec-handle_triple">▣</a>
   penman.PENMANCodec.**handle_triple**(_lhs, relation, rhs_)
 
   Process triples before they are added to the graph.
@@ -368,7 +449,7 @@ Methods:
   * The processed (source, relation, target) triple. By default,
     it is returned as a Triple object.
 
-* <a name="PENMANCodec-triples_to_graph" href="API.md#PENMANCodec-triples_to_graph">▣</a>
+* <a name="PENMANCodec-triples_to_graph" href="API#PENMANCodec-triples_to_graph">▣</a>
   penman.PENMANCodec.**triples_to_graph**(_triples, top=None_)
 
   Create a Graph from *triples* considering codec configuration.
@@ -389,3 +470,35 @@ Methods:
 
   * a Graph object
   
+## AMRCodec
+
+An AMR-specific subclass of [PENMANCodec](#PENMANCodec).
+
+This subclass redefines some patterns used for decoding so that only
+AMR-style graphs are allowed. It also redefines how certain relations
+get inverted (e.g. that the inverse of `:domain` is `:mod`, and
+vice-versa).
+
+<a name="AMRCodec" href="API#AMRCodec">▣</a>
+penman.**AMRCodec**(_indent=True, relation_sort=original_order_)
+
+Instantiation options and methods are the same.
+
+Example:
+
+```python
+>>> import penman
+>>> amr = penman.AMRCodec()
+>>> print(amr.encode(
+...     penman.Graph([('s', 'instance', 'small'), ('s', 'domain', 'm'),
+...                   ('m', 'instance', 'marble')])))
+(s / small
+   :domain (m / marble))
+>>> print(amr.encode(
+...     penman.Graph([('s', 'instance', 'small'), ('s', 'domain', 'm'),
+...                   ('m', 'instance', 'marble')]),
+...     top='m'))
+(m / marble
+   :mod (s / small))
+
+```

@@ -73,14 +73,26 @@ __version_info__ = [
 
 
 def original_order(triples):
+    """
+    Return a list of triples in the original order.
+    """
     return triples
 
 
 def out_first_order(triples):
+    """
+    Sort a list of triples so outward (true) edges appear first.
+    """
     return sorted(triples, key=lambda t: t.inverted)
 
 
 def alphanum_order(triples):
+    """
+    Sort a list of triples by relation name.
+
+    Embedded integers are sorted numerically, but otherwise the sorting
+    is alphabetic.
+    """
     return sorted(
         triples,
         key=lambda t: [
@@ -499,6 +511,180 @@ class PENMANCodec(object):
         )
 
 
+class AMRCodec(PENMANCodec):
+    """
+    An AMR codec for graphs in PENMAN notation.
+    """
+    TYPE_REL = 'instance'
+    TOP_VAR = None
+    TOP_REL = 'top'
+    # vars: [a-z]+\d* ; first relation must be node type
+    NODE_ENTER_RE = re.compile(r'\s*(\()\s*([a-z]+\d*)\s*(?=\/)')
+    # only non-anonymous relations
+    RELATION_RE = re.compile(r'(:[^\s(),]+)\s*')
+
+    _inversions = {
+        TYPE_REL: None,  # don't allow inverted types
+        'domain': 'mod',
+        'consist-of': 'consist-of-of',
+        'prep-on-behalf-of': 'prep-on-behalf-of-of',
+        'prep-out-of': 'prep-out-of-of',
+    }
+    _deinversions = {
+        'mod': 'domain',
+    }
+
+    def is_relation_inverted(self, relation):
+        """
+        Return True if *relation* is inverted.
+        """
+        return (
+            relation in self._deinversions or
+            (relation.endswith('-of') and relation not in self._inversions)
+        )
+
+    def invert_relation(self, relation):
+        """
+        Invert or deinvert *relation*.
+        """
+        if self.is_relation_inverted(relation):
+            rel = self._deinversions.get(relation, relation[:-3])
+        else:
+            rel = self._inversions.get(relation, relation + '-of')
+        if rel is None:
+             raise PenmanError(
+                'Cannot (de)invert {}; not allowed'.format(relation)
+            )
+        return rel
+
+
+class Triple(namedtuple('Triple', ('source', 'relation', 'target'))):
+    """Container for Graph edges and node attributes."""
+    def __new__(cls, source, relation, target, inverted=None):
+        t = super(Triple, cls).__new__(
+            cls, source, relation, target
+        )
+        t.inverted = inverted
+        return t
+
+
+class Graph(object):
+    """
+    A basic class for modeling a rooted, directed acyclic graph.
+
+    A Graph is defined by a list of triples, which can be divided into
+    two parts: a list of graph edges where both the source and target
+    are node identifiers, and a list of node attributes where only the
+    source is a node identifier and the target is a constant. These
+    lists can be obtained via the Graph.triples(), Graph.edges(), and
+    Graph.attributes() methods.
+    """
+
+    def __init__(self, data=None, top=None):
+        """
+        Create a Graph from an iterable of triples.
+
+        Args:
+            data: an iterable of triples (Triple objects or 3-tuples)
+            top: the node identifier of the top node; if unspecified,
+                the source of the first triple is used
+        Example:
+
+            >>> Graph([
+            ...     ('b', 'instance', 'bark'),
+            ...     ('d', 'instance', 'dog'),
+            ...     ('b', 'ARG1', 'd')
+            ... ])
+        """
+        self._triples = []
+        self._top = None
+
+        if data is None:
+            data = []
+        else:
+            data = list(data)  # make list (e.g., if its a generator)
+
+        if data:
+            self._triples.extend(
+                Triple(*t, inverted=getattr(t, 'inverted', None))
+                for t in data
+            )
+            # implicit top: source of first triple
+            if top is None:
+                top = data[0][0]
+            self.top = top
+
+    def __repr__(self):
+        return '<{} object (top={}) at {}>'.format(
+            self.__class__.__name__,
+            self.top,
+            id(self)
+        )
+
+    def __str__(self):
+        return PENMANCodec().encode(self)  # just use the default encoder
+
+    @property
+    def top(self):
+        """
+        The top variable.
+        """
+        return self._top
+
+    @top.setter
+    def top(self, top):
+        if top not in self.variables():
+            raise ValueError('top must be a valid node')
+        self._top = top  # check if top is valid variable?
+
+    def variables(self):
+        """
+        Return the list of variables (nonterminal node identifiers).
+        """
+        return set(v for v, _, _ in self._triples)
+
+    def triples(self, source=None, relation=None, target=None):
+        """
+        Return triples filtered by their *source*, *relation*, or *target*.
+        """
+        triplematch = lambda t: (
+            (source is None or source == t.source) and
+            (relation is None or relation == t.relation) and
+            (target is None or target == t.target)
+        )
+        return list(filter(triplematch, self._triples))
+
+    def edges(self, source=None, relation=None, target=None):
+        """
+        Return edges filtered by their *source*, *relation*, or *target*.
+
+        Edges don't include terminal triples (node types or attributes).
+        """
+        edgematch = lambda e: (
+            (source is None or source == e.source) and
+            (relation is None or relation == e.relation) and
+            (target is None or target == e.target)
+        )
+        variables = self.variables()
+        edges = [t for t in self._triples if t.target in variables]
+        return list(filter(edgematch, edges))
+
+    def attributes(self, source=None, relation=None, target=None):
+        """
+        Return attributes filtered by their *source*, *relation*, or *target*.
+
+        Attributes don't include triples where the target is a nonterminal.
+        """
+        attrmatch = lambda a: (
+            (source is None or source == a.source) and
+            (relation is None or relation == a.relation) and
+            (target is None or target == a.target)
+        )
+        variables = self.variables()
+        attrs = [t for t in self.triples() if t.target not in variables]
+        return list(filter(attrmatch, attrs))
+
+
 def _regex(x, s, pos, msg):
     m = x.match(s, pos=pos)
     if m is None:
@@ -661,180 +847,6 @@ def dumps(graphs, triples=False, cls=PENMANCodec, **kwargs):
     codec = cls(**kwargs)
     strings = [codec.encode(g, triples=triples) for g in graphs]
     return '\n\n'.join(strings)
-
-
-class Triple(namedtuple('Triple', ('source', 'relation', 'target'))):
-    """Container for Graph edges and node attributes."""
-    def __new__(cls, source, relation, target, inverted=None):
-        t = super(Triple, cls).__new__(
-            cls, source, relation, target
-        )
-        t.inverted = inverted
-        return t
-
-
-class Graph(object):
-    """
-    A basic class for modeling a rooted, directed acyclic graph.
-
-    A Graph is defined by a list of triples, which can be divided into
-    two parts: a list of graph edges where both the source and target
-    are node identifiers, and a list of node attributes where only the
-    source is a node identifier and the target is a constant. These
-    lists can be obtained via the Graph.triples(), Graph.edges(), and
-    Graph.attributes() methods.
-    """
-
-    def __init__(self, data=None, top=None):
-        """
-        Create a Graph from an iterable of triples.
-
-        Args:
-            data: an iterable of triples (Triple objects or 3-tuples)
-            top: the node identifier of the top node; if unspecified,
-                the source of the first triple is used
-        Example:
-
-            >>> Graph([
-            ...     ('b', 'instance', 'bark'),
-            ...     ('d', 'instance', 'dog'),
-            ...     ('b', 'ARG1', 'd')
-            ... ])
-        """
-        self._triples = []
-        self._top = None
-
-        if data is None:
-            data = []
-        else:
-            data = list(data)  # make list (e.g., if its a generator)
-
-        if data:
-            self._triples.extend(
-                Triple(*t, inverted=getattr(t, 'inverted', None))
-                for t in data
-            )
-            # implicit top: source of first triple
-            if top is None:
-                top = data[0][0]
-            self.top = top
-
-    def __repr__(self):
-        return '<{} object (top={}) at {}>'.format(
-            self.__class__.__name__,
-            self.top,
-            id(self)
-        )
-
-    def __str__(self):
-        return PENMANCodec().encode(self)  # just use the default encoder
-
-    @property
-    def top(self):
-        """
-        The top variable.
-        """
-        return self._top
-
-    @top.setter
-    def top(self, top):
-        if top not in self.variables():
-            raise ValueError('top must be a valid node')
-        self._top = top  # check if top is valid variable?
-
-    def variables(self):
-        """
-        Return the list of variables (nonterminal node identifiers).
-        """
-        return set(v for v, _, _ in self._triples)
-
-    def triples(self, source=None, relation=None, target=None):
-        """
-        Return triples filtered by their *source*, *relation*, or *target*.
-        """
-        triplematch = lambda t: (
-            (source is None or source == t.source) and
-            (relation is None or relation == t.relation) and
-            (target is None or target == t.target)
-        )
-        return list(filter(triplematch, self._triples))
-
-    def edges(self, source=None, relation=None, target=None):
-        """
-        Return edges filtered by their *source*, *relation*, or *target*.
-
-        Edges don't include terminal triples (node types or attributes).
-        """
-        edgematch = lambda e: (
-            (source is None or source == e.source) and
-            (relation is None or relation == e.relation) and
-            (target is None or target == e.target)
-        )
-        variables = self.variables()
-        edges = [t for t in self._triples if t.target in variables]
-        return list(filter(edgematch, edges))
-
-    def attributes(self, source=None, relation=None, target=None):
-        """
-        Return attributes filtered by their *source*, *relation*, or *target*.
-
-        Attributes don't include triples where the target is a nonterminal.
-        """
-        attrmatch = lambda a: (
-            (source is None or source == a.source) and
-            (relation is None or relation == a.relation) and
-            (target is None or target == a.target)
-        )
-        variables = self.variables()
-        attrs = [t for t in self.triples() if t.target not in variables]
-        return list(filter(attrmatch, attrs))
-
-
-class AMRCodec(PENMANCodec):
-    """
-    An AMR codec for graphs in PENMAN notation.
-    """
-    TYPE_REL = 'instance'
-    TOP_VAR = None
-    TOP_REL = 'top'
-    # vars: [a-z]+\d* ; first relation must be node type
-    NODE_ENTER_RE = re.compile(r'\s*(\()\s*([a-z]+\d*)\s*(?=\/)')
-    # only non-anonymous relations
-    RELATION_RE = re.compile(r'(:[^\s(),]+)\s*')
-
-    _inversions = {
-        TYPE_REL: None,  # don't allow inverted types
-        'domain': 'mod',
-        'consist-of': 'consist-of-of',
-        'prep-on-behalf-of': 'prep-on-behalf-of-of',
-        'prep-out-of': 'prep-out-of-of',
-    }
-    _deinversions = {
-        'mod': 'domain',
-    }
-
-    def is_relation_inverted(self, relation):
-        """
-        Return True if *relation* is inverted.
-        """
-        return (
-            relation in self._deinversions or
-            (relation.endswith('-of') and relation not in self._inversions)
-        )
-
-    def invert_relation(self, relation):
-        """
-        Invert or deinvert *relation*.
-        """
-        if self.is_relation_inverted(relation):
-            rel = self._deinversions.get(relation, relation[:-3])
-        else:
-            rel = self._inversions.get(relation, relation + '-of')
-        if rel is None:
-            raise PenmanError(
-                'Cannot (de)invert {}; not allowed'.format(relation)
-            )
-        return rel
 
 
 def _main():
