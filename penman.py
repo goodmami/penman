@@ -65,7 +65,7 @@ try:
 except NameError:
     basestring = str
 
-__version__ = '0.6.0-pre2'
+__version__ = '0.6.0'
 __version_info__ = [
     int(x) if x.isdigit() else x
     for x in re.findall(r'[0-9]+|[^0-9\.-]+', __version__)

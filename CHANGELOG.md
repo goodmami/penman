@@ -3,6 +3,14 @@
 ## [Unreleased][unreleased]
 
 ### Fixed
+### Added
+### Removed
+### Changed
+### Deprecated
+
+## [v0.6.0][]
+
+### Fixed
 
 * By default, always preserve relation order when given (fixes #6)
 * `__version_info__` now gives integers for numeric parts
@@ -31,15 +39,12 @@
 * `--indent` option for commandline usage
 * `AMRCodec` with a more restrictive grammar and special inversions
 
-### Removed
 ### Changed
 
 * `DecodeError` now derives from `PenmanError`
 * `PENMANCodec` now takes a `relation_sort` parameter whose value is a
   function that sorts `Triple` objects (see **Added** above)
 * Updated the PEG definition in `README.md`, and accompanying prose.
-
-### Deprecated
 
 
 ## [v0.5.1][]
@@ -177,4 +182,5 @@ First release with very basic functionality.
 [v0.4.0]: ../../releases/tag/v0.4.0
 [v0.5.0]: ../../releases/tag/v0.5.0
 [v0.5.1]: ../../releases/tag/v0.5.1
+[v0.6.0]: ../../releases/tag/v0.6.0
 [README]: README.md
