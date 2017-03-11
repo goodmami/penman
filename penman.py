@@ -482,7 +482,7 @@ class PENMANCodec(object):
         for t in outedges:
             if t.relation == self.TYPE_REL:
                 if t.target is not None:
-                    branches = ['/ ' + t.target] + branches  # always first
+                    branches = ['/ {}'.format(t.target)] + branches  # always first
             else:
                 if t.inverted:
                     tgt = t.source
