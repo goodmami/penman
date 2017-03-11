@@ -104,11 +104,12 @@ NodeType <- Atom
 Variable <- Atom
 Edge     <- Relation Value
 Relation <- /:[^\s(]*/
-Value    <- Node | String | Float | Integer | Atom
+Value    <- Node | Atom
+Atom     <- String | Float | Integer | Symbol
 String   <- /"[^"\\]*(?:\\.[^"\\]*)*"/
-Atom     <- /[^\s)\/]+/
 Float    <- /[-+]?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+/
 Integer  <- /[-+]?\d+/
+Symbol   <- /[^\s)\/]+/
 ```
 
 \* *Note: I use `|` above for ordered-choice instead of `/` so that `/`
