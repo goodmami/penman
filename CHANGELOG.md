@@ -3,9 +3,18 @@
 ## [Unreleased][unreleased]
 
 ### Added
+### Removed
+### Fixed
+### Changed
+### Deprecated
+
+## [v0.6.1][v0.6.1]
+
+### Added
 
 * Some additional regular expressions on `PENMANCodec` to influence
   parsing behavior
+* `CONTRIBUTING.md`
 
 ### Fixed
 
@@ -191,4 +200,5 @@ First release with very basic functionality.
 [v0.5.0]: ../../releases/tag/v0.5.0
 [v0.5.1]: ../../releases/tag/v0.5.1
 [v0.6.0]: ../../releases/tag/v0.6.0
+[v0.6.1]: ../../releases/tag/v0.6.1
 [README]: README.md
