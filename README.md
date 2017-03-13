@@ -46,7 +46,7 @@ the example [below](#library-usage).
 (d / dog
       :ARG0-of (b / bark))
 >>> print(penman.encode(g, indent=False))
-(b / bark :ARG0 (d / dog))```
+(b / bark :ARG0 (d / dog))
 ```
 
 ### Script Usage
@@ -103,12 +103,13 @@ NodeData <- Variable ('/' NodeType)? Edge*
 NodeType <- Atom
 Variable <- Atom
 Edge     <- Relation Value
-Relation <- /:[^\s(]*/
-Value    <- Node | String | Float | Integer | Atom
+Relation <- /:[^\s(),]*/
+Value    <- Node | Atom
+Atom     <- String | Float | Integer | Symbol
 String   <- /"[^"\\]*(?:\\.[^"\\]*)*"/
-Atom     <- /[^\s)\/]+/
-Float    <- /[-+]?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+/
+Float    <- /[-+]?(((\d+\.\d*|\.\d+)([eE][-+]?\d+)?)|\d+[eE][-+]?\d+)/
 Integer  <- /[-+]?\d+/
+Symbol   <- /[^\s()\/,]+/
 ```
 
 \* *Note: I use `|` above for ordered-choice instead of `/` so that `/`
@@ -120,7 +121,7 @@ could be given as a disjunction of allowed names. Similarly, Relations
 could be a disjunction of allowed names and possible inversions, or
 otherwise require at least one character after `:`. It might also
 restrict Variables to a form like `/[a-z]+\d*/` and also restrict Atom
-values in some way. The included `AMRCodec` employs most of these
+values in some way. The included [AMRCodec][] employs most of these
 restrictions and raises `DecodeError`s for graphs it deems invalid. See
 also [Nathan Schneider's PEG for AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
 
@@ -137,6 +138,7 @@ This project is not affiliated with [ISI], the [PENMAN] project, or the
 
 [documentation]: docs/API.md
 [PENMANCodec]: docs/API.md#penmancodec
+[AMRCodec]: docs/API.md#amrcodec
 [encode(g)]: docs/API.md#encode
 [decode(s)]: docs/API.md#decode
 [load(f)]: docs/API.md#load

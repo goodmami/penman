@@ -116,6 +116,34 @@ def test_decode(x1, x2):
         ('a', 'ARG', 15)
     ]
 
+    # numeric node type
+    g = decode('(one / 1)')
+    assert g.triples() == [
+        ('one', 'instance', 1)
+    ]
+
+    # string node type
+    g = decode('(one / "a string")')
+    assert g.triples() == [
+        ('one', 'instance', '"a string"')
+    ]
+
+    # numeric "variable"
+    g = decode('(1 / one)')
+    assert g.triples() == [
+        (1, 'instance', 'one')
+    ]
+    g = decode('(1.1 / one)')
+    assert g.triples() == [
+        (1.1, 'instance', 'one')
+    ]
+
+    # string "variable"
+    g = decode('("a string" / one)')
+    assert g.triples() == [
+        ('"a string"', 'instance', 'one')
+    ]
+
     # fuller example
     assert decode(x1[0]).triples() == x1[1]
     assert decode(x2[0]).triples() == x2[1]
@@ -227,6 +255,34 @@ def test_encode(x1, x2):
         ('a', 'ARG', 15)
     ])
     assert encode(g) == '(a :ARG 15)'
+
+    # numeric node type
+    g = penman.Graph([
+        ('one', 'instance', 1)
+    ])
+    assert encode(g) == '(one / 1)'
+
+    # string node type
+    g = penman.Graph([
+        ('one', 'instance', '"a string"')
+    ])
+    assert encode(g) == '(one / "a string")'
+
+    # numeric "variable"
+    g = penman.Graph([
+        (1, 'instance', 'one')
+    ])
+    assert encode(g) == '(1 / one)'
+    g = penman.Graph([
+        (1.1, 'instance', 'one')
+    ])
+    assert encode(g) == '(1.1 / one)'
+
+    # string "variable"
+    g = penman.Graph([
+        ('"a string"', 'instance', 'one')
+    ])
+    assert encode(g) == '("a string" / one)'
 
     assert encode(penman.Graph(x1[1])) == x1[0]
     assert encode(penman.Graph(x2[1])) == x2[0]
@@ -481,6 +537,15 @@ def test_loads_triples():
     assert len(gs) == 1
     assert gs[0].triples() == [('a', 'instance', 'alpha'), ('a', 'ARG', 'b')]
 
+    gs = penman.loads('instance(1, alpha)', triples=True)
+    assert gs[0].triples() == [(1, 'instance', 'alpha')]
+
+    gs = penman.loads('instance(1.1, alpha)', triples=True)
+    assert gs[0].triples() == [(1.1, 'instance', 'alpha')]
+
+    gs = penman.loads('instance("a string", alpha)', triples=True)
+    assert gs[0].triples() == [('"a string"', 'instance', 'alpha')]
+
     class TestCodec(penman.PENMANCodec):
         TYPE_REL = 'test'
         TOP_VAR = 'TOP'
@@ -523,6 +588,21 @@ def test_dumps_triples():
         [penman.Graph([('a', 'instance', None), ('a', 'ARG', 'b')])],
         triples=True
     ) == 'instance(a, None) ^\nARG(a, b)'
+
+    gs = penman.dumps(
+        [penman.Graph([(1, 'instance', 'alpha')])],
+        triples=True
+    ) == 'instance(1, alpha)'
+
+    gs = penman.dumps(
+        [penman.Graph([(1.1, 'instance', 'alpha')])],
+        triples=True
+    ) == 'instance(1.1, alpha)'
+
+    gs = penman.dumps(
+        [penman.Graph([('"a string"', 'instance', 'alpha')])],
+        triples=True
+    ) == 'instance("a string", alpha)'
 
     class TestCodec(penman.PENMANCodec):
         TYPE_REL = 'test'
