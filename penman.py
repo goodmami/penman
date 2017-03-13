@@ -34,7 +34,7 @@ Options:
 # API overview:
 #
 # Classes:
-#  * PENMANCodec(indent=True)
+#  * PENMANCodec(indent=True, relation_sort=original_order)
 #    - PENMANCodec.decode(s)
 #    - PENMANCodec.iterdecode(s)
 #    - PENMANCodec.encode(g, top=None)
@@ -42,6 +42,8 @@ Options:
 #    - PENMANCodec.invert_relation(relation)
 #    - PENMANCodec.handle_triple(source, relation, target)
 #    - PENMANCodec.triples_to_graph(triples, top=None)
+#  * AMRCodec(indent=True, relation_sort=original_order)
+#    - (methods are the same as PENMANCodec)
 #  * Triple(source, relation, target)
 #  * Graph(data=None, top=None)
 #    - Graph.top
@@ -57,6 +59,9 @@ Options:
 #  * loads(string, triples=False, cls=PENMANCodec, **kwargs)
 #  * dump(graphs, file, triples=False, cls=PENMANCodec, **kwargs)
 #  * dumps(graphs, triples=False, cls=PENMANCodec, **kwargs)
+#  * original_order(triples)
+#  * out_first_order(triples)
+#  * alphanum_order(triples)
 
 import re
 from collections import namedtuple, defaultdict
@@ -65,7 +70,7 @@ try:
 except NameError:
     basestring = str
 
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 __version_info__ = [
     int(x) if x.isdigit() else x
     for x in re.findall(r'[0-9]+|[^0-9\.-]+', __version__)
@@ -110,12 +115,22 @@ class PENMANCodec(object):
     TYPE_REL = 'instance'
     TOP_VAR = None
     TOP_REL = 'top'
-    NODE_ENTER_RE = re.compile(r'\s*(\()\s*([^\s()\/,]+)\s*')
+    NODE_ENTER_RE = re.compile(r'\s*(\()\s*')
     NODE_EXIT_RE = re.compile(r'\s*(\))\s*')
     RELATION_RE = re.compile(r'(:[^\s(),]*)\s*')
-    ATOM_RE = re.compile(r'\s*([^\s()\/,]+)\s*')
-    STRING_RE = re.compile(r'("[^"\\]*(?:\\.[^"\\]*)*")\s*')
+    INT_RE = re.compile(r'[+-]?\d+')
+    FLOAT_RE = re.compile(
+        r'[-+]?(((\d+\.\d*|\.\d+)([eE][-+]?\d+)?)|\d+[eE][-+]?\d+)'
+    )
+    ATOM_RE = re.compile(r'([^\s()\/,]+)')
+    STRING_RE = re.compile(r'("[^"\\]*(?:\\.[^"\\]*)*")')
+    VAR_RE = re.compile(
+        '({}|{}|{}|{})'.format(STRING_RE.pattern, FLOAT_RE.pattern,
+                               INT_RE.pattern, ATOM_RE.pattern)
+    )
+    NODETYPE_RE = VAR_RE  # default; allow strings, numbers, and symbols
     COMMA_RE = re.compile(r'\s*,\s*')
+    SPACING_RE = re.compile(r'\s*')
 
     def __init__(self, indent=True, relation_sort=original_order):
         """
@@ -324,23 +339,35 @@ class PENMANCodec(object):
             if start is None:
                 start = m.start(1)
             pos, rel = m.end(0), m.group(1)
-            m = _regex(self.NODE_ENTER_RE, s, pos, '"(" and a variable')
-            pos, var = m.end(0), m.group(2)
+
+            m = _regex(self.NODE_ENTER_RE, s, pos, '"("')
+            pos = m.end(0)
+            
+            m = _regex(self.VAR_RE, s, pos, "a variable (node identifier)")
+            pos, var = m.end(0), m.group(1).strip()
+
             m = _regex(self.COMMA_RE, s, pos, '","')
             pos = m.end(0)
-            if s[pos] == '"':
-                m = _regex(self.STRING_RE, s, pos, 'a quoted string')
+
+            if rel == self.TYPE_REL:
+                m = _regex(self.NODETYPE_RE, s, pos, 'a node type')
             else:
-                m = _regex(self.ATOM_RE, s, pos, 'a float/int/atom')
+                if s[pos] == '"':
+                    m = _regex(self.STRING_RE, s, pos, 'a quoted string')
+                else:
+                    m = _regex(self.ATOM_RE, s, pos, 'a float/int/symbol')
             pos, tgt = m.end(0), m.group(1)
+            
             if var == self.TOP_VAR and rel == self.TOP_REL:
                 top = tgt
             elif rel == self.TYPE_REL:
                 nodes.append((var, rel, tgt))
             else:
                 edges.append((var, rel, tgt))
+            
             m = _regex(self.NODE_EXIT_RE, s, pos, '")"')
             pos = m.end(1)
+            
             if m.end(0) < len(s) and s[m.end(0)] == '^':
                 pos = m.end(0) + 1
             else:
@@ -353,15 +380,19 @@ class PENMANCodec(object):
         nodes, edges = [], []
 
         strlen = len(s)
-        m = _regex(self.NODE_ENTER_RE, s, pos, '"(" and a variable')
-        start, pos, var = m.start(1), m.end(0), m.group(2)
+        m = _regex(self.NODE_ENTER_RE, s, pos, '"("')
+        start, pos = m.start(1), m.end(0)
+
+        m = _regex(self.VAR_RE, s, pos, "a variable (node identifier)")
+        pos, var = m.end(0), m.group(1).strip()
 
         nodetype = None
         while pos < strlen and s[pos] != ')':
 
             # node type
             if s[pos] == '/':
-                m = _regex(self.ATOM_RE, s, pos+1, 'a node type')
+                pos = self.SPACING_RE.match(s, pos=pos+1).end()
+                m = _regex(self.NODETYPE_RE, s, pos, 'a node type')
                 pos, nodetype = m.end(0), m.group(1)
 
             # relation
@@ -384,7 +415,7 @@ class PENMANCodec(object):
                         m = _regex(self.STRING_RE, s, pos, 'a quoted string')
                         pos, value = m.end(0), m.group(1)
                     else:
-                        m = _regex(self.ATOM_RE, s, pos, 'a float/int/atom')
+                        m = _regex(self.ATOM_RE, s, pos, 'a float/int/symbol')
                         pos, value = m.end(0), m.group(1)
                     edges.append((var, rel, value))
 
@@ -482,7 +513,8 @@ class PENMANCodec(object):
         for t in outedges:
             if t.relation == self.TYPE_REL:
                 if t.target is not None:
-                    branches = ['/ {}'.format(t.target)] + branches  # always first
+                    # node types always come first
+                    branches = ['/ {}'.format(t.target)] + branches
             else:
                 if t.inverted:
                     tgt = t.source
@@ -519,7 +551,8 @@ class AMRCodec(PENMANCodec):
     TOP_VAR = None
     TOP_REL = 'top'
     # vars: [a-z]+\d* ; first relation must be node type
-    NODE_ENTER_RE = re.compile(r'\s*(\()\s*([a-z]+\d*)\s*(?=\/)')
+    NODE_ENTER_RE = re.compile(r'\s*(\()\s*(?=[a-z]+\d*\s*\/)')
+    VAR_RE = re.compile(r'([a-z]+\d*)')
     # only non-anonymous relations
     RELATION_RE = re.compile(r'(:[^\s(),]+)\s*')
 

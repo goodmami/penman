@@ -2,11 +2,19 @@
 
 ## [Unreleased][unreleased]
 
-### Fixed
 ### Added
-### Removed
+
+* Some additional regular expressions on `PENMANCodec` to influence
+  parsing behavior
+
+### Fixed
+
+* Allow numeric and string variables and node types
+
 ### Changed
-### Deprecated
+
+* Grammar in README now more accurately reflect parsing behavior (and
+  vice versa)
 
 ## [v0.6.0][]
 
