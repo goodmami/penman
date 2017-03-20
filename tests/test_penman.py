@@ -41,6 +41,20 @@ def x2():
     )
 
 
+def test_handle_triple():
+    c = penman.PENMANCodec()
+    assert c.handle_triple('a', ':', 'b') == ('a', None, 'b')
+    assert c.handle_triple('a', ':r', 'b') == ('a', 'r', 'b')
+    assert c.handle_triple('a', ':-of', 'b') == ('b', None, 'a')
+    assert c.handle_triple('a', ':r-of', 'b') == ('b', 'r', 'a')
+
+    assert c.handle_triple('a', ':r', '123') == ('a', 'r', 123)
+    assert c.handle_triple('a', ':r', '1.2') == ('a', 'r', 1.2)
+
+    assert c.handle_triple('a', ':r', '1a') == ('a', 'r', '1a')
+    assert c.handle_triple('a', ':r', '1.2a') == ('a', 'r', '1.2a')
+
+
 def test_decode(x1, x2):
     decode = penman.decode
 

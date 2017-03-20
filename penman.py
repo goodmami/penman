@@ -70,7 +70,7 @@ try:
 except NameError:
     basestring = str
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 __version_info__ = [
     int(x) if x.isdigit() else x
     for x in re.findall(r'[0-9]+|[^0-9\.-]+', __version__)
@@ -730,9 +730,9 @@ def _default_cast(x):
         if x.startswith('"'):
             x = x  # strip quotes?
         elif re.match(
-                r'-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+', x):
+                r'-?(0|[1-9]\d*)(\.\d+[eE][-+]?|\.|[eE][-+]?)\d+$', x):
             x = float(x)
-        elif re.match(r'-?\d+', x):
+        elif re.match(r'-?\d+$', x):
             x = int(x)
     return x
 

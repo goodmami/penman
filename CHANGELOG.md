@@ -5,6 +5,9 @@
 ### Added
 ### Removed
 ### Fixed
+
+* Value-cast patterns terminated with `$` to invalid casts (fixes #9)
+
 ### Changed
 ### Deprecated
 
