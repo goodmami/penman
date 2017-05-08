@@ -522,6 +522,16 @@ class TestGraph(object):
             (10002, 'instance', 'udef_q'),
         ]
 
+    def test_reentrancies(self, x1, x2):
+        g = penman.Graph(x1[1])
+        assert g.reentrancies() == {'x1': 2}
+        g = penman.Graph(x2[1])
+        assert g.reentrancies() == {10001: 1}
+        # top has an implicit entrancy
+        g = penman.decode('(b / bark :ARG1 (d / dog) :ARG1-of (w / wild))')
+        assert g.reentrancies() == {'b': 1}
+
+
 def test_loads():
     assert penman.loads('') == []
     assert penman.loads('# comment') == []

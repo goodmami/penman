@@ -51,6 +51,7 @@ Options:
 #    - Graph.triples(source=None, relation=None, target=None)
 #    - Graph.edges(source=None, relation=None, target=None)
 #    - Graph.attributes(source=None, relation=None, target=None)
+#    - Graph.reentrancies()
 #
 # Module Functions:
 #  * decode(s, cls=PENMANCodec, **kwargs)
@@ -716,6 +717,24 @@ class Graph(object):
         variables = self.variables()
         attrs = [t for t in self.triples() if t.target not in variables]
         return list(filter(attrmatch, attrs))
+
+    def reentrancies(self):
+        """
+        Return a mapping of variables to their re-entrancy count.
+
+        A re-entrancy is when more than one edge selects a node as its
+        target. These graphs are rooted, so the top node always has an
+        implicit entrancy. Only nodes with re-entrancies are reported,
+        and the count is only for the entrant edges beyond the first.
+        Also note that these counts are for the interpreted graph, not
+        for the linearized form, so inverted edges are always
+        re-entrant.
+        """
+        entrancies = defaultdict(int)
+        entrancies[self.top] += 1  # implicit entrancy to top
+        for t in self.edges():
+            entrancies[t.target] += 1
+        return dict((v, cnt - 1) for v, cnt in entrancies.items() if cnt >= 2)
 
 
 def _regex(x, s, pos, msg):

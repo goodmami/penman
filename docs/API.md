@@ -28,6 +28,7 @@ Classes and methods:
   - [Graph.triples()](#Graph-triples)
   - [Graph.edges()](#Graph-edges)
   - [Graph.attributes()](#Graph-attributes)
+  - [Graph.reentrancies()](#Graph-reentrancies)
 * [PENMANCodec](#PENMANCodec)
   - [PENMANCodec.decode()](#PENMANCodec-decode)
   - [PENMANCodec.iterdecode()](#PENMANCodec-iterdecode)
@@ -312,6 +313,18 @@ Methods:
   Return attributes filtered by their *source*, *relation*, or *target*.
   
   Attributes don't include triples where the target is a nonterminal.
+
+* <a name="Graph-reentrancies" href="#Graph-reentrancies">▣</a>
+  penman.Graph.**reentrancies**()
+  
+  Return a mapping of variables to their re-entrancy count.
+
+  A re-entrancy is when more than one edge selects a node as its target.
+  These graphs are rooted, so the top node always has an implicit
+  entrancy. Only nodes with re-entrancies are reported, and the count is
+  only for the entrant edges beyond the first. Also note that these
+  counts are for the interpreted graph, not for the linearized form, so
+  inverted edges are always re-entrant.
 
 
 ## PENMANCodec
