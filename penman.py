@@ -245,6 +245,8 @@ class PENMANCodec(object):
             ...                      triples=True)
             instance(h, hi)
         """
+        if len(g.triples()) == 0:
+            raise EncodeError('Cannot encode empty graph.')
         if triples:
             return self._encode_triple_conjunction(g, top=top)
         else:

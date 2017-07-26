@@ -173,6 +173,10 @@ def test_decode(x1, x2):
         decode('(a / alpha')
     with pytest.raises(penman.DecodeError):
         decode('(a b)')
+    with pytest.raises(penman.DecodeError):
+        decode('()')
+    with pytest.raises(penman.DecodeError):
+        decode('(a :ARG1 ())')
 
     # custom codec
     class TestCodec(penman.PENMANCodec):
@@ -326,6 +330,11 @@ def test_encode(x1, x2):
         ('a', 'test', 'alpha')
     ])
     assert encode(g, cls=TestCodec) == '(a / alpha)'
+
+    # empty graph
+    g = penman.Graph()
+    with pytest.raises(penman.EncodeError):
+        encode(g)
 
     # disconnected graph
     g = penman.Graph([

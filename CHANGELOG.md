@@ -6,7 +6,8 @@
 ### Removed
 ### Fixed
 
-* Value-cast patterns terminated with `$` to invalid casts (fixes #9)
+* Value-cast patterns terminated with `$` to invalid casts (#9)
+* Raise EncodeError when attempting to encode empty graphs (#14)
 
 ### Changed
 ### Deprecated
