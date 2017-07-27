@@ -8,6 +8,9 @@
 
 * Value-cast patterns terminated with `$` to invalid casts (#9)
 * Raise EncodeError when attempting to encode empty graphs (#14)
+* Redefine NODETYPE_RE for AMRCodec (#17)
+* Remove specific float and int parsing in variables/nodetypes for the
+  default parser (the numeric values are still parses as atoms) (#17)
 
 ### Changed
 ### Deprecated

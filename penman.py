@@ -125,10 +125,7 @@ class PENMANCodec(object):
     )
     ATOM_RE = re.compile(r'([^\s()\/,]+)')
     STRING_RE = re.compile(r'("[^"\\]*(?:\\.[^"\\]*)*")')
-    VAR_RE = re.compile(
-        '({}|{}|{}|{})'.format(STRING_RE.pattern, FLOAT_RE.pattern,
-                               INT_RE.pattern, ATOM_RE.pattern)
-    )
+    VAR_RE = re.compile('({}|{})'.format(STRING_RE.pattern, ATOM_RE.pattern))
     NODETYPE_RE = VAR_RE  # default; allow strings, numbers, and symbols
     COMMA_RE = re.compile(r'\s*,\s*')
     SPACING_RE = re.compile(r'\s*')
@@ -555,6 +552,7 @@ class AMRCodec(PENMANCodec):
     TOP_REL = 'top'
     # vars: [a-z]+\d* ; first relation must be node type
     NODE_ENTER_RE = re.compile(r'\s*(\()\s*(?=[a-z]+\d*\s*\/)')
+    NODETYPE_RE = PENMANCodec.ATOM_RE
     VAR_RE = re.compile(r'([a-z]+\d*)')
     # only non-anonymous relations
     RELATION_RE = re.compile(r'(:[^\s(),]+)\s*')

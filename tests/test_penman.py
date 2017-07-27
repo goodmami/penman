@@ -158,6 +158,14 @@ def test_decode(x1, x2):
         ('"a string"', 'instance', 'one')
     ]
 
+    # numeric symbol (from https://github.com/goodmami/penman/issues/17)
+    g = decode('(g / go :null_edge (x20 / 876-9))')
+    assert g.triples() == [
+        ('g', 'instance', 'go'),
+        ('x20', 'instance', '876-9'),
+        ('g', 'null_edge', 'x20')
+    ]
+
     # fuller example
     assert decode(x1[0]).triples() == x1[1]
     assert decode(x2[0]).triples() == x2[1]
@@ -693,6 +701,12 @@ def test_AMRCodec():
 
 
     assert c.decode('(g / go)').triples() == [('g', 'instance', 'go')]
+    # example adapted from https://github.com/goodmami/penman/issues/17
+    assert c.decode('(g / go :null_edge (x20 / 876-9))').triples() == [
+        ('g', 'instance', 'go'),
+        ('x20', 'instance', '876-9'),
+        ('g', 'null_edge', 'x20')
+    ]
 
     with pytest.raises(penman.DecodeError):
         c.decode('(g)')  # no concept or relations
