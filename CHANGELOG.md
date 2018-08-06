@@ -12,12 +12,16 @@
   `role_alignments` parameters
 
 ### Removed
+
+* [docopt](https://github.com/docopt/docopt) dependency (#20)
+
 ### Fixed
 ### Changed
 
 * Altered the style of the API.md documentation
 * `AMRCodec.RELATION_RE`, `PENMANCodec.RELATION_RE`, and
   `PENMANCodec.ATOM_RE` no longer accept `~` characters
+* `dump()` now writes iteratively to a stream (#22)
 
 ### Deprecated
 

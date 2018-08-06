@@ -14,23 +14,6 @@ module as a script.
 
 from __future__ import print_function
 
-USAGE = '''
-Penman
-
-An API and utility for working with graphs in PENMAN notation.
-
-Usage: penman.py [-h|--help] [-V|--version] [options]
-
-Options:
-  -h, --help                display this help and exit
-  -V, --version             display the version and exit
-  -i FILE, --input FILE     read graphs from FILE instead of stdin
-  -o FILE, --output FILE    write output to FILE instead of stdout
-  -t, --triples             print graphs as triple conjunctions
-  --indent N                indent N spaces per level ("no" for no newlines)
-  --amr                     use AMR codec instead of generic PENMAN one
-'''
-
 # API overview:
 #
 # Classes:
@@ -41,11 +24,12 @@ Options:
 #    - PENMANCodec.is_relation_inverted(relation)
 #    - PENMANCodec.invert_relation(relation)
 #    - PENMANCodec.handle_triple(source, relation, target)
-#    - PENMANCodec.triples_to_graph(triples, top=None)
+#    - PENMANCodec.triples_to_graph(triples, top=None, alignments=None,
+#                                   role_alignments=None)
 #  * AMRCodec(indent=True, relation_sort=original_order)
 #    - (methods are the same as PENMANCodec)
 #  * Triple(source, relation, target)
-#  * Graph(data=None, top=None)
+#  * Graph(data=None, top=None, alignments=None, role_alignments=None)
 #    - Graph.top
 #    - Graph.variables()
 #    - Graph.triples(source=None, relation=None, target=None)
@@ -74,7 +58,7 @@ try:
 except NameError:
     basestring = str
 
-__version__ = '0.6.2'
+__version__ = '0.6.2+dev'
 __version_info__ = [
     int(x) if x.isdigit() else x
     for x in re.findall(r'[0-9]+|[^0-9\.-]+', __version__)
@@ -974,13 +958,24 @@ def dump(graphs, file, triples=False, cls=PENMANCodec, **kwargs):
         cls: serialization codec class
         kwargs: keyword arguments passed to the constructor of *cls*
     """
-    text = dumps(graphs, triples=triples, cls=cls, **kwargs)
-
     if hasattr(file, 'write'):
-        print(text, file=file)
+        _dump(file, graphs, triples, cls, **kwargs)
     else:
         with open(file, 'w') as fh:
-            print(text, file=fh)
+            _dump(fh, graphs, triples, cls, **kwargs)
+
+
+def _dump(fh, gs, triples, cls, **kwargs):
+    """Helper method for dump() for incremental printing."""
+    codec = cls(**kwargs)
+    ss = (codec.encode(g, triples=triples) for g in gs)
+    try:
+        print(next(ss), file=fh)
+    except StopIteration:
+        return
+    for s in ss:
+        print(file=fh)
+        print(s, file=fh)
 
 
 def dumps(graphs, triples=False, cls=PENMANCodec, **kwargs):
@@ -1000,29 +995,53 @@ def dumps(graphs, triples=False, cls=PENMANCodec, **kwargs):
 
 def _main():
     import sys
-    from docopt import docopt
-    args = docopt(USAGE, version='Penman {}'.format(__version__))
+    import argparse
 
-    infile = args['--input'] or sys.stdin
-    outfile = args['--output'] or sys.stdout
+    parser = argparse.ArgumentParser(
+        description='An API and utility for working with graphs in the '
+                    'PENMAN notation.'
+    )
+    add = parser.add_argument
+    add('-V', '--version', action='version',
+        version='Penman v{}'.format(__version__))
+    add('-i', '--input', metavar='FILE',
+        type=argparse.FileType('r'), default=sys.stdin,
+        help='read graphs from FILE instead of stdin')
+    add('-o', '--output', metavar='FILE',
+        type=argparse.FileType('w'), default=sys.stdout,
+        help='write output to FILE instead of stdout')
+    add('-t', '--triples', action='store_true',
+        help='print graphs as triple conjunctions')
+    add('--indent', metavar='N',
+        help='indent N spaces per level ("no" for no newlines)')
+    add('--amr', action='store_true',
+        help='use AMR codec instead of generic PENMAN one')
 
-    codec = AMRCodec if args['--amr'] else PENMANCodec
+    args = parser.parse_args()
+
+    codec = AMRCodec if args.amr else PENMANCodec
 
     indent = True
-    if args['--indent']:
-        if args['--indent'].lower() in ("no", "none", "false"):
+    if args.indent:
+        if args.indent.lower() in ("no", "none", "false"):
             indent = False
         else:
             try:
-                indent = int(args['--indent'])
+                indent = int(args.indent)
                 if indent < 0:
                     raise ValueError
             except ValueError:
                 sys.exit('error: --indent value must be "no" or a '
                          ' positive integer')
 
-    data = load(infile, cls=codec)
-    dump(data, outfile, triples=args['--triples'], cls=codec, indent=indent)
+    data = codec().iterdecode(args.input.read())
+    dump(
+        data,
+        args.output,
+        triples=args.triples,
+        cls=codec,
+        indent=indent
+    )
 
 
 if __name__ == '__main__':

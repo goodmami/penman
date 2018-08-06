@@ -78,7 +78,6 @@ $ python penman.py <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 ### Requirements
 
 - Python 2.7 or 3.3+
-- [docopt](https://pypi.python.org/pypi/docopt) (for script usage)
 
 ### PENMAN Notation
 
