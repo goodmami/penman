@@ -74,7 +74,7 @@ Arguments:
 
 * `g` - the Graph object
 * `top` - the node identifier for the top of the serialized graph; if
-          unset, the original top of *g* is used
+      unset, the original top of *g* is used
 * `cls` - serialization codec class
 * `kwargs` - keyword arguments passed to the constructor of *cls*
 
@@ -237,7 +237,7 @@ lists can be obtained via the Graph.triples(), Graph.edges(), and
 Graph.attributes() methods.
 
 <a name="Graph" href="#Graph">penman.**Graph**</a>
-(_data=None, top=None, codec=PENMANCodec_)
+(_data=None, top=None, alignments=None, role_alignments=None_)
 
 Create a Graph from an iterable of triples.
 
@@ -245,8 +245,11 @@ Arguments:
 
 * `data` - an iterable of triples (Triple objects or 3-tuples)
 * `top` - the node identifier of the top node; if unspecified,
-          the source of the first triple is used
-* `codec` - the serialization codec used to interpret values
+      the source of the first triple is used
+* `alignments` - a mapping of triples to surface token indices for
+      node alignments
+* `role_alignments` - a mapping of triples to surface token indices
+      for role alignments
 
 Example:
 
@@ -306,6 +309,16 @@ Methods:
   counts are for the interpreted graph, not for the linearized form, so
   inverted edges are always re-entrant.
 
+* <a name="Graph-alignments" href="#Graph-alignments">penman.Graph.**alignments**</a>
+  ()
+
+  Return the surface alignments for nodes and attributes.
+
+* <a name="Graph-role_alignments" href="#Graph-role_alignments">penman.Graph.**role_alignments**</a>
+  ()
+
+  Return the surface alignments for relations.
+
 
 ## PENMANCodec
 
@@ -319,8 +332,8 @@ Initialize a new codec.
 Arguments:
 
 * `indent` - if True, adaptively indent; if False or None, don't
-             indent; if a non-negative integer, indent that many
-             spaces per nesting level
+      indent; if a non-negative integer, indent that many spaces
+      per nesting level
 * `relation_sort` - the function used to sort relations on a node
 
 Methods:
@@ -387,7 +400,7 @@ Methods:
 
   * `g` - the Graph object
   * `top` - the node identifier for the top of the serialized
-            graph; if unset, the original top of *g* is used
+        graph; if unset, the original top of *g* is used
   * `triples` - if True, serialize as a conjunction of logical triples
 
   Returns:
@@ -443,7 +456,7 @@ Methods:
     it is returned as a Triple object.
 
 * <a name="PENMANCodec-triples_to_graph" href="#PENMANCodec-triples_to_graph">penman.PENMANCodec.**triples_to_graph**</a>
-  (_triples, top=None_)
+  (_triples, top=None, alignments=None_, role_alignments=None_)
 
   Create a Graph from *triples* considering codec configuration.
 
@@ -458,6 +471,10 @@ Methods:
 
   * `triples` - an iterable of (lhs, relation, rhs) triples
   * `top` - node identifier of the top node
+  * `alignments` - a mapping of triples to surface token indices for
+        node alignments
+  * `role_alignments` - a mapping of triples to surface token indices
+        for role alignments
 
   Returns:
 
