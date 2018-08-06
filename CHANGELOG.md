@@ -6,6 +6,9 @@
 ### Removed
 ### Fixed
 ### Changed
+
+* Altered the style of the API.md documentation
+
 ### Deprecated
 
 ## [v0.6.2][v0.6.2]

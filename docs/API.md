@@ -41,10 +41,9 @@ Classes and methods:
 
 # Serialization Functions
 
-## decode
 
-<a name="decode" href="#decode">▣</a>
-penman.**decode**(_s, cls=PENMANCodec, \*\*kwargs_)
+<a name="decode" href="#decode">penman.**decode**</a>
+(_s, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize PENMAN-serialized *s* into its Graph object
 
@@ -66,10 +65,8 @@ Example:
 ```
 
 
-## encode
-
-<a name="encode" href="#encode">▣</a>
-penman.**encode**(_g, top=None, cls=PENMANCodec, \*\*kwargs_)
+<a name="encode" href="#encode">penman.**encode**</a>
+(_g, top=None, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize the graph *g* from *top* to PENMAN notation.
 
@@ -93,10 +90,8 @@ Example:
 ```
 
 
-## load
-
-<a name="load" href="#load">▣</a>
-penman.**load**(_source, triples=False, cls=PENMANCodec, \*\*kwargs_)
+<a name="load" href="#load">penman.**load**</a>
+(_source, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize a list of PENMAN-encoded graphs from *source*.
 
@@ -112,10 +107,8 @@ Returns:
 * a list of Graph objects
 
 
-## loads
-
-<a name="loads" href="#loads">▣</a>
-penman.**loads**(_string, triples=False, cls=PENMANCodec, \*\*kwargs_)
+<a name="loads" href="#loads">penman.**loads**</a>
+(_string, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Deserialize a list of PENMAN-encoded graphs from *string*.
 
@@ -131,10 +124,8 @@ Returns:
 * a list of Graph objects
 
 
-## dump
-
-<a name="dump" href="#dump">▣</a>
-penman.**dump**(_graphs, file, triples=False, cls=PENMANCodec, \*\*kwargs_)
+<a name="dump" href="#dump">penman.**dump**</a>
+(_graphs, file, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize each graph in *graphs* to PENMAN and write to *file*.
 
@@ -147,10 +138,8 @@ Arguments:
 * `kwargs` - keyword arguments passed to the constructor of *cls*
 
 
-## dumps
-
-<a name="dumps" href="#dumps">▣</a>
-penman.**dumps**(_graphs, triples=False, cls=PENMANCodec, \*\*kwargs_)
+<a name="dumps" href="#dumps">penman.**dumps**</a>
+(_graphs, triples=False, cls=PENMANCodec, \*\*kwargs_)
 
 Serialize each graph in *graphs* to the PENMAN format.
 
@@ -174,23 +163,20 @@ order during decoding or graph construction is used, but if a particular
 order is to be used an appropriate function may be passed as the
 `relation_sort` parameter to a `PENMANCodec` instantiation.
 
-## original_order
-<a name="original_order" href="#original_order">▣</a>
-penman.**original_order**(_triples_)
+<a name="original_order" href="#original_order">penman.**original_order**</a>
+(_triples_)
 
 Return a list of *triples* in the original order.
 
 
-## out_first_order
-<a name="out_first_order" href="#out_first_order">▣</a>
-penman.**out_first_order**(_triples_)
+<a name="out_first_order" href="#out_first_order">penman.**out_first_order**</a>
+(_triples_)
 
 Sort a list of *triples* so outward (true) edges appear first.
 
 
-## alphanum_order
-<a name="alphanum_order" href="#alphanum_order">▣</a>
-penman.**alphanum_order**(_triples_)
+<a name="alphanum_order" href="#alphanum_order">penman.**alphanum_order**</a>
+(_triples_)
 
 Sort a list of *triples* by relation name.
 
@@ -198,15 +184,14 @@ Embedded integers are sorted numerically, but otherwise the sorting
 is alphabetic.
 
 
-#  Classes
-
+# Classes
 
 ## Triple
 
 Container for Graph edges and node attributes.
 
-<a name="Triple" href="#Triple">▣</a>
-penman.**Triple**(_source, relation, target, inverted=None_)
+<a name="Triple" href="#Triple">penman.**Triple**</a>
+(_source, relation, target, inverted=None_)
 
 The final parameter, `inverted`, is optional, and when set it exists as
 an attribute of the Triple object, but not as part of the 3-tuple data.
@@ -216,26 +201,22 @@ serialization is for a true orientation.
 
 Properties:
 
-* <a name="Triple-source" href="#Triple-source">▣</a>
-  penman.Triple.**source**
+* <a name="Triple-source" href="#Triple-source">penman.Triple.**source**</a>
 
   The source node of the triple. Only get-access is supported. It can
   also be accessed by index: `triple[0]`.
 
-* <a name="Triple-relation" href="#Triple-relation">▣</a>
-  penman.Triple.**relation**
+* <a name="Triple-relation" href="#Triple-relation">penman.Triple.**relation**</a>
 
   The relation name of the triple. Only get-access is supported. It can
   also be accessed by index: `triple[1]`.
 
-* <a name="Triple-target" href="#Triple-target">▣</a>
-  penman.Triple.**target**
+* <a name="Triple-target" href="#Triple-target">penman.Triple.**target**</a>
 
   The target node of the triple. Only get-access is supported. It can
   also be accessed by index: `triple[2]`.
 
-* <a name="Triple-inverted" href="#Triple-inverted">▣</a>
-  penman.Triple.**inverted**
+* <a name="Triple-inverted" href="#Triple-inverted">penman.Triple.**inverted**</a>
 
   The intended or observed orientation of the triple. If `True`, the
   triple was or should be inverted (e.g., `(a :rel b)` was or should be
@@ -255,8 +236,8 @@ source is a node identifier and the target is a constant. These
 lists can be obtained via the Graph.triples(), Graph.edges(), and
 Graph.attributes() methods.
 
-<a name="Graph" href="#Graph">▣</a>
-penman.**Graph**(_data=None, top=None, codec=PENMANCodec_)
+<a name="Graph" href="#Graph">penman.**Graph**</a>
+(_data=None, top=None, codec=PENMANCodec_)
 
 Create a Graph from an iterable of triples.
 
@@ -279,8 +260,7 @@ Example:
 
 Properties:
 
-* <a name="Graph-top" href="#Graph-top">▣</a>
-  penman.Graph.**top**
+* <a name="Graph-top" href="#Graph-top">penman.Graph.**top**</a>
 
   The top variable.
 
@@ -290,33 +270,33 @@ Properties:
 
 Methods:
 
-* <a name="Graph-variables" href="#Graph-variables">▣</a>
-  penman.Graph.**variables**()
+* <a name="Graph-variables" href="#Graph-variables">penman.Graph.**variables**</a>
+  ()
 
   Return the list of variables (nonterminal node identifiers).
 
-* <a name="Graph-triples" href="#Graph-triples">▣</a>
-  penman.Graph.**triples**(_source=None, relation=None, target=None_)
-  
+* <a name="Graph-triples" href="#Graph-triples">penman.Graph.**triples**</a>
+  (_source=None, relation=None, target=None_)
+
   Return triples filtered by their *source*, *relation*, or *target*.
 
-* <a name="Graph-edges" href="#Graph-edges">▣</a>
-  penman.Graph.**edges**(_source=None, relation=None, target=None_)
-  
+* <a name="Graph-edges" href="#Graph-edges">penman.Graph.**edges**</a>
+  (_source=None, relation=None, target=None_)
+
   Return edges filtered by their *source*, *relation*, or *target*.
-  
+
   Edges don't include terminal triples (node types or attributes).
 
-* <a name="Graph-attributes" href="#Graph-attributes">▣</a>
-  penman.Graph.**attributes**(_source=None, relation=None, target=None_)
-  
+* <a name="Graph-attributes" href="#Graph-attributes">penman.Graph.**attributes**</a>
+  (_source=None, relation=None, target=None_)
+
   Return attributes filtered by their *source*, *relation*, or *target*.
-  
+
   Attributes don't include triples where the target is a nonterminal.
 
-* <a name="Graph-reentrancies" href="#Graph-reentrancies">▣</a>
-  penman.Graph.**reentrancies**()
-  
+* <a name="Graph-reentrancies" href="#Graph-reentrancies">penman.Graph.**reentrancies**</a>
+  ()
+
   Return a mapping of variables to their re-entrancy count.
 
   A re-entrancy is when more than one edge selects a node as its target.
@@ -331,8 +311,8 @@ Methods:
 
 A parameterized encoder/decoder for graphs in PENMAN notation.
 
-<a name="PENMANCodec" href="#PENMANCodec">▣</a>
-penman.**PENMANCodec**(_indent=True, relation_sort=original_order_)
+<a name="PENMANCodec" href="#PENMANCodec">penman.**PENMANCodec**</a>
+(_indent=True, relation_sort=original_order_)
 
 Initialize a new codec.
 
@@ -345,22 +325,22 @@ Arguments:
 
 Methods:
 
-* <a name="PENMANCodec-decode" href="#PENMANCodec-decode">▣</a>
-  penman.PENMANCodec.**decode**(_s, triples=False_)
-  
+* <a name="PENMANCodec-decode" href="#PENMANCodec-decode">penman.PENMANCodec.**decode**</a>
+  (_s, triples=False_)
+
   Deserialize PENMAN-notation string *s* into its Graph object.
-  
+
   Arguments:
-  
+
   * `s` - a string containing a single PENMAN-serialized graph
   * `triples` - if True, treat *s* as a conjunction of logical triples
-  
+
   Returns:
-  
+
   * the Graph object described by *s*
-  
+
   Example:
-  
+
   ```python
   >>> codec = PENMANCodec()
   >>> codec.decode('(b / bark :ARG1 (d / dog))')
@@ -371,22 +351,22 @@ Methods:
   <Graph object (top=b) at ...>
   ```
 
-* <a name="PENMANCodec-iterdecode" href="#PENMANCodec-iterdecode">▣</a>
-  penman.PENMANCodec.**iterdecode**(_s, triples=False_)
-  
+* <a name="PENMANCodec-iterdecode" href="#PENMANCodec-iterdecode">penman.PENMANCodec.**iterdecode**</a>
+  (_s, triples=False_)
+
   Deserialize PENMAN-notation string *s* into its Graph objects.
-  
+
   Arguments:
-  
+
   * `s` - a string containing zero or more PENMAN-serialized graphs
   * `triples` - if True, treat *s* as a conjunction of logical triples
-  
+
   Yields:
-  
+
   * valid Graph objects described by *s*
-  
+
   Example:
-  
+
   ```python
   >>> codec = PENMANCodec()
   >>> list(codec.iterdecode('(h / hello)(g / goodbye)'))
@@ -398,24 +378,24 @@ Methods:
   [<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
   ```
 
-* <a name="PENMANCodec-encode" href="#PENMANCodec-encode">▣</a>
-  penman.PENMANCodec.**encode**(_g, top=None, triples=False_)
-  
+* <a name="PENMANCodec-encode" href="#PENMANCodec-encode">penman.PENMANCodec.**encode**</a>
+  (_g, top=None, triples=False_)
+
   Serialize the graph *g* from *top* to PENMAN notation.
-  
+
   Arguments:
-  
+
   * `g` - the Graph object
   * `top` - the node identifier for the top of the serialized
             graph; if unset, the original top of *g* is used
   * `triples` - if True, serialize as a conjunction of logical triples
-  
+
   Returns:
-  
+
   * the PENMAN-serialized string of the Graph *g*
-  
+
   Example:
-  
+
   ```python
   >>> codec = PENMANCodec()
   >>> codec.encode(Graph([('h', 'instance', 'hi')]))
@@ -425,18 +405,18 @@ Methods:
   instance(h, hi)
   ```
 
-* <a name="PENMANCodec-is_relation_inverted" href="#PENMANCodec-is_relation_inverted">▣</a>
-  penman.PENMANCodec.**is_relation_inverted**(_relation_)
+* <a name="PENMANCodec-is_relation_inverted" href="#PENMANCodec-is_relation_inverted">penman.PENMANCodec.**is_relation_inverted**</a>
+  (_relation_)
 
   Return True if *relation* is inverted.
 
-* <a name="PENMANCodec-invert_relation" href="#PENMANCodec-invert_relation">▣</a>
-  penman.PENMANCodec.**invert_relation**(_relation_)
+* <a name="PENMANCodec-invert_relation" href="#PENMANCodec-invert_relation">penman.PENMANCodec.**invert_relation**</a>
+  (_relation_)
 
   Invert or deinvert *relation*.
 
-* <a name="PENMANCodec-handle_triple" href="#PENMANCodec-handle_triple">▣</a>
-  penman.PENMANCodec.**handle_triple**(_lhs, relation, rhs_)
+* <a name="PENMANCodec-handle_triple" href="#PENMANCodec-handle_triple">penman.PENMANCodec.**handle_triple**</a>
+  (_lhs, relation, rhs_)
 
   Process triples before they are added to the graph.
 
@@ -452,18 +432,18 @@ Methods:
      types (e.g. float, int)
 
   Arguments:
-  
+
   * `lhs` - the left hand side of an observed triple
   * `relation` - the triple relation (possibly inverted)
   * `rhs` - the right hand side of an observed triple
-  
+
   Returns:
-  
+
   * The processed (source, relation, target) triple. By default,
     it is returned as a Triple object.
 
-* <a name="PENMANCodec-triples_to_graph" href="#PENMANCodec-triples_to_graph">▣</a>
-  penman.PENMANCodec.**triples_to_graph**(_triples, top=None_)
+* <a name="PENMANCodec-triples_to_graph" href="#PENMANCodec-triples_to_graph">penman.PENMANCodec.**triples_to_graph**</a>
+  (_triples, top=None_)
 
   Create a Graph from *triples* considering codec configuration.
 
@@ -475,14 +455,14 @@ Methods:
   (via handle_triple()).
 
   Arguments:
- 
+
   * `triples` - an iterable of (lhs, relation, rhs) triples
   * `top` - node identifier of the top node
 
   Returns:
 
   * a Graph object
-  
+
 ## AMRCodec
 
 An AMR-specific subclass of [PENMANCodec](#PENMANCodec).
@@ -492,8 +472,8 @@ AMR-style graphs are allowed. It also redefines how certain relations
 get inverted (e.g. that the inverse of `:domain` is `:mod`, and
 vice-versa).
 
-<a name="AMRCodec" href="#AMRCodec">▣</a>
-penman.**AMRCodec**(_indent=True, relation_sort=original_order_)
+<a name="AMRCodec" href="#AMRCodec">penman.**AMRCodec**</a>
+(_indent=True, relation_sort=original_order_)
 
 Instantiation options and methods are the same.
 
