@@ -21,9 +21,10 @@ def x1():
             ('x1', 'CARG', '"Abrams"'),
             ('_1', 'RSTR', 'x1'),
             ('e2', 'ARG2', 'e3'),
-            ('e3', 'ARG1', 'x1'),            
+            ('e3', 'ARG1', 'x1'),
         ]
     )
+
 
 @pytest.fixture
 def x2():
@@ -114,7 +115,7 @@ def test_decode(x1, x2):
     assert g.triples() == [
         ('a', 'instance', None),
         ('a', 'ARG', 'symbol')
-    ]    
+    ]
 
     # float value
     g = decode('(a :ARG -1.0e-2)')
@@ -195,9 +196,11 @@ def test_decode(x1, x2):
         ('a', 'test', 'alpha')
     ]
     assert g.top == 'a'
-    
+
+
 def test_decode_triples():
     pass
+
 
 def test_iterdecode():
     codec = penman.PENMANCodec()
@@ -210,6 +213,7 @@ def test_iterdecode():
     # uncomment below if not reraising exceptions in iterdecode
     # assert len(list(codec.iterdecode('(h / hello'))) == 0
     # assert len(list(codec.iterdecode('(h / hello)(g / goodbye'))) == 1
+
 
 def test_encode(x1, x2):
     encode = penman.encode
@@ -394,6 +398,7 @@ def test_encode_with_parameters():
         '               :ARG1-of (a / aaa)))'
     )
 
+
 class TestGraph(object):
     def test_init(self):
         # empty graph
@@ -450,7 +455,7 @@ class TestGraph(object):
             ('x1', 'CARG', '"Abrams"'),
             ('_1', 'RSTR', 'x1'),
             ('e2', 'ARG2', 'e3'),
-            ('e3', 'ARG1', 'x1')        
+            ('e3', 'ARG1', 'x1')
         ]
         assert g.triples(source='e2') == [
             ('e2', 'instance', '_try_v_1'),
@@ -460,7 +465,7 @@ class TestGraph(object):
         assert g.triples(target='x1') == [
             ('e2', 'ARG1', 'x1'),
             ('_1', 'RSTR', 'x1'),
-            ('e3', 'ARG1', 'x1')        
+            ('e3', 'ARG1', 'x1')
         ]
         assert g.triples(relation='instance') == [
             ('e2', 'instance', '_try_v_1'),
@@ -488,11 +493,11 @@ class TestGraph(object):
             ('e2', 'ARG1', 'x1'),
             ('_1', 'RSTR', 'x1'),
             ('e2', 'ARG2', 'e3'),
-            ('e3', 'ARG1', 'x1')        
+            ('e3', 'ARG1', 'x1')
         ]
         assert g.edges(source='e2') == [
             ('e2', 'ARG1', 'x1'),
-            ('e2', 'ARG2', 'e3')        
+            ('e2', 'ARG2', 'e3')
         ]
         assert g.edges(source='e3') == [
             ('e3', 'ARG1', 'x1')
@@ -564,6 +569,7 @@ def test_loads():
         '(b / bbb)\n'
     )) == 2
 
+
 def test_loads_triples():
     assert penman.loads('', triples=True) == []
     assert len(penman.loads('instance(a, alpha)', triples=True)) == 1
@@ -618,6 +624,7 @@ def test_dumps():
         penman.Graph([('b', 'instance', None)]),
     ]) == '(a)\n\n(b)'
 
+
 def test_dumps_triples():
     assert penman.dumps(
         [penman.Graph([('a', 'instance', None)])], triples=True
@@ -653,6 +660,7 @@ def test_dumps_triples():
         [penman.Graph([('a', 'ARG', 'b')])],
         triples=True, cls=TestCodec
     ) == 'top(TOP, a) ^\nARG(a, b)'
+
 
 def test_AMRCodec():
     c = penman.AMRCodec()
@@ -699,7 +707,6 @@ def test_AMRCodec():
         '   :mod (w / white))'
     )
 
-
     assert c.decode('(g / go)').triples() == [('g', 'instance', 'go')]
     # example adapted from https://github.com/goodmami/penman/issues/17
     assert c.decode('(g / go :null_edge (x20 / 876-9))').triples() == [
@@ -718,3 +725,29 @@ def test_AMRCodec():
         c.decode('(1 / one)')  # bad variable form
     with pytest.raises(penman.DecodeError):
         c.decode('(g / go : (b / boy))')  # anonymous relation
+
+    # "ISI-style" alignments
+    # ::tok The cat was chased by the dog .
+    g = c.decode(
+        '(c / chase-01~e.3 :ARG0~e.4 (d / dog~e.6) :ARG1 (c2 / cat~e.1))'
+    )
+    assert g.triples() == [
+        ('c', 'instance', 'chase-01'),
+        ('d', 'instance', 'dog'),
+        ('c2', 'instance', 'cat'),
+        ('c', 'ARG0', 'd'),
+        ('c', 'ARG1', 'c2')
+    ]
+    assert g.alignments() == {
+        ('c', 'instance', 'chase-01'): [3],
+        ('d', 'instance', 'dog'): [6],
+        ('c2', 'instance', 'cat'): [1]
+    }
+    assert g.role_alignments() == {
+        ('c', 'ARG0', 'd'): [4]
+    }
+    assert c.encode(g) == (
+        '(c / chase-01~e.3\n'
+        '   :ARG0~e.4 (d / dog~e.6)\n'
+        '   :ARG1 (c2 / cat~e.1))'
+    )

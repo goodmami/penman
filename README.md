@@ -97,19 +97,20 @@ whitespace is not explicitly included; assume all nonterminals can be
 surrounded by `/\s+/`):
 
 ```ruby
-Start    <- Node
-Node     <- '(' NodeData ')'
-NodeData <- Variable ('/' NodeType)? Edge*
-NodeType <- Atom
-Variable <- Atom
-Edge     <- Relation Value
-Relation <- /:[^\s(),]*/
-Value    <- Node | Atom
-Atom     <- String | Float | Integer | Symbol
-String   <- /"[^"\\]*(?:\\.[^"\\]*)*"/
-Float    <- /[-+]?(((\d+\.\d*|\.\d+)([eE][-+]?\d+)?)|\d+[eE][-+]?\d+)/
-Integer  <- /[-+]?\d+/
-Symbol   <- /[^\s()\/,]+/
+Start     <- Node
+Node      <- '(' NodeData ')'
+NodeData  <- Variable ('/' NodeType)? Edge*
+NodeType  <- Atom Alignment?
+Variable  <- Atom
+Edge      <- Relation Alignment? Value
+Relation  <- /:[^\s(),]*/
+Value     <- Node | Atom Alignment?
+Atom      <- String | Float | Integer | Symbol
+String    <- /"[^"\\]*(?:\\.[^"\\]*)*"/
+Float     <- /[-+]?(((\d+\.\d*|\.\d+)([eE][-+]?\d+)?)|\d+[eE][-+]?\d+)/
+Integer   <- /[-+]?\d+/
+Symbol    <- /[^\s()\/,]+/
+Alignment <- /~([a-zA-Z]\.?)?\d+(,\d+)*/
 ```
 
 \* *Note: I use `|` above for ordered-choice instead of `/` so that `/`

@@ -52,6 +52,8 @@ Options:
 #    - Graph.edges(source=None, relation=None, target=None)
 #    - Graph.attributes(source=None, relation=None, target=None)
 #    - Graph.reentrancies()
+#    - Graph.alignments()
+#    - Graph.role_alignments()
 #
 # Module Functions:
 #  * decode(s, cls=PENMANCodec, **kwargs)
@@ -63,6 +65,7 @@ Options:
 #  * original_order(triples)
 #  * out_first_order(triples)
 #  * alphanum_order(triples)
+
 
 import re
 from collections import namedtuple, defaultdict
@@ -118,17 +121,18 @@ class PENMANCodec(object):
     TOP_REL = 'top'
     NODE_ENTER_RE = re.compile(r'\s*(\()\s*')
     NODE_EXIT_RE = re.compile(r'\s*(\))\s*')
-    RELATION_RE = re.compile(r'(:[^\s(),]*)\s*')
+    RELATION_RE = re.compile(r'(:[^\s(),~]*)\s*')
     INT_RE = re.compile(r'[+-]?\d+')
     FLOAT_RE = re.compile(
         r'[-+]?(((\d+\.\d*|\.\d+)([eE][-+]?\d+)?)|\d+[eE][-+]?\d+)'
     )
-    ATOM_RE = re.compile(r'([^\s()\/,]+)')
+    ATOM_RE = re.compile(r'([^\s()\/,~]+)')
     STRING_RE = re.compile(r'("[^"\\]*(?:\\.[^"\\]*)*")')
     VAR_RE = re.compile('({}|{})'.format(STRING_RE.pattern, ATOM_RE.pattern))
     NODETYPE_RE = VAR_RE  # default; allow strings, numbers, and symbols
     COMMA_RE = re.compile(r'\s*,\s*')
     SPACING_RE = re.compile(r'\s*')
+    ALIGNMENT_RE = re.compile(r'~([a-zA-Z]\.?)?(\d+(?:,\d+)*)\s*')
 
     def __init__(self, indent=True, relation_sort=original_order):
         """
@@ -169,13 +173,18 @@ class PENMANCodec(object):
             if triples:
                 span, data = self._decode_triple_conjunction(s)
             else:
-                span, data = self._decode_penman_node(s)
+                span, data = self._decode_penman_node(s, 0, [1])
         except IndexError:
             raise DecodeError(
                 'Unexpected end of string.', string=s, pos=len(s)
             )
-        top, nodes, edges = data
-        return self.triples_to_graph(nodes + edges, top=top)
+        top, nodes, edges, alignments, role_alignments = data
+        return self.triples_to_graph(
+            nodes + edges,
+            top=top,
+            alignments=alignments,
+            role_alignments=role_alignments
+        )
 
     def iterdecode(self, s, triples=False):
         """
@@ -209,15 +218,20 @@ class PENMANCodec(object):
                             s, pos=pos
                         )
                     else:
-                        span, data = self._decode_penman_node(s, pos=pos)
+                        span, data = self._decode_penman_node(s, pos, [1])
                 except (IndexError, DecodeError):
                     # don't re-raise below for more robust parsing, but
                     # for now, raising helps with debugging bad input
                     raise
                     pos += 1
                 else:
-                    top, nodes, edges = data
-                    yield self.triples_to_graph(nodes + edges, top=top)
+                    top, nodes, edges, alignments, role_alignments = data
+                    yield self.triples_to_graph(
+                        nodes + edges,
+                        top=top,
+                        alignments=alignments,
+                        role_alignments=role_alignments
+                    )
                     pos = span[1]
             else:
                 pos += 1
@@ -303,7 +317,8 @@ class PENMANCodec(object):
 
         return Triple(source, relation, target, inverted)
 
-    def triples_to_graph(self, triples, top=None):
+    def triples_to_graph(self, triples, top=None,
+                         alignments=None, role_alignments=None):
         """
         Create a Graph from *triples* considering codec configuration.
 
@@ -317,22 +332,37 @@ class PENMANCodec(object):
         Args:
             triples: an iterable of (lhs, relation, rhs) triples
             top: node identifier of the top node
+            alignments (dict): triples to node alignments
+            role_alignments (dict): triples to relation alignments
         Returns:
             a Graph object
         """
+        if alignments is None: alignments = {}
+        if role_alignments is None: role_alignments = {}
         inferred_top = triples[0][0] if triples else None
-        ts = []
+        handled_triples, alns, ralns = [], {}, {}
         for triple in triples:
             if triple[0] == self.TOP_VAR and triple[1] == self.TOP_REL:
                 inferred_top = triple[2]
             else:
-                ts.append(self.handle_triple(*triple))
+                handled_triple = self.handle_triple(*triple)
+                # reset alignments, if any, to the handled triple
+                if triple in alignments:
+                    alns[handled_triple] = alignments[triple]
+                if triple in role_alignments:
+                    ralns[handled_triple] = role_alignments[triple]
+                handled_triples.append(handled_triple)
         top = self.handle_triple(self.TOP_VAR, self.TOP_REL, top).target
-        return Graph(ts, top=top or inferred_top)
-
+        return Graph(
+            handled_triples,
+            top=top or inferred_top,
+            alignments=alns,
+            role_alignments=ralns
+        )
 
     def _decode_triple_conjunction(self, s, pos=0):
         top, nodes, edges = None, [], []
+        alignments, role_alignments = [], []
         start = None
         while True:
             m = _regex(self.ATOM_RE, s, pos, "a relation/predicate")
@@ -342,7 +372,7 @@ class PENMANCodec(object):
 
             m = _regex(self.NODE_ENTER_RE, s, pos, '"("')
             pos = m.end(0)
-            
+
             m = _regex(self.VAR_RE, s, pos, "a variable (node identifier)")
             pos, var = m.end(0), m.group(1).strip()
 
@@ -357,27 +387,27 @@ class PENMANCodec(object):
                 else:
                     m = _regex(self.ATOM_RE, s, pos, 'a float/int/symbol')
             pos, tgt = m.end(0), m.group(1)
-            
+
             if var == self.TOP_VAR and rel == self.TOP_REL:
                 top = tgt
             elif rel == self.TYPE_REL:
                 nodes.append((var, rel, tgt))
             else:
                 edges.append((var, rel, tgt))
-            
+
             m = _regex(self.NODE_EXIT_RE, s, pos, '")"')
             pos = m.end(1)
-            
+
             if m.end(0) < len(s) and s[m.end(0)] == '^':
                 pos = m.end(0) + 1
             else:
                 break
         if top is None and nodes:
             top = nodes[0][0]
-        return (start, pos), (top, nodes, edges)
+        return (start, pos), (top, nodes, edges, alignments, role_alignments)
 
-    def _decode_penman_node(self, s, pos=0):
-        nodes, edges = [], []
+    def _decode_penman_node(self, s, pos, path):
+        nodes, edges, alignments, role_alignments = [], [], {}, {}
 
         strlen = len(s)
         m = _regex(self.NODE_ENTER_RE, s, pos, '"("')
@@ -385,29 +415,49 @@ class PENMANCodec(object):
 
         m = _regex(self.VAR_RE, s, pos, "a variable (node identifier)")
         pos, var = m.end(0), m.group(1).strip()
+        pos = self.SPACING_RE.match(s, pos=pos).end()
 
-        nodetype = None
+        # node type and node alignments
+        if s[pos] == '/':
+            pos = self.SPACING_RE.match(s, pos=pos+1).end()
+            m = _regex(self.NODETYPE_RE, s, pos, 'a node type')
+            pos, nodetype = m.end(0), m.group(1)
+            nodetype_triple = (var, self.TYPE_REL, nodetype)
+
+            m = self.ALIGNMENT_RE.match(s, pos=pos)
+            if m is not None:
+                pos, indices = m.end(0), m.group(2).split(',')
+                alignment = list(map(int, indices))
+                alignments[nodetype_triple] = alignment
+        else:
+            nodetype_triple = (var, self.TYPE_REL, None)
+        # append this even if there is no node type
+        nodes.append(nodetype_triple)
+
         while pos < strlen and s[pos] != ')':
-
-            # node type
-            if s[pos] == '/':
-                pos = self.SPACING_RE.match(s, pos=pos+1).end()
-                m = _regex(self.NODETYPE_RE, s, pos, 'a node type')
-                pos, nodetype = m.end(0), m.group(1)
-
             # relation
-            elif s[pos] == ':':
+            if s[pos] == ':':
+                role_alignment = None
                 m = _regex(self.RELATION_RE, s, pos, 'a relation')
                 pos, rel = m.end(0), m.group(1)
 
+                # relation alignment
+                m = self.ALIGNMENT_RE.match(s, pos)
+                if m is not None:
+                    pos, indices = m.end(0), m.group(2).split(',')
+                    role_alignment = list(map(int, indices))
+
                 # node value
                 if s[pos] == '(':
-                    span, data = self._decode_penman_node(s, pos=pos)
+                    span, data = self._decode_penman_node(s, pos, path)
                     pos = span[1]
-                    subtop, subnodes, subedges = data
+                    subtop, subnodes, subedges, subalns, subralns = data
                     nodes.extend(subnodes)
-                    edges.append((var, rel, subtop))
+                    local_edge = (var, rel, subtop)
+                    edges.append(local_edge)
                     edges.extend(subedges)
+                    alignments.update(subalns)
+                    role_alignments.update(subralns)
 
                 # string or other atom value
                 else:
@@ -417,21 +467,29 @@ class PENMANCodec(object):
                     else:
                         m = _regex(self.ATOM_RE, s, pos, 'a float/int/symbol')
                         pos, value = m.end(0), m.group(1)
-                    edges.append((var, rel, value))
+                    local_edge = (var, rel, value)
+                    edges.append(local_edge)
+
+                    m = self.ALIGNMENT_RE.match(s, pos)
+                    if m is not None:
+                        pos, indices = m.end(0), m.group(2).split(',')
+                        alignment = list(map(int, indices))
+                        alignments[local_edge] = alignment
+
+                if role_alignment is not None:
+                    role_alignments[local_edge] = role_alignment
 
             elif s[pos].isspace():
                 pos += 1
 
             # error
             else:
-                raise DecodeError('Expected ":" or "/"', string=s, pos=pos)
+                raise DecodeError('Expected ":"', string=s, pos=pos)
 
         m = _regex(self.NODE_EXIT_RE, s, pos, '")"')
         pos = m.end(1)
 
-        nodes = [(var, self.TYPE_REL, nodetype)] + nodes
-
-        return (start, pos), (var, nodes, edges)
+        return (start, pos), (var, nodes, edges, alignments, role_alignments)
 
     def _encode_penman(self, g, top=None):
         """
@@ -498,9 +556,12 @@ class PENMANCodec(object):
             if tgt is not None:
                 _explore_preferred(tgt)
 
-        return self._layout(p, top, 0, set())
+        return self._layout(
+            p, top, 0, set(),
+            g.alignments(), g.role_alignments()
+        )
 
-    def _layout(self, g, src, offset, seen):
+    def _layout(self, g, src, offset, seen, alns, ralns):
         indent = self.indent
         if src not in g or len(g.get(src, [])) == 0 or src in seen:
             return src
@@ -515,8 +576,9 @@ class PENMANCodec(object):
         for t in outedges:
             if t.relation == self.TYPE_REL:
                 if t.target is not None:
+                    aln = _get_alignment(t, alns)
                     # node types always come first
-                    branches = ['/ {}'.format(t.target)] + branches
+                    branches = ['/ {}{}'.format(t.target, aln)] + branches
             else:
                 if t.inverted:
                     tgt = t.source
@@ -525,8 +587,14 @@ class PENMANCodec(object):
                     tgt = t.target
                     rel = t.relation or ''
                 inner_offset = (len(rel) + 2) if indent is True else 0
-                branch = self._layout(g, tgt, offset + inner_offset, seen)
-                branches.append(':{} {}'.format(rel, branch))
+                branch = self._layout(
+                    g, tgt, offset + inner_offset, seen, alns, ralns
+                )
+                aln = _get_alignment(t, alns)
+                raln = _get_alignment(t, ralns)
+                branches.append(
+                    ':{}{} {}{}'.format(rel, raln, branch, aln)
+                )
         if branches:
             head += ' '
         delim = ' ' if (indent is None or indent is False) else '\n'
@@ -557,7 +625,7 @@ class AMRCodec(PENMANCodec):
     NODETYPE_RE = PENMANCodec.ATOM_RE
     VAR_RE = re.compile(r'([a-z]+\d*)')
     # only non-anonymous relations
-    RELATION_RE = re.compile(r'(:[^\s(),]+)\s*')
+    RELATION_RE = re.compile(r'(:[^\s(),~]+)\s*')
 
     _inversions = {
         TYPE_REL: None,  # don't allow inverted types
@@ -616,7 +684,8 @@ class Graph(object):
     Graph.attributes() methods.
     """
 
-    def __init__(self, data=None, top=None):
+    def __init__(self, data=None, top=None,
+                 alignments=None, role_alignments=None):
         """
         Create a Graph from an iterable of triples.
 
@@ -624,6 +693,7 @@ class Graph(object):
             data: an iterable of triples (Triple objects or 3-tuples)
             top: the node identifier of the top node; if unspecified,
                 the source of the first triple is used
+            alignments: an iterable of ISI
         Example:
 
             >>> Graph([
@@ -649,6 +719,11 @@ class Graph(object):
             if top is None:
                 top = data[0][0]
             self.top = top
+
+        if alignments is None: alignments = {}
+        if role_alignments is None: role_alignments = {}
+        self._alignments = alignments
+        self._role_alignments = role_alignments
 
     def __repr__(self):
         return '<{} object (top={}) at {}>'.format(
@@ -738,6 +813,18 @@ class Graph(object):
             entrancies[t.target] += 1
         return dict((v, cnt - 1) for v, cnt in entrancies.items() if cnt >= 2)
 
+    def alignments(self):
+        """
+        Return the surface alignments for nodes and attributes.
+        """
+        return dict(self._alignments)
+
+    def role_alignments(self):
+        """
+        Return the surface alignments for relations.
+        """
+        return dict(self._role_alignments)
+
 
 def _regex(x, s, pos, msg):
     m = x.match(s, pos=pos)
@@ -756,6 +843,14 @@ def _default_cast(x):
         elif re.match(r'-?\d+$', x):
             x = int(x)
     return x
+
+
+def _get_alignment(t, alndict, prefix='e.'):
+    if t in alndict:
+        aln = '~{}{}'.format(prefix, ','.join(map(str, alndict[t])))
+    else:
+        aln = ''
+    return aln
 
 
 class PenmanError(Exception):

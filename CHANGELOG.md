@@ -3,11 +3,21 @@
 ## [Unreleased][unreleased]
 
 ### Added
+
+* `Graph()` now has `alignments` and `role_alignments` parameters
+* `Graph.alignments()`
+* `Graph.role_alignments()`
+* `PENMANCodec.ALIGNMENT_RE` pattern
+* `PENMANCodec.triples_to_graph()` now has `alignments` and
+  `role_alignments` parameters
+
 ### Removed
 ### Fixed
 ### Changed
 
 * Altered the style of the API.md documentation
+* `AMRCodec.RELATION_RE`, `PENMANCodec.RELATION_RE`, and
+  `PENMANCodec.ATOM_RE` no longer accept `~` characters
 
 ### Deprecated
 
