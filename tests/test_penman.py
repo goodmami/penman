@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import pytest
 
@@ -167,7 +168,7 @@ def test_decode(x1, x2):
         ('g', 'null_edge', 'x20')
     ]
 
-    # fuller example
+    # fuller examples
     assert decode(x1[0]).triples() == x1[1]
     assert decode(x2[0]).triples() == x2[1]
 
@@ -396,6 +397,22 @@ def test_encode_with_parameters():
         '(c / ccc\n'
         '   :ARG1-of (b / bbb\n'
         '               :ARG1-of (a / aaa)))'
+    )
+    g = penman.decode('(a / aaa~e.1 :ARG0-of (b / bbb~e.2))')
+    assert encode(g, top='b') == (
+        '(b / bbb~e.2\n'
+        '   :ARG0 (a / aaa~e.1))'
+    )
+    g = penman.decode(
+        '(a / aaa~e.1\n'
+        '   :ARG0 (b / bbb~e.2\n'
+        '            :ARG0 c~e.3)\n'
+        '   :ARG1 (c / ccc~e.4))')
+    assert encode(g, top='c') == (
+        '(c / ccc~e.4\n'
+        '   :ARG0-of (b / bbb~e.2)\n'
+        '   :ARG1-of (a / aaa~e.1\n'
+        '               :ARG0 b))'
     )
 
 
@@ -637,17 +654,17 @@ def test_dumps_triples():
         triples=True
     ) == 'instance(a, None) ^\nARG(a, b)'
 
-    gs = penman.dumps(
+    assert penman.dumps(
         [penman.Graph([(1, 'instance', 'alpha')])],
         triples=True
     ) == 'instance(1, alpha)'
 
-    gs = penman.dumps(
+    assert penman.dumps(
         [penman.Graph([(1.1, 'instance', 'alpha')])],
         triples=True
     ) == 'instance(1.1, alpha)'
 
-    gs = penman.dumps(
+    assert penman.dumps(
         [penman.Graph([('"a string"', 'instance', 'alpha')])],
         triples=True
     ) == 'instance("a string", alpha)'

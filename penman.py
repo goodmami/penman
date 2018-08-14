@@ -52,7 +52,10 @@ from __future__ import print_function
 
 
 import re
-from collections import namedtuple, defaultdict
+from collections import (
+    namedtuple,
+    defaultdict,
+)
 try:
     basestring
 except NameError:
@@ -157,7 +160,7 @@ class PENMANCodec(object):
             if triples:
                 span, data = self._decode_triple_conjunction(s)
             else:
-                span, data = self._decode_penman_node(s, 0, [1])
+                span, data = self._decode_penman_node(s, 0)
         except IndexError:
             raise DecodeError(
                 'Unexpected end of string.', string=s, pos=len(s)
@@ -202,7 +205,7 @@ class PENMANCodec(object):
                             s, pos=pos
                         )
                     else:
-                        span, data = self._decode_penman_node(s, pos, [1])
+                        span, data = self._decode_penman_node(s, pos)
                 except (IndexError, DecodeError):
                     # don't re-raise below for more robust parsing, but
                     # for now, raising helps with debugging bad input
@@ -336,6 +339,8 @@ class PENMANCodec(object):
                 if triple in role_alignments:
                     ralns[handled_triple] = role_alignments[triple]
                 handled_triples.append(handled_triple)
+        # Using handle_triple() on top is used for type casting (e.g.,
+        # if node identifiers are integers)
         top = self.handle_triple(self.TOP_VAR, self.TOP_REL, top).target
         return Graph(
             handled_triples,
@@ -390,7 +395,7 @@ class PENMANCodec(object):
             top = nodes[0][0]
         return (start, pos), (top, nodes, edges, alignments, role_alignments)
 
-    def _decode_penman_node(self, s, pos, path):
+    def _decode_penman_node(self, s, pos):
         nodes, edges, alignments, role_alignments = [], [], {}, {}
 
         strlen = len(s)
@@ -433,7 +438,7 @@ class PENMANCodec(object):
 
                 # node value
                 if s[pos] == '(':
-                    span, data = self._decode_penman_node(s, pos, path)
+                    span, data = self._decode_penman_node(s, pos)
                     pos = span[1]
                     subtop, subnodes, subedges, subalns, subralns = data
                     nodes.extend(subnodes)
@@ -513,6 +518,8 @@ class PENMANCodec(object):
             src, tgt = (t[2], t[0]) if t.inverted else (t[0], t[2])
             p[src].append(t)
             remaining.remove(t)
+            # check for TYPE_REL is in case '/' is specified as
+            # inverted (e.g., 'instance-of')
             if tgt in variables and t.relation != self.TYPE_REL:
                 topolist.append(tgt)
                 return tgt
@@ -543,12 +550,15 @@ class PENMANCodec(object):
         return self._layout(
             p, top, 0, set(),
             g.alignments(), g.role_alignments()
-        )
+        )[0]
 
     def _layout(self, g, src, offset, seen, alns, ralns):
+        """
+        Serialize a pre-structured graph.
+        """
         indent = self.indent
         if src not in g or len(g.get(src, [])) == 0 or src in seen:
-            return src
+            return src, False
         seen.add(src)
         branches = []
         outedges = self.relation_sort(g[src])
@@ -571,10 +581,13 @@ class PENMANCodec(object):
                     tgt = t.target
                     rel = t.relation or ''
                 inner_offset = (len(rel) + 2) if indent is True else 0
-                branch = self._layout(
+                branch, nested = self._layout(
                     g, tgt, offset + inner_offset, seen, alns, ralns
                 )
-                aln = _get_alignment(t, alns)
+                if nested:
+                    aln = ''  # cannot currently have ( ... )~e.1
+                else:
+                    aln = _get_alignment(t, alns)
                 raln = _get_alignment(t, ralns)
                 branches.append(
                     ':{}{} {}{}'.format(rel, raln, branch, aln)
@@ -583,7 +596,7 @@ class PENMANCodec(object):
             head += ' '
         delim = ' ' if (indent is None or indent is False) else '\n'
         tail = (delim + (' ' * offset)).join(branches) + ')'
-        return head + tail
+        return head + tail, True
 
     def _encode_triple_conjunction(self, g, top=None):
         if top is None:
@@ -686,28 +699,27 @@ class Graph(object):
             ...     ('b', 'ARG1', 'd')
             ... ])
         """
-        self._triples = []
-        self._top = None
-
-        if data is None:
-            data = []
-        else:
+        if data is not None:
             data = list(data)  # make list (e.g., if its a generator)
+        if alignments is None: alignments = {}
+        if role_alignments is None: role_alignments = {}
+
+        self._triples = []
+        self._variables = []
+        self._top = None
+        self._alignments = alignments
+        self._role_alignments = role_alignments
 
         if data:
             self._triples.extend(
                 Triple(*t, inverted=getattr(t, 'inverted', None))
                 for t in data
             )
+            self._variables = {v for v, _, _ in self._triples}
             # implicit top: source of first triple
             if top is None:
                 top = data[0][0]
             self.top = top
-
-        if alignments is None: alignments = {}
-        if role_alignments is None: role_alignments = {}
-        self._alignments = alignments
-        self._role_alignments = role_alignments
 
     def __repr__(self):
         return '<{} object (top={}) at {}>'.format(
@@ -728,7 +740,7 @@ class Graph(object):
 
     @top.setter
     def top(self, top):
-        if top not in self.variables():
+        if top not in self._variables:
             raise ValueError('top must be a valid node')
         self._top = top  # check if top is valid variable?
 
@@ -736,18 +748,21 @@ class Graph(object):
         """
         Return the list of variables (nonterminal node identifiers).
         """
-        return set(v for v, _, _ in self._triples)
+        return set(self._variables)
 
     def triples(self, source=None, relation=None, target=None):
         """
         Return triples filtered by their *source*, *relation*, or *target*.
         """
-        triplematch = lambda t: (
-            (source is None or source == t.source) and
-            (relation is None or relation == t.relation) and
-            (target is None or target == t.target)
-        )
-        return list(filter(triplematch, self._triples))
+        triples = self._triples
+        if not (source is relation is target is None):
+            triplematch = lambda t: (
+                (source is None or source == t.source) and
+                (relation is None or relation == t.relation) and
+                (target is None or target == t.target)
+            )
+            triples = filter(triplematch, triples)
+        return list(triples)
 
     def edges(self, source=None, relation=None, target=None):
         """
@@ -760,7 +775,7 @@ class Graph(object):
             (relation is None or relation == e.relation) and
             (target is None or target == e.target)
         )
-        variables = self.variables()
+        variables = self._variables
         edges = [t for t in self._triples if t.target in variables]
         return list(filter(edgematch, edges))
 
@@ -775,7 +790,7 @@ class Graph(object):
             (relation is None or relation == a.relation) and
             (target is None or target == a.target)
         )
-        variables = self.variables()
+        variables = self._variables
         attrs = [t for t in self.triples() if t.target not in variables]
         return list(filter(attrmatch, attrs))
 
