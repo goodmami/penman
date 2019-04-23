@@ -1,8 +1,10 @@
 
 | Branch | Status |
 | ------ | ------ |
-| [master](https://github.com/goodmami/penman/tree/master)  | [![Build Status](https://travis-ci.org/goodmami/penman.svg?branch=master)](https://travis-ci.org/goodmami/penman) |
-| [develop](https://github.com/goodmami/penman/tree/develop) | [![Build Status](https://travis-ci.org/goodmami/penman.svg?branch=develop)](https://travis-ci.org/goodmami/penman) |
+
+[![PyPI Version](https://img.shields.io/pypi/v/penman.svg)](https://pypi.org/project/Penman/)
+![Python Support](https://img.shields.io/pypi/pyversions/penman.svg)
+[![Build Status](https://travis-ci.org/goodmami/penman.svg?branch=develop)](https://travis-ci.org/goodmami/penman) |
 
 This module models graphs encoded in the [PENMAN notation](#penman-notation)
 (e.g., [AMR][]). It may be used as a Python library or as a script.
@@ -17,7 +19,7 @@ conjunctions is provided by the [PENMANCodec][] class's `encode()`,
 provide a convenient interface to this class:
 
 * [encode(g)][] - serialized graph *g* and return the string
-* [decode(s)][] - deserialize *s* and return the graph 
+* [decode(s)][] - deserialize *s* and return the graph
 * [load(f)][] - return all graphs in file *f*
 * [loads(s)][] - return all graphs in string *s*
 * [dump(gs, f)][] - serialize all graphs in *gs* and write to file *f*

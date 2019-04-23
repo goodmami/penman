@@ -12,8 +12,6 @@ such as conversion or reserialization, can be done by calling the
 module as a script.
 """
 
-from __future__ import print_function
-
 # API overview:
 #
 # Classes:
@@ -56,12 +54,8 @@ from collections import (
     namedtuple,
     defaultdict,
 )
-try:
-    basestring
-except NameError:
-    basestring = str
 
-__version__ = '0.6.2+dev'
+__version__ = '0.7.0-beta'
 __version_info__ = [
     int(x) if x.isdigit() else x
     for x in re.findall(r'[0-9]+|[^0-9\.-]+', __version__)
@@ -101,6 +95,14 @@ def alphanum_order(triples):
 class PENMANCodec(object):
     """
     A parameterized encoder/decoder for graphs in PENMAN notation.
+
+    Args:
+        indent: if True, adaptively indent; if False or None, don't
+            indent; if a non-negative integer, indent that many
+            spaces per nesting level
+        relation_sort: when encoding, sort the relations on each
+            node according to this function; by default, the
+            original order is maintained
     """
 
     TYPE_REL = 'instance'
@@ -122,17 +124,6 @@ class PENMANCodec(object):
     ALIGNMENT_RE = re.compile(r'~([a-zA-Z]\.?)?(\d+(?:,\d+)*)\s*')
 
     def __init__(self, indent=True, relation_sort=original_order):
-        """
-        Initialize a new codec.
-
-        Args:
-            indent: if True, adaptively indent; if False or None, don't
-                indent; if a non-negative integer, indent that many
-                spaces per nesting level
-            relation_sort: when encoding, sort the relations on each
-                node according to this function; by default, the
-                original order is maintained
-        """
         self.indent = indent
         self.relation_sort = relation_sort
 
@@ -155,6 +146,7 @@ class PENMANCodec(object):
             ...     triples=True
             ... )
             <Graph object (top=b) at ...>
+
         """
         try:
             if triples:
@@ -183,12 +175,11 @@ class PENMANCodec(object):
         Yields:
             valid Graph objects described by *s*
         Example:
-
             >>> codec = PENMANCodec()
             >>> list(codec.iterdecode('(h / hello)(g / goodbye)'))
             [<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
             >>> list(codec.iterdecode(
-            ...     'instance(h, hello)\n'
+            ...     'instance(h, hello)\\n'
             ...     'instance(g, goodbye)'
             ... ))
             [<Graph object (top=h) at ...>, <Graph object (top=g) at ...>]
@@ -242,6 +233,7 @@ class PENMANCodec(object):
             >>> codec.encode(Graph([('h', 'instance', 'hi')]),
             ...                      triples=True)
             instance(h, hi)
+
         """
         if len(g.triples()) == 0:
             raise EncodeError('Cannot encode empty graph.')
@@ -612,8 +604,32 @@ class PENMANCodec(object):
 
 class AMRCodec(PENMANCodec):
     """
-    An AMR codec for graphs in PENMAN notation.
+    An AMR-specific subclass of [PENMANCodec](#PENMANCodec).
+
+    This subclass redefines some patterns used for decoding so that
+    only AMR-style graphs are allowed. It also redefines how certain
+    relations get inverted (e.g. that the inverse of `:domain` is
+    `:mod`, and vice-versa). Class instantiation options and methods
+    are the same.
+
+    Example:
+        >>> import penman
+        >>> amr = penman.AMRCodec()
+        >>> print(amr.encode(
+        ...     penman.Graph([('s', 'instance', 'small'),
+        ...                   ('s', 'domain', 'm'),
+        ...                   ('m', 'instance', 'marble')])))
+        (s / small
+           :domain (m / marble))
+        >>> print(amr.encode(
+        ...     penman.Graph([('s', 'instance', 'small'),
+        ...                   ('s', 'domain', 'm'),
+        ...                   ('m', 'instance', 'marble')]),
+        ...     top='m'))
+        (m / marble
+           :mod (s / small))
     """
+
     TYPE_REL = 'instance'
     TOP_VAR = None
     TOP_REL = 'top'
@@ -660,11 +676,32 @@ class AMRCodec(PENMANCodec):
 
 
 class Triple(namedtuple('Triple', ('source', 'relation', 'target'))):
-    """Container for Graph edges and node attributes."""
+    """
+    Container for Graph edges and node attributes.
+
+    The final parameter, `inverted`, is optional, and when set it
+    exists as an attribute of the Triple object, but not as part of
+    the 3-tuple data.  It is used to store the intended or original
+    orientation of the triple (i.e. whether it was true or
+    inverted). If unset, preference during serialization is for a true
+    orientation.
+
+    Args:
+        source: the source node of the triple
+        relation: the relation between the source and target
+        target: the target node or attribute
+        inverted: the preferred orientation is inverted if `True`,
+            uninverted if `False`, and no preference if `None`
+    Attributes:
+        source: the source node of the triple
+        relation: the relation between the source and target
+        target: the target node or attribute
+        inverted: the preferred orientation is inverted if `True`,
+            uninverted if `False`, and no preference if `None`
+    """
+
     def __new__(cls, source, relation, target, inverted=None):
-        t = super(Triple, cls).__new__(
-            cls, source, relation, target
-        )
+        t = super().__new__(cls, source, relation, target)
         t.inverted = inverted
         return t
 
@@ -679,26 +716,22 @@ class Graph(object):
     source is a node identifier and the target is a constant. These
     lists can be obtained via the Graph.triples(), Graph.edges(), and
     Graph.attributes() methods.
+
+    Args:
+        data: an iterable of triples (Triple objects or 3-tuples)
+        top: the node identifier of the top node; if unspecified,
+            the source of the first triple is used
+        alignments: an iterable of ISI
+    Example:
+        >>> Graph([
+        ...     ('b', 'instance', 'bark'),
+        ...     ('d', 'instance', 'dog'),
+        ...     ('b', 'ARG1', 'd')
+        ... ])
     """
 
     def __init__(self, data=None, top=None,
                  alignments=None, role_alignments=None):
-        """
-        Create a Graph from an iterable of triples.
-
-        Args:
-            data: an iterable of triples (Triple objects or 3-tuples)
-            top: the node identifier of the top node; if unspecified,
-                the source of the first triple is used
-            alignments: an iterable of ISI
-        Example:
-
-            >>> Graph([
-            ...     ('b', 'instance', 'bark'),
-            ...     ('d', 'instance', 'dog'),
-            ...     ('b', 'ARG1', 'd')
-            ... ])
-        """
         if data is not None:
             data = list(data)  # make list (e.g., if its a generator)
         if alignments is None: alignments = {}
@@ -833,7 +866,7 @@ def _regex(x, s, pos, msg):
 
 
 def _default_cast(x):
-    if isinstance(x, basestring):
+    if isinstance(x, str):
         if x.startswith('"'):
             x = x  # strip quotes?
         elif re.match(
@@ -900,6 +933,7 @@ def decode(s, cls=PENMANCodec, **kwargs):
 
         >>> decode('(b / bark :ARG1 (d / dog))')
         <Graph object (top=b) at ...>
+
     """
     codec = cls(**kwargs)
     return codec.decode(s)
@@ -911,14 +945,13 @@ def encode(g, top=None, cls=PENMANCodec, **kwargs):
 
     Args:
         g: the Graph object
-        top: the node identifier for the top of the serialized graph; if
-            unset, the original top of *g* is used
+        top: the node identifier for the top of the serialized graph;
+            if unset, the original top of *g* is used
         cls: serialization codec class
         kwargs: keyword arguments passed to the constructor of *cls*
     Returns:
         the PENMAN-serialized string of the Graph *g*
     Example:
-
         >>> encode(Graph([('h', 'instance', 'hi')]))
         (h / hi)
     """
