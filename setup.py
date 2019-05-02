@@ -10,6 +10,10 @@ long_description = ''
 with open(os.path.join(base_dir, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+about = {}
+with open(os.path.join(base_dir, "delphin", "__about__.py")) as f:
+    exec(f.read(), about)
+
 # thanks: https://snarky.ca/clarifying-pep-518/
 docs_require = [
     'sphinx',
@@ -22,15 +26,15 @@ tests_require = [
 
 
 setup(
-    name='Penman',
-    version='0.7.0-beta',
-    description='PENMAN notation for graphs (e.g. AMR).',
+    name=about['__title__'],
+    version=about['__version__'],
+    description=about['__summary__'],
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/goodmami/penman',
-    author='Michael Wayne Goodman',
-    author_email='goodman.m.w@gmail.com',
-    license='MIT',
+    url=about['__uri__'],
+    author=about['__author__'],
+    author_email=about['__email__'],
+    license=about['__license__'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -48,17 +52,19 @@ setup(
         'Topic :: Utilities'
     ],
     keywords='nlp semantics amr',
-    py_modules=['penman'],
+    packages=[
+        'penman',
+    ],
     install_requires=[
     ],
     extras_require={
         'docs': docs_require,
         'tests': tests_require,
         'dev': docs_require + tests_require,
+    },
+    entry_points={
+        'console_scripts': [
+            'penman=penman.main:main'
+        ]
     }
-    # entry_points={
-    #     'console_scripts': [
-    #         'penman=...'
-    #     ]
-    # }
 )
