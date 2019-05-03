@@ -11,7 +11,7 @@ with open(os.path.join(base_dir, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 about = {}
-with open(os.path.join(base_dir, "delphin", "__about__.py")) as f:
+with open(os.path.join(base_dir, "penman", "__about__.py")) as f:
     exec(f.read(), about)
 
 # thanks: https://snarky.ca/clarifying-pep-518/

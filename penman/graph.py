@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from operator import itemgetter
 from collections import defaultdict
 
 
 class Triple(tuple):
     """
-    Container for Graph edges and node attributes.
+    A relation between Graph nodes and attributes.
 
     The final parameter, `inverted`, is optional, and when set it
     exists as an attribute of the Triple object, but not as part of
@@ -17,29 +16,40 @@ class Triple(tuple):
 
     Args:
         source: the source node of the triple
-        relation: the relation between the source and target
-        target: the target node or attribute
-        inverted: the preferred orientation is inverted if `True`,
-            uninverted if `False`, and no preference if `None`
-    Attributes:
-        source: the source node of the triple
-        relation: the relation between the source and target
+        role: the relation between the source and target
         target: the target node or attribute
         inverted: the preferred orientation is inverted if `True`,
             uninverted if `False`, and no preference if `None`
     """
 
-    def __new__(cls, source, relation, target, inverted=None):
-        t = super().__new__(cls, (source, relation, target))
+    def __new__(cls, source, role, target, inverted=None):
+        t = super().__new__(cls, (source, role, target))
         t._inverted = inverted
         return t
 
-    source = property(itemgetter(0))
-    relation = property(itemgetter(1))
-    target = property(itemgetter(2))
+    @property
+    def source(self):
+        """The source node of the triple."""
+        return self[0]
+
+    @property
+    def role(self):
+        """The role that relates the source and target."""
+        return self[1]
+
+    @property
+    def relation(self):
+        """Alias for :attr:`role` for backward compatibility."""
+        return self[1]
+
+    @property
+    def target(self):
+        """The target node or attribute."""
+        return self[2]
 
     @property
     def inverted(self):
+        """Return True if the triple is inverted."""
         return self._inverted
 
 
@@ -101,6 +111,7 @@ class Graph(object):
         )
 
     def __str__(self):
+        from penman.codecs import PENMANCodec
         return PENMANCodec().encode(self)  # just use the default encoder
 
     @property
@@ -122,47 +133,47 @@ class Graph(object):
         """
         return set(self._variables)
 
-    def triples(self, source=None, relation=None, target=None):
+    def triples(self, source=None, role=None, target=None):
         """
-        Return triples filtered by their *source*, *relation*, or *target*.
+        Return triples filtered by their *source*, *role*, or *target*.
         """
         triples = self._triples
-        if not (source is relation is target is None):
+        if not (source is role is target is None):
 
             def triplematch(t):
                 return ((source is None or source == t.source)
-                        and (relation is None or relation == t.relation)
+                        and (role is None or role == t.role)
                         and (target is None or target == t.target))
 
             triples = filter(triplematch, triples)
         return list(triples)
 
-    def edges(self, source=None, relation=None, target=None):
+    def edges(self, source=None, role=None, target=None):
         """
-        Return edges filtered by their *source*, *relation*, or *target*.
+        Return edges filtered by their *source*, *role*, or *target*.
 
         Edges don't include terminal triples (node types or attributes).
         """
 
         def edgematch(e):
             return ((source is None or source == e.source)
-                    and (relation is None or relation == e.relation)
+                    and (role is None or role == e.role)
                     and (target is None or target == e.target))
 
         variables = self._variables
         edges = [t for t in self._triples if t.target in variables]
         return list(filter(edgematch, edges))
 
-    def attributes(self, source=None, relation=None, target=None):
+    def attributes(self, source=None, role=None, target=None):
         """
-        Return attributes filtered by their *source*, *relation*, or *target*.
+        Return attributes filtered by their *source*, *role*, or *target*.
 
         Attributes don't include triples where the target is a nonterminal.
         """
 
         def attrmatch(a):
             return ((source is None or source == a.source)
-                    and (relation is None or relation == a.relation)
+                    and (role is None or role == a.role)
                     and (target is None or target == a.target))
 
         variables = self._variables
@@ -195,6 +206,6 @@ class Graph(object):
 
     def role_alignments(self):
         """
-        Return the surface alignments for relations.
+        Return the surface alignments for roles.
         """
         return dict(self._role_alignments)

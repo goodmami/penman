@@ -4,6 +4,7 @@ import pytest
 
 import penman
 
+
 @pytest.fixture
 def x1():
     return (
@@ -484,7 +485,7 @@ class TestGraph(object):
             ('_1', 'RSTR', 'x1'),
             ('e3', 'ARG1', 'x1')
         ]
-        assert g.triples(relation='instance') == [
+        assert g.triples(role='instance') == [
             ('e2', 'instance', '_try_v_1'),
             ('x1', 'instance', 'named'),
             ('_1', 'instance', 'proper_q'),
@@ -522,7 +523,7 @@ class TestGraph(object):
         assert g.edges(target='e3') == [
             ('e2', 'ARG2', 'e3')
         ]
-        assert g.edges(relation='RSTR') == [
+        assert g.edges(role='RSTR') == [
             ('_1', 'RSTR', 'x1')
         ]
         g = penman.Graph(x2[1])
@@ -548,7 +549,7 @@ class TestGraph(object):
         assert g.attributes(target='named') == [
             ('x1', 'instance', 'named'),
         ]
-        assert g.attributes(relation='instance') == [
+        assert g.attributes(role='instance') == [
             ('e2', 'instance', '_try_v_1'),
             ('x1', 'instance', 'named'),
             ('_1', 'instance', 'proper_q'),

@@ -32,12 +32,14 @@ from penman.exceptions import (
 )
 from penman.graph import Triple, Graph
 from penman.model import Model
-from penman.codecs import (
-    PENMANCodec,
-    AMRCodec,
+from penman.layout import (
     original_order,
     out_first_order,
     alphanum_order,
+)
+from penman.codecs import (
+    PENMANCodec,
+    AMRCodec,
 )
 from penman.interface import (
     decode,

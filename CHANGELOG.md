@@ -2,14 +2,23 @@
 
 ## [Unreleased][unreleased]
 
+### Python Versions
+
+* Removed support for Python 2.7
+* Removed support for Python 3.3
+* Removed support for Python 3.4
+* Added support for Python 3.6
+* Added support for Python 3.7
+
 ### Added
 
-* `Graph()` now has `alignments` and `role_alignments` parameters
+* `Graph` now has `alignments` and `role_alignments` parameters
 * `Graph.alignments()`
 * `Graph.role_alignments()`
 * `PENMANCodec.ALIGNMENT_RE` pattern
 * `PENMANCodec.triples_to_graph()` now has `alignments` and
   `role_alignments` parameters
+* `Model` class
 
 ### Removed
 
@@ -18,10 +27,13 @@
 ### Fixed
 ### Changed
 
-* Altered the style of the API.md documentation
+* Restructured project as a package
+* Use Sphinx-generated documentation
 * `AMRCodec.RELATION_RE`, `PENMANCodec.RELATION_RE`, and
   `PENMANCodec.ATOM_RE` no longer accept `~` characters
 * `dump()` now writes iteratively to a stream (#22)
+* Replaced "relation" with "role" when "role" is intended. Note that
+  this breaks backward compatibility in some places!
 
 ### Deprecated
 

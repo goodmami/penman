@@ -2,35 +2,9 @@
 from collections import defaultdict
 import re
 
-
-def original_order(triples):
-    """
-    Return a list of triples in the original order.
-    """
-    return triples
-
-
-def out_first_order(triples):
-    """
-    Sort a list of triples so outward (true) edges appear first.
-    """
-    return sorted(triples, key=lambda t: t.inverted)
-
-
-def alphanum_order(triples):
-    """
-    Sort a list of triples by relation name.
-
-    Embedded integers are sorted numerically, but otherwise the sorting
-    is alphabetic.
-    """
-    return sorted(
-        triples,
-        key=lambda t: [
-            int(t) if t.isdigit() else t
-            for t in re.split(r'([0-9]+)', t.relation or '')
-        ]
-    )
+from penman.exceptions import PenmanError, DecodeError, EncodeError
+from penman.layout import original_order
+from penman.graph import Triple, Graph
 
 
 class PENMANCodec(object):
@@ -51,7 +25,7 @@ class PENMANCodec(object):
     TOP_REL = 'top'
     NODE_ENTER_RE = re.compile(r'\s*(\()\s*')
     NODE_EXIT_RE = re.compile(r'\s*(\))\s*')
-    RELATION_RE = re.compile(r'(:[^\s(),~]*)\s*')
+    ROLE_RE = re.compile(r'(:[^\s(),~]*)\s*')
     INT_RE = re.compile(r'[+-]?\d+')
     FLOAT_RE = re.compile(
         r'[-+]?(((\d+\.\d*|\.\d+)([eE][-+]?\d+)?)|\d+[eE][-+]?\d+)'
@@ -64,7 +38,7 @@ class PENMANCodec(object):
     SPACING_RE = re.compile(r'\s*')
     ALIGNMENT_RE = re.compile(r'~([a-zA-Z]\.?)?(\d+(?:,\d+)*)\s*')
 
-    def __init__(self, indent=True, relation_sort=original_order):
+    def __init__(self, model=None, indent=True, relation_sort=original_order):
         self.indent = indent
         self.relation_sort = relation_sort
 
@@ -183,22 +157,22 @@ class PENMANCodec(object):
         else:
             return self._encode_penman(g, top=top)
 
-    def is_relation_inverted(self, relation):
+    def is_relation_inverted(self, role):
         """
-        Return True if *relation* is inverted.
+        Return True if *role* is inverted.
         """
-        return relation and relation.endswith('-of')
+        return role and role.endswith('-of')
 
-    def invert_relation(self, relation):
+    def invert_relation(self, role):
         """
-        Invert or deinvert *relation*.
+        Invert or deinvert *role*.
         """
-        if self.is_relation_inverted(relation):
-            return relation[:-3] or None
+        if self.is_relation_inverted(role):
+            return role[:-3] or None
         else:
-            return (relation or '') + '-of'
+            return (role or '') + '-of'
 
-    def handle_triple(self, lhs, relation, rhs):
+    def handle_triple(self, lhs, role, rhs):
         """
         Process triples before they are added to the graph.
 
@@ -207,35 +181,35 @@ class PENMANCodec(object):
         is_relation_inverted() and de-inverted by invert_relation().
 
         By default, this function:
-         * removes initial colons on relations
-         * de-inverts all inverted relations
-         * sets empty relations to `None`
+         * removes initial colons on roles
+         * de-inverts all inverted roles
+         * sets empty roles to `None`
          * casts numeric string sources and targets to their numeric
            types (e.g. float, int)
 
         Args:
             lhs: the left hand side of an observed triple
-            relation: the triple relation (possibly inverted)
+            role: the triple role (possibly inverted)
             rhs: the right hand side of an observed triple
         Returns:
-            The processed (source, relation, target) triple. By default,
+            The processed (source, role, target) triple. By default,
             it is returned as a Triple object.
         """
-        relation = relation.replace(':', '', 1)  # remove leading :
+        role = role.replace(':', '', 1)  # remove leading :
 
-        if self.is_relation_inverted(relation):  # deinvert
+        if self.is_relation_inverted(role):  # deinvert
             source, target, inverted = rhs, lhs, True
-            relation = self.invert_relation(relation)
+            role = self.invert_relation(role)
         else:
             source, target, inverted = lhs, rhs, False
 
         source = _default_cast(source)
         target = _default_cast(target)
 
-        if relation == '':  # set empty relations to None
-            relation = None
+        if role == '':  # set empty roles to None
+            role = None
 
-        return Triple(source, relation, target, inverted)
+        return Triple(source, role, target, inverted)
 
     def triples_to_graph(self, triples, top=None,
                          alignments=None, role_alignments=None):
@@ -250,15 +224,17 @@ class PENMANCodec(object):
         (via handle_triple()).
 
         Args:
-            triples: an iterable of (lhs, relation, rhs) triples
+            triples: an iterable of (lhs, role, rhs) triples
             top: node identifier of the top node
             alignments (dict): triples to node alignments
-            role_alignments (dict): triples to relation alignments
+            role_alignments (dict): triples to role alignments
         Returns:
             a Graph object
         """
-        if alignments is None: alignments = {}
-        if role_alignments is None: role_alignments = {}
+        if alignments is None:
+            alignments = {}
+        if role_alignments is None:
+            role_alignments = {}
         inferred_top = triples[0][0] if triples else None
         handled_triples, alns, ralns = [], {}, {}
         for triple in triples:
@@ -287,7 +263,7 @@ class PENMANCodec(object):
         alignments, role_alignments = [], []
         start = None
         while True:
-            m = _regex(self.ATOM_RE, s, pos, "a relation/predicate")
+            m = _regex(self.ATOM_RE, s, pos, "a role/predicate")
             if start is None:
                 start = m.start(1)
             pos, rel = m.end(0), m.group(1)
@@ -357,13 +333,13 @@ class PENMANCodec(object):
         nodes.append(nodetype_triple)
 
         while pos < strlen and s[pos] != ')':
-            # relation
+            # role
             if s[pos] == ':':
                 role_alignment = None
-                m = _regex(self.RELATION_RE, s, pos, 'a relation')
+                m = _regex(self.ROLE_RE, s, pos, 'a role')
                 pos, rel = m.end(0), m.group(1)
 
-                # relation alignment
+                # role alignment
                 m = self.ALIGNMENT_RE.match(s, pos)
                 if m is not None:
                     pos, indices = m.end(0), m.group(2).split(',')
@@ -453,7 +429,7 @@ class PENMANCodec(object):
             remaining.remove(t)
             # check for TYPE_REL is in case '/' is specified as
             # inverted (e.g., 'instance-of')
-            if tgt in variables and t.relation != self.TYPE_REL:
+            if tgt in variables and t.role != self.TYPE_REL:
                 topolist.append(tgt)
                 return tgt
             return None
@@ -470,7 +446,7 @@ class PENMANCodec(object):
         _explore_preferred(top)
 
         while remaining:
-            flip_candidates = [store.get(v, ([],[]))[1] for v in topolist]
+            flip_candidates = [store.get(v, ([], []))[1] for v in topolist]
             for fc in flip_candidates:
                 fc[:] = [c for c in fc if c in remaining]  # clear superfluous
             if not any(len(fc) > 0 for fc in flip_candidates):
@@ -501,7 +477,7 @@ class PENMANCodec(object):
         elif indent is not None and indent is not False:
             offset += indent
         for t in outedges:
-            if t.relation == self.TYPE_REL:
+            if t.role == self.TYPE_REL:
                 if t.target is not None:
                     aln = _get_alignment(t, alns)
                     # node types always come first
@@ -509,10 +485,10 @@ class PENMANCodec(object):
             else:
                 if t.inverted:
                     tgt = t.source
-                    rel = self.invert_relation(t.relation)
+                    rel = self.invert_relation(t.role)
                 else:
                     tgt = t.target
-                    rel = t.relation or ''
+                    rel = t.role or ''
                 inner_offset = (len(rel) + 2) if indent is True else 0
                 branch, nested = self._layout(
                     g, tgt, offset + inner_offset, seen, alns, ralns
@@ -578,8 +554,8 @@ class AMRCodec(PENMANCodec):
     NODE_ENTER_RE = re.compile(r'\s*(\()\s*(?=[a-z]+\d*\s*\/)')
     NODETYPE_RE = PENMANCodec.ATOM_RE
     VAR_RE = re.compile(r'([a-z]+\d*)')
-    # only non-anonymous relations
-    RELATION_RE = re.compile(r'(:[^\s(),~]+)\s*')
+    # only non-anonymous roles
+    ROLE_RE = re.compile(r'(:[^\s(),~]+)\s*')
 
     _inversions = {
         TYPE_REL: None,  # don't allow inverted types
@@ -592,26 +568,26 @@ class AMRCodec(PENMANCodec):
         'mod': 'domain',
     }
 
-    def is_relation_inverted(self, relation):
+    def is_relation_inverted(self, role):
         """
-        Return True if *relation* is inverted.
+        Return True if *role* is inverted.
         """
         return (
-            relation in self._deinversions or
-            (relation.endswith('-of') and relation not in self._inversions)
+            role in self._deinversions or
+            (role.endswith('-of') and role not in self._inversions)
         )
 
-    def invert_relation(self, relation):
+    def invert_relation(self, role):
         """
-        Invert or deinvert *relation*.
+        Invert or deinvert *role*.
         """
-        if self.is_relation_inverted(relation):
-            rel = self._deinversions.get(relation, relation[:-3])
+        if self.is_relation_inverted(role):
+            rel = self._deinversions.get(role, role[:-3])
         else:
-            rel = self._inversions.get(relation, relation + '-of')
+            rel = self._inversions.get(role, role + '-of')
         if rel is None:
             raise PenmanError(
-                'Cannot (de)invert {}; not allowed'.format(relation)
+                'Cannot (de)invert {}; not allowed'.format(role)
             )
         return rel
 
