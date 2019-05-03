@@ -1,0 +1,292 @@
+{
+  "relations": {
+    ":ARG0": {"type": "frame"},
+    ":ARG1": {"type": "frame"},
+    ":ARG2": {"type": "frame"},
+    ":ARG3": {"type": "frame"},
+    ":ARG4": {"type": "frame"},
+    ":ARG5": {"type": "frame"},
+    ":accompanier": {
+      "type": "general",
+      "reifications": [
+	"(a / accompany-01 :ARG0 {source} :ARG1 {target})"
+      ]
+    },
+    ":age": {
+      "type": "general",
+      "reifications": [
+	"(a / age-01 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":beneficiary": {
+      "type": "general",
+      "reifications": [
+	"(b / benefit-01 :ARG0 {source} :ARG1 {target})",
+	"(r / receive-01 :ARG2 {source} :ARG0 {target})"
+      ]
+    },
+    ":cause": {
+      "type": "general",
+      "shortcut": true,
+      "reifications": [
+	"(c / cause-01 :ARG1 {source} :ARG0 {target})"
+      ]
+    },
+    ":concession": {
+      "type": "general",
+      "reifications": [
+	"(h / have-concession-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":condition": {
+      "type": "general",
+      "reifications": [
+	"(h / have-condition-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":consist-of": {"type": "general"},
+    ":cost": {
+      "type": "general",
+      "shortcut": true,
+      "reifications": [
+	"(c / cost-01 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":degree": {
+      "type": "general",
+      "reifications": [
+	"(h / have-degree-92 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":destination": {
+      "type": "general",
+      "reifications": [
+	"(b / be-destined-for-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":direction": {"type": "general"},
+    ":domain": {"type": "general", "inverse": ":mod"},
+    ":duration": {
+      "type": "general",
+      "reifications": [
+	"(l / last-01 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":employed-by": {
+      "type": "general",
+      "shortcut": true,
+      "reifications": [
+	"(h / have-org-role-91 :ARG0 {source} :ARG1 {target})"
+      ]
+    },
+    ":example": {
+      "type": "general",
+      "reifications": [
+	"(e / exemplify-01 :ARG0 {source} :ARG1 {target})"
+      ]
+    },
+    ":extent": {
+      "type": "general",
+      "reifications": [
+	"(h / have-extent-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":frequency": {
+      "type": "general",
+      "reifications": [
+	"(h / have-frequency-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":instrument": {
+      "type": "general",
+      "reifications": [
+	"(h / have-instrument-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":li": {
+      "type": "general",
+      "reifications": [
+	"(h / have-li-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":location": {
+      "type": "general",
+      "reifications": [
+	"(b / be-located-at-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":manner": {
+      "type": "general",
+      "reifications": [
+	"(h / have-manner-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":meaning": {
+      "type": "general", "shortcut": true,
+      "reifications": [
+	"(m / mean-01 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":medium": {"type": "general"},
+    ":mod": {
+      "type": "general", "inverse": ":domain",
+      "reifications": [
+	"(h / have-mod-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":mode": {"type": "general"},
+    ":name": {
+      "type": "general",
+      "reifications": [
+	"(h / have-name-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":ord": {
+      "type": "general",
+      "reifications": [
+	"(h / have-ord-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":part": {
+      "type": "general",
+      "reifications": [
+	"(h / have-part-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":path": {"type": "general"},
+    ":polarity": {
+      "type": "general",
+      "reifications": [
+	"(h / have-polarity-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":polite": {"type": "general"},
+    ":poss": {
+      "type": "general",
+      "reifications": [
+	"(o / own-01 :ARG0 {source} :ARG1 {target})",
+	"(h / have-03 :ARG0 {source} :ARG1 {target})"
+      ]
+    },
+    ":purpose": {
+      "type": "general",
+      "reifications": [
+	"(h / have-purpose-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":role": {
+      "type": "general", "shortcut": true,
+      "reifications": [
+	"(h / have-org-role-91 :ARG0 {source} :ARG2 {target})"
+      ]
+    },
+    ":source": {
+      "type": "general",
+      "reifications": [
+	"(b / be-from-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":subevent": {
+      "type": "general",
+      "reifications": [
+	"(h / have-subevent-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":subset": {
+      "type": "general",
+      "shortcut": true,
+      "reifications": [
+	"(i / include-91 :ARG2 {source} :ARG1 {target})"
+      ]
+    },
+    ":superset": {
+      "type": "general",
+      "shortcut": true,
+      "reifications": [
+	"(i / include-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":time": {
+      "type": "general",
+      "reifications": [
+	"(b / be-temporally-at-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":topic": {
+      "type": "general",
+      "reifications": [
+	"(c / concern-02 :ARG0 {source} :ARG1 {target})"
+      ]
+    },
+    ":value": {
+      "type": "general",
+      "reifications": [
+	"(h / have-value-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":quant": {
+      "type": "quantity",
+      "reifications": [
+	"(h / have-quant-91 :ARG1 {source} :ARG2 {target})"
+      ]
+    },
+    ":unit": {"type": "quantity"},
+    ":scale": {"type": "quantity"},
+    ":day": {"type": "date"},
+    ":month": {"type": "date"},
+    ":year": {"type": "date"},
+    ":weekday": {"type": "date"},
+    ":time": {"type": "date"},
+    ":timezone": {"type": "date"},
+    ":quarter": {"type": "date"},
+    ":dayperiod": {"type": "date"},
+    ":season": {"type": "date"},
+    ":year2": {"type": "date"},
+    ":decade": {"type": "date"},
+    ":century": {"type": "date"},
+    ":calendar": {"type": "date"},
+    ":era": {"type": "date"},
+    ":mod": {"type": "date"},
+    ":op1": {"type": "op"},
+    ":op2": {"type": "op"},
+    ":op3": {"type": "op"},
+    ":op4": {"type": "op"},
+    ":op5": {"type": "op"},
+    ":op6": {"type": "op"},
+    ":op7": {"type": "op"},
+    ":op8": {"type": "op"},
+    ":op9": {"type": "op"},
+    ":op10": {"type": "op"},
+    ":snt1": {"type": "snt"},
+    ":snt2": {"type": "snt"},
+    ":snt3": {"type": "snt"},
+    ":snt4": {"type": "snt"},
+    ":snt5": {"type": "snt"},
+    ":snt6": {"type": "snt"},
+    ":snt7": {"type": "snt"},
+    ":snt8": {"type": "snt"},
+    ":snt9": {"type": "snt"},
+    ":snt10": {"type": "snt"},
+    ":prep-against": {"type": "preposition"},
+    ":prep-along-with": {"type": "preposition"},
+    ":prep-amid": {"type": "preposition"},
+    ":prep-among": {"type": "preposition"},
+    ":prep-as": {"type": "preposition"},
+    ":prep-at": {"type": "preposition"},
+    ":prep-by": {"type": "preposition"},
+    ":prep-for": {"type": "preposition"},
+    ":prep-from": {"type": "preposition"},
+    ":prep-in": {"type": "preposition"},
+    ":prep-in-addition-to": {"type": "preposition"},
+    ":prep-into": {"type": "preposition"},
+    ":prep-on": {"type": "preposition"},
+    ":prep-on-behalf-of": {"type": "preposition"},
+    ":prep-out-of": {"type": "preposition"},
+    ":prep-to": {"type": "preposition"},
+    ":prep-toward": {"type": "preposition"},
+    ":prep-under": {"type": "preposition"},
+    ":prep-with": {"type": "preposition"},
+    ":prep-without": {"type": "preposition"},
+    ":conj-as-if": {"type": "conjunction"}
+  }
+}
