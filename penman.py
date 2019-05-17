@@ -455,7 +455,9 @@ class PENMANCodec(object):
         variables = g.variables()
         store = defaultdict(lambda: ([], []))  # (preferred, dispreferred)
         for t in g.triples():
-            if t.inverted:
+            if t.relation == self.TYPE_REL:
+                store[t.source][0].append(t)
+            elif t.inverted:
                 store[t.target][0].append(t)
                 store[t.source][1].append(Triple(*t, inverted=False))
             else:
