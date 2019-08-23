@@ -55,12 +55,18 @@ setup(
     packages=[
         'penman',
     ],
+    setup_requires=['wheel >= 0.31.0'],
     install_requires=[
     ],
     extras_require={
         'docs': docs_require,
         'tests': tests_require,
-        'dev': docs_require + tests_require,
+        'dev': docs_require + tests_require + [
+            # https://packaging.python.org/guides/making-a-pypi-friendly-readme
+            'setuptools >= 38.6.0',
+            'wheel >= 0.31.0',
+            'twine >= 1.11.0',
+        ]
     },
     entry_points={
         'console_scripts': [
