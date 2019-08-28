@@ -3,7 +3,7 @@ from collections import defaultdict
 import re
 
 from penman.exceptions import PenmanError, DecodeError, EncodeError
-from penman.layout import original_order
+from penman import layout
 from penman.graph import Triple, Graph
 
 
@@ -38,7 +38,8 @@ class PENMANCodec(object):
     SPACING_RE = re.compile(r'\s*')
     ALIGNMENT_RE = re.compile(r'~([a-zA-Z]\.?)?(\d+(?:,\d+)*)\s*')
 
-    def __init__(self, model=None, indent=True, relation_sort=original_order):
+    def __init__(self, model=None, indent=True,
+                 relation_sort=layout.original_order):
         self.indent = indent
         self.relation_sort = relation_sort
 
@@ -118,9 +119,9 @@ class PENMANCodec(object):
                     raise
                     pos += 1
                 else:
-                    top, nodes, edges, alignments, role_alignments = data
+                    top, _triples, alignments, role_alignments = data
                     yield self.triples_to_graph(
-                        nodes + edges,
+                        _triples,
                         top=top,
                         alignments=alignments,
                         role_alignments=role_alignments
@@ -238,7 +239,9 @@ class PENMANCodec(object):
         inferred_top = triples[0][0] if triples else None
         handled_triples, alns, ralns = [], {}, {}
         for triple in triples:
-            if triple[0] == self.TOP_VAR and triple[1] == self.TOP_REL:
+            if triple is layout.POP:
+                handled_triples.append(triple)
+            elif triple[0] == self.TOP_VAR and triple[1] == self.TOP_REL:
                 inferred_top = triple[2]
             else:
                 handled_triple = self.handle_triple(*triple)
@@ -305,7 +308,7 @@ class PENMANCodec(object):
         return (start, pos), (top, nodes, edges, alignments, role_alignments)
 
     def _decode_penman_node(self, s, pos):
-        nodes, edges, alignments, role_alignments = [], [], {}, {}
+        triples, alignments, role_alignments = [], {}, {}
 
         strlen = len(s)
         m = _regex(self.NODE_ENTER_RE, s, pos, '"("')
@@ -330,7 +333,7 @@ class PENMANCodec(object):
         else:
             nodetype_triple = (var, self.TYPE_REL, None)
         # append this even if there is no node type
-        nodes.append(nodetype_triple)
+        triples.append(nodetype_triple)
 
         while pos < strlen and s[pos] != ')':
             # role
@@ -349,11 +352,10 @@ class PENMANCodec(object):
                 if s[pos] == '(':
                     span, data = self._decode_penman_node(s, pos)
                     pos = span[1]
-                    subtop, subnodes, subedges, subalns, subralns = data
-                    nodes.extend(subnodes)
+                    subtop, subtriples, subalns, subralns = data
                     local_edge = (var, rel, subtop)
-                    edges.append(local_edge)
-                    edges.extend(subedges)
+                    triples.append(local_edge)
+                    triples.extend(subtriples)
                     alignments.update(subalns)
                     role_alignments.update(subralns)
 
@@ -366,7 +368,7 @@ class PENMANCodec(object):
                         m = _regex(self.ATOM_RE, s, pos, 'a float/int/symbol')
                         pos, value = m.end(0), m.group(1)
                     local_edge = (var, rel, value)
-                    edges.append(local_edge)
+                    triples.append(local_edge)
 
                     m = self.ALIGNMENT_RE.match(s, pos)
                     if m is not None:
@@ -386,8 +388,9 @@ class PENMANCodec(object):
 
         m = _regex(self.NODE_EXIT_RE, s, pos, '")"')
         pos = m.end(1)
+        triples.append(layout.POP)
 
-        return (start, pos), (var, nodes, edges, alignments, role_alignments)
+        return (start, pos), (var, triples, alignments, role_alignments)
 
     def _encode_penman(self, g, top=None):
         """

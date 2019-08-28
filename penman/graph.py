@@ -94,10 +94,10 @@ class Graph(object):
 
         if data:
             self._triples.extend(
-                Triple(*t, inverted=getattr(t, 'inverted', None))
+                Triple(*t, inverted=getattr(t, 'inverted', None)) if t else t
                 for t in data
             )
-            self._variables = {v for v, _, _ in self._triples}
+            self._variables = {v for v, _, _ in self.triples()}
             # implicit top: source of first triple
             if top is None:
                 top = data[0][0]
@@ -137,7 +137,7 @@ class Graph(object):
         """
         Return triples filtered by their *source*, *role*, or *target*.
         """
-        triples = self._triples
+        triples = [t for t in self._triples if t]
         if not (source is role is target is None):
 
             def triplematch(t):
@@ -161,7 +161,7 @@ class Graph(object):
                     and (target is None or target == e.target))
 
         variables = self._variables
-        edges = [t for t in self._triples if t.target in variables]
+        edges = [t for t in self.triples() if t.target in variables]
         return list(filter(edgematch, edges))
 
     def attributes(self, source=None, role=None, target=None):
