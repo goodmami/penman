@@ -10,26 +10,35 @@ class EncodeError(PenmanError):
 
 
 class DecodeError(PenmanError):
-    """Raised when decoding PENMAN-notation fails."""
+    """Raised on PENMAN syntax errors."""
 
-    def __init__(self, *args, **kwargs):
-        # Python2 doesn't allow parameters like:
-        #   (*args, key=val, **kwargs)
-        # so do this manaully.
-        string = pos = None
-        if 'string' in kwargs:
-            string = kwargs['string']
-            del kwargs['string']
-        if 'pos' in kwargs:
-            pos = kwargs['pos']
-            del kwargs['pos']
-        super(DecodeError, self).__init__(*args, **kwargs)
-        self.string = string
-        self.pos = pos
+    def __init__(self,
+                 message: str = None,
+                 filename: str = None,
+                 lineno: int = None,
+                 offset: int = None,
+                 text: str = None):
+        self.message = message
+        self.filename = filename
+        self.lineno = lineno
+        self.offset = offset
+        self.text = text
 
     def __str__(self):
-        if isinstance(self.pos, slice):
-            loc = ' in span {}:{}'.format(self.pos.start, self.pos.stop)
-        else:
-            loc = ' at position {}'.format(self.pos)
-        return Exception.__str__(self) + loc
+        parts = []
+        if self.filename is not None:
+            parts.append('File "{}"'.format(self.filename))
+        if self.lineno is not None:
+            parts.append('line {}'.format(self.lineno))
+        if parts:
+            parts = ['', '  ' + ', '.join(parts)]
+        if self.text is not None:
+            parts.append('    ' + self.text)
+            if self.offset is not None:
+                parts.append('   ' + (' ' * self.offset) + '^')
+        elif parts:
+            parts[-1] += ', character {}'.format(self.offset)
+        if self.message is not None:
+            parts.append('{}: {}'.format(self.__class__.__name__,
+                                         self.message))
+        return '\n'.join(parts)
