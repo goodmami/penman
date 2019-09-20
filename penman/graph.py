@@ -1,56 +1,70 @@
 # -*- coding: utf-8 -*-
 
+"""
+Data structures for Penman graphs and triples.
+"""
+
+from typing import (
+    Union, Iterable, Optional, Mapping, Any,
+    List, Tuple, Dict, Set, NamedTuple)
+
 from collections import defaultdict
 
 
-class Triple(tuple):
-    """
-    A relation between Graph nodes and attributes.
+_Identifier = Union[str, int]
+_Constant = Union[str, float, int]
+_Role = str                                    # '' for anonymous relations
+_Target = Union[_Identifier, _Constant, None]  # None for untyped nodes
 
-    The final parameter, `inverted`, is optional, and when set it
-    exists as an attribute of the Triple object, but not as part of
-    the 3-tuple data.  It is used to store the intended or original
-    orientation of the triple (i.e. whether it was true or
-    inverted). If unset, preference during serialization is for a true
-    orientation.
+# This type-checks with basic tuples, unlike Triple below
+BasicTriple = Tuple[_Identifier, _Role, _Target]
+
+# These are the main data containers on graphs
+# _Data = Iterable[BasicTriple]
+_Metadata = Mapping[str, str]
+
+
+class Epidatum(object):
+    __slots__ = ()
+
+
+Datum = Union[BasicTriple, Epidatum]
+_Data = Iterable[Datum]
+_Epidata = Mapping[BasicTriple, List[Epidatum]]
+
+
+class Triple(NamedTuple):
+    """
+    A relation between nodes or between a node and an constant.
 
     Args:
-        source: the source node of the triple
+        source: the source node identifier of the triple
         role: the relation between the source and target
-        target: the target node or attribute
-        inverted: the preferred orientation is inverted if `True`,
-            uninverted if `False`, and no preference if `None`
+        target: the target node identifier or constant
     """
 
-    def __new__(cls, source, role, target, inverted=None):
-        t = super().__new__(cls, (source, role, target))
-        t._inverted = inverted
-        return t
+    source: _Identifier
+    """The source node identifier of the triple."""
 
-    @property
-    def source(self):
-        """The source node of the triple."""
-        return self[0]
+    role: _Role
+    """The relation (edge label) between the source and target."""
 
-    @property
-    def role(self):
-        """The role that relates the source and target."""
-        return self[1]
+    target: _Target
+    """The target node identifier or constant."""
 
-    @property
-    def relation(self):
-        """Alias for :attr:`role` for backward compatibility."""
-        return self[1]
 
-    @property
-    def target(self):
-        """The target node or attribute."""
-        return self[2]
+class Edge(Triple):
+    """A relation between nodes."""
 
-    @property
-    def inverted(self):
-        """Return True if the triple is inverted."""
-        return self._inverted
+    target: _Identifier
+    """The target node identifier."""
+
+
+class Attribute(Triple):
+    """A relation between a node and a constant."""
+
+    target: _Constant
+    """The target constant."""
 
 
 class Graph(object):
@@ -61,47 +75,54 @@ class Graph(object):
     two parts: a list of graph edges where both the source and target
     are node identifiers, and a list of node attributes where only the
     source is a node identifier and the target is a constant. These
-    lists can be obtained via the Graph.triples(), Graph.edges(), and
-    Graph.attributes() methods.
+    lists can be obtained via the :meth:`triples`, :meth:`edges`, and
+    :meth:`attributes` methods.
 
     Args:
-        data: an iterable of triples (Triple objects or 3-tuples)
+        data: an iterable of triples (:class:`Triple` or 3-tuples)
         top: the node identifier of the top node; if unspecified,
             the source of the first triple is used
-        alignments: an iterable of ISI
+        alignments: a mapping of ISI-style surface alignments (triples
+            to token indices) for nodes
+        role_alignments: a mapping of ISI-style surface alignments
+            (triples to token indices) for roles
     Example:
-        >>> Graph([
-        ...     ('b', 'instance', 'bark'),
-        ...     ('d', 'instance', 'dog'),
-        ...     ('b', 'ARG1', 'd')
-        ... ])
+        >>> Graph([('b', 'instance', 'bark'),
+        ...        ('d', 'instance', 'dog'),
+        ...        ('b', 'ARG1', 'd')])
     """
 
-    def __init__(self, data=None, top=None,
-                 alignments=None, role_alignments=None):
-        if data is not None:
-            data = list(data)  # make list (e.g., if its a generator)
-        if alignments is None:
-            alignments = {}
-        if role_alignments is None:
-            role_alignments = {}
+    def __init__(self,
+                 data: _Data,
+                 top: _Identifier = None,
+                 epidata: _Epidata = None,
+                 metadata: _Metadata = None):
+        # split triples and epidata
+        if not epidata:
+            epidata = {}
+        triples = []
+        current = None
+        for datum in data:
+            if isinstance(datum, Epidatum):
+                epidata[current] = epidata.get(current, []) + [datum]
+            else:
+                triples.append(datum)
+                current = datum
 
-        self._triples = []
-        self._variables = []
-        self._top = None
-        self._alignments = alignments
-        self._role_alignments = role_alignments
+        if not triples:
+            raise ValueError('Cannot instantiate an empty Graph')
 
-        if data:
-            self._triples.extend(
-                Triple(*t, inverted=getattr(t, 'inverted', None)) if t else t
-                for t in data
-            )
-            self._variables = {v for v, _, _ in self.triples()}
-            # implicit top: source of first triple
-            if top is None:
-                top = data[0][0]
-            self.top = top
+        ids = [t[0] for t in triples]
+        if top is None:
+            top = ids[0]  # implicit top: source of first triple
+        if not metadata:
+            metadata = {}
+
+        self._triples = triples
+        self._variables = set(ids)
+        self._top = top
+        self._epidata = epidata
+        self.metadata = metadata
 
     def __repr__(self):
         return '<{} object (top={}) at {}>'.format(
@@ -110,77 +131,99 @@ class Graph(object):
             id(self)
         )
 
-    def __str__(self):
-        from penman.codecs import PENMANCodec
-        return PENMANCodec().encode(self)  # just use the default encoder
+    @property
+    def data(self) -> List[Datum]:
+        data = self._epidata.get(None, [])
+        for triple in self._triples:
+            data.append(triple)
+            data.extend(self._epidata.get(triple, []))
+        return data
 
     @property
-    def top(self):
+    def top(self) -> _Identifier:
         """
         The top variable.
         """
         return self._top
 
     @top.setter
-    def top(self, top):
+    def top(self, top: _Identifier):
         if top not in self._variables:
             raise ValueError('top must be a valid node')
         self._top = top  # check if top is valid variable?
 
-    def variables(self):
+    def variables(self) -> Set[_Identifier]:
         """
-        Return the list of variables (nonterminal node identifiers).
+        Return the set of variables (nonterminal node identifiers).
         """
         return set(self._variables)
 
-    def triples(self, source=None, role=None, target=None):
+    @property
+    def epidata(self) -> _Epidata:
+        return dict(self._epidata)
+
+    def triples(self,
+                source: _Identifier = None,
+                role: _Role = None,
+                target: _Target = None) -> List[Triple]:
         """
         Return triples filtered by their *source*, *role*, or *target*.
         """
-        triples = [t for t in self._triples if t]
-        if not (source is role is target is None):
+        variables = self._variables
+        triples = [Edge(*t) if t[2] in variables else Attribute(*t)
+                   for t in self._filter_triples(None, source, role, target)]
+        return triples
 
-            def triplematch(t):
-                return ((source is None or source == t.source)
-                        and (role is None or role == t.role)
-                        and (target is None or target == t.target))
-
-            triples = filter(triplematch, triples)
-        return list(triples)
-
-    def edges(self, source=None, role=None, target=None):
+    def edges(self,
+              source: Optional[_Identifier] = None,
+              role: _Role = None,
+              target: _Identifier = None) -> List[Edge]:
         """
         Return edges filtered by their *source*, *role*, or *target*.
 
         Edges don't include terminal triples (node types or attributes).
         """
+        triples = [Edge(*t)
+                   for t in self._filter_triples(True, source, role, target)]
+        return triples
 
-        def edgematch(e):
-            return ((source is None or source == e.source)
-                    and (role is None or role == e.role)
-                    and (target is None or target == e.target))
-
-        variables = self._variables
-        edges = [t for t in self.triples() if t.target in variables]
-        return list(filter(edgematch, edges))
-
-    def attributes(self, source=None, role=None, target=None):
+    def attributes(self,
+                   source: Optional[_Identifier] = None,
+                   role: _Role = None,
+                   target: _Constant = None) -> List[Attribute]:
         """
         Return attributes filtered by their *source*, *role*, or *target*.
 
         Attributes don't include triples where the target is a nonterminal.
         """
+        triples = [Attribute(*t)
+                   for t in self._filter_triples(False, source, role, target)]
+        return triples
 
-        def attrmatch(a):
-            return ((source is None or source == a.source)
-                    and (role is None or role == a.role)
-                    and (target is None or target == a.target))
+    def _filter_triples(self,
+                        is_edge: Union[bool, None],
+                        source: Optional[_Identifier],
+                        role: Optional[_Role],
+                        target: Optional[_Target]) -> List[BasicTriple]:
+        """
+        Filter triples based on their source, role, and/or target.
+        """
+        if is_edge is source is role is target is None:
+            triples = list(self._triples)
+        else:
+            variables = self._variables
 
-        variables = self._variables
-        attrs = [t for t in self.triples() if t.target not in variables]
-        return list(filter(attrmatch, attrs))
+            def triplematch(t: BasicTriple) -> bool:
+                return ((is_edge is None or (t[2] in variables) == is_edge)
+                        and (source is None or source == t[0])
+                        and (role is None or role == t[1])
+                        and (target is None or target == t[2]))
 
-    def reentrancies(self):
+            triples = list(filter(triplematch, self._triples))
+
+        return triples
+
+    def reentrancies(self) -> Dict[_Identifier, int]:
         """
         Return a mapping of variables to their re-entrancy count.
 
@@ -192,20 +235,8 @@ class Graph(object):
         for the linearized form, so inverted edges are always
         re-entrant.
         """
-        entrancies = defaultdict(int)
+        entrancies: Dict[_Identifier, int] = defaultdict(int)
         entrancies[self.top] += 1  # implicit entrancy to top
         for t in self.edges():
             entrancies[t.target] += 1
         return dict((v, cnt - 1) for v, cnt in entrancies.items() if cnt >= 2)
-
-    def alignments(self):
-        """
-        Return the surface alignments for nodes and attributes.
-        """
-        return dict(self._alignments)
-
-    def role_alignments(self):
-        """
-        Return the surface alignments for roles.
-        """
-        return dict(self._role_alignments)

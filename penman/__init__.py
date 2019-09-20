@@ -33,8 +33,12 @@ from penman.exceptions import (
     ModelError
 )
 from penman.lexer import lex
+from penman.graph import (
+    Triple,
+    Edge,
+    Attribute,
+    Graph
 )
-from penman.graph import Triple, Graph
 from penman.model import Model
 from penman.layout import (
     original_order,
