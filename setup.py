@@ -18,7 +18,6 @@ with open(os.path.join(base_dir, "penman", "__about__.py")) as f:
 docs_require = [
     'sphinx',
     'sphinx-rtd-theme',
-    'sphinx_autodoc_typehints'
 ]
 tests_require = [
     'pytest'

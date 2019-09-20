@@ -14,7 +14,14 @@ API Documentation
       :members:
 
    .. autoclass:: Triple
+
+      .. autoattribute:: source
+      .. autoattribute:: role
+      .. autoattribute:: target
+
+   .. autoclass:: Marker
       :members:
+
 
    Codec Classes
    -------------
@@ -22,9 +29,6 @@ API Documentation
    .. autoclass:: PENMANCodec
       :members:
 
-   .. autoclass:: AMRCodec
-      :show-inheritance:
-      :members:
 
    Serialization Functions
    -----------------------
@@ -50,13 +54,24 @@ API Documentation
    .. autofunction:: out_first_order
    .. autofunction:: alphanum_order
 
+   Utilities
+   ---------
+
+   .. autofunction:: lex
+
    Exceptions
    ----------
 
    .. autoexception:: PenmanError
 
-   .. autoexception:: EncodeError
+   .. autoexception:: LayoutError
       :show-inheritance:
 
    .. autoexception:: DecodeError
+      :show-inheritance:
+
+   .. autoexception:: SurfaceError
+      :show-inheritance:
+
+   .. autoexception:: ModelError
       :show-inheritance:

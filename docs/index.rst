@@ -10,10 +10,22 @@ Welcome to Penman's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   setup.rst
-   basic.rst
-   advanced.rst
-   api.rst
+   setup
+   basic
+   advanced
+   basic-api
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced API:
+
+   api/penman.exceptions
+   api/penman.graph
+   api/penman.lexer
+   api/penman.model
+   api/penman.layout
+   api/penman.surface
+   api/penman.codec
 
 
 Indices and tables
