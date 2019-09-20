@@ -45,10 +45,8 @@ from penman.layout import (
     out_first_order,
     alphanum_order,
 )
-from penman.codecs import (
-    PENMANCodec,
-    AMRCodec,
-)
+from penman.codec import PENMANCodec
+
 from penman.interface import (
     decode,
     encode,
