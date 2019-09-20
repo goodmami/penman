@@ -23,7 +23,7 @@ PATTERNS = {
            (?:[eE][-+]?\d+)?)  # .1e2 | 1.2e3
        |\d+[eE][-+]?\d+        # 1e2
       )''',
-    'INTEGER':    r'[-+]?\d+',
+    'INTEGER':    r'[-+]?\d+(?=[ )/:])',
     'ALIGNMENT':  r'~(?:[a-zA-Z]\.?)?\d+(?:,\d+)*',
     # ROLE cannot be made up of COLON + SYMBOL because it then becomes
     # difficult to detect anonymous roles: (a : b) vs (a :b c)
@@ -57,9 +57,18 @@ class Token(NamedTuple):
     A lexed token.
     """
     type: str    #: The token type.
-    form: str    #: The matched string for the token.
+    text: str    #: The matched string for the token.
     lineno: int  #: The line number the token appears on.
     offset: int  #: The character offset of the token.
+
+    @property
+    def value(self):
+        if self.type == 'INTEGER':
+            return int(self.text)
+        elif self.type == 'FLOAT':
+            return float(self.text)
+        else:
+            return self.text
 
 
 class TokenIterator(Iterator[Token]):
@@ -72,6 +81,7 @@ class TokenIterator(Iterator[Token]):
             self._next = next(iterator)
         except StopIteration:
             self._next = None
+        self._last = None
         self.iterator = iterator
 
     def __iter__(self):
@@ -80,22 +90,28 @@ class TokenIterator(Iterator[Token]):
     def __next__(self):
         return self.next()
 
-    def peek(self) -> Union[Token, None]:
+    def peek(self, error_on_empty=True) -> Union[Token, None]:
         """
         Return the next token but do not advance the iterator.
 
-        If the iterator is exhausted, ``None`` is returned.
+        If the iterator is exhausted then a :exc:`DecodeError` is
+        raised if *error_on_empty* is ``True``, otherwise ``None`` is
+        returned.
         """
         if self._next is None:
+            if error_on_empty:
+                self.raise_error('Unexpected end of input')
             return None
         else:
             return self._next
 
-    def peek_type(self) -> Union[str, None]:
+    def peek_type(self, error_on_empty=True) -> Union[str, None]:
         """
         Return the next token's type but do not advance the iterator.
 
-        If the iterator is exhausted, ``None`` is returned.
+        If the iterator is exhausted then a :exc:`DecodeError` is
+        raised if *error_on_empty* is ``True``, otherwise ``None`` is
+        returned.
 
         The :meth:`peek` method is not so useful for things like
         while-loops as attempting to get the ``type`` attribute on a
@@ -107,10 +123,11 @@ class TokenIterator(Iterator[Token]):
            while tokens.peek_type() != 'RPAREN':
                ...
         """
-        if self._next is None:
+        _next = self.peek(error_on_empty=error_on_empty)
+        if _next is None:
             return None
         else:
-            return self._next.type
+            return _next.type
 
     def next(self) -> Token:
         """
@@ -127,6 +144,7 @@ class TokenIterator(Iterator[Token]):
             if current is None:
                 raise
             self._next = None
+        self._last = current
         return current
 
     def expect(self, *choices):
@@ -139,13 +157,13 @@ class TokenIterator(Iterator[Token]):
             :exc:`DecodeError`: if the
                 next token type is not in *choices*
         """
-        token = self.next()
+        try:
+            token = self.next()
+        except StopIteration:
+            self.raise_error('Unexpected end of input')
         if token.type not in choices:
-            raise DecodeError(
-                'Expected: {}'.format(', '.join(choices)),
-                lineno=token.lineno,
-                offset=token.offset,
-                text=token.form)
+            self.raise_error('Expected: {}'.format(', '.join(choices)),
+                             token=token)
         return token
 
     def accept(self, *choices):
@@ -158,6 +176,19 @@ class TokenIterator(Iterator[Token]):
         if self._next is not None and self._next.type in choices:
             return self.next()
         return None
+
+    def raise_error(self, message, token=None):
+        if token is None:
+            type = text = None
+            if self._last is not None:
+                lineno = self._last.lineno
+                offset = self._last.offset + len(self._last.text)
+            else:
+                lineno = offset = 0
+        else:
+            type, text, lineno, offset = token
+
+        raise DecodeError(message, lineno=lineno, offset=offset, text=text)
 
 
 def lex(lines: Union[Iterable[str], str],
