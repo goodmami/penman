@@ -27,8 +27,11 @@ from penman.__about__ import (
 
 from penman.exceptions import (
     PenmanError,
+    LayoutError,
     DecodeError,
-    EncodeError,
+    SurfaceError,
+    ModelError
+)
 from penman.lexer import lex
 )
 from penman.graph import Triple, Graph

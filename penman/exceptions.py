@@ -5,8 +5,8 @@ class PenmanError(Exception):
     """Base class for errors in the Penman package."""
 
 
-class EncodeError(PenmanError):
-    """Raises when encoding PENMAN-notation fails."""
+class LayoutError(PenmanError):
+    """Raised on invalid graph layouts."""
 
 
 class DecodeError(PenmanError):
@@ -42,3 +42,11 @@ class DecodeError(PenmanError):
             parts.append('{}: {}'.format(self.__class__.__name__,
                                          self.message))
         return '\n'.join(parts)
+
+
+class SurfaceError(PenmanError):
+    """Raised on invalid surface information."""
+
+
+class ModelError(PenmanError):
+    """Raised when a graph violates model constraints."""
