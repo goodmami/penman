@@ -15,8 +15,8 @@ source code.
 Requirements
 ------------
 
-The Penman package runs in `Python 3.5+`_, but otherwise it has no
-dependencies beyond Python's standard library.
+The Penman package runs with `Python 3.6`_ and higher versions, but
+otherwise it has no dependencies beyond Python's standard library.
 
 Some development tasks, such as unit testing, building the
 documentation, or making releases, have additional dependencies. See

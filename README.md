@@ -76,7 +76,7 @@ $ python penman.py <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 
 ### Requirements
 
-- Python 2.7 or 3.3+
+- Python 3.6+
 
 ### PENMAN Notation
 
