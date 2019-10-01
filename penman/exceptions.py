@@ -35,7 +35,7 @@ class DecodeError(PenmanError):
         if self.text is not None:
             parts.append('    ' + self.text)
             if self.offset is not None:
-                parts.append('   ' + (' ' * self.offset) + '^')
+                parts.append('    ' + (' ' * self.offset) + '^')
         elif parts:
             parts[-1] += ', character {}'.format(self.offset)
         if self.message is not None:
