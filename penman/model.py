@@ -7,13 +7,25 @@ Semantic models for interpreting graphs.
 from penman import graph
 
 class Model(object):
-    def __init__(self, relations=None):
-        if not relations:
-            relations = {}
-        self.relations = relations
+
+    def __init__(self,
+                 top_identifier:str = 'top',
+                 top_role:str = 'TOP',
+                 nodetype_role:str = 'instance',
+                 relations:dict = None):
+        self.top_identifier = top_identifier
+        self.top_role = top_role
+        self.nodetype_role = nodetype_role
+        self.relations = relations or {}
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
 
     def is_inverted(self, triple: graph.BasicTriple) -> bool:
-        role = triple[1]
+        return self.is_role_inverted(triple[1])
+
+    def is_role_inverted(self, role: str) -> bool:
         return role not in self.relations and role.endswith('-of')
 
     def invert(self, triple: graph.BasicTriple) -> graph.BasicTriple:
@@ -27,7 +39,7 @@ class Model(object):
         return (target, inverse, source)
 
     def normalize(self, triple: graph.BasicTriple) -> graph.BasicTriple:
-        if self.is_inverted(triple):
+        if self.is_role_inverted(triple[1]):
             triple = self.invert(triple)
         return triple
 
