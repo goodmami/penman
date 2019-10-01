@@ -279,6 +279,44 @@ def _branches(node_id, data, variables, strict):
     # # full traversal complete
     # return True
 
+def interpret(t: graph.Tree, model: _model.Model):
+    data = []
+    _interpret(t, model, data)
+    return graph.Graph(data)
+
+
+def _interpret(t: graph.Tree, model: _model.Model, data):
+    start_index = len(data)
+    id, attrs, edges = t
+    has_nodetype = False
+    for edge in (attrs + edges):
+        if len(edge) == 2:
+            role, target, role_epi, target_epi = *edge, None, None
+        else:
+            role, role_epi, target, target_epi = edge
+        if role == '/':
+            role = model.nodetype_role
+            has_nodetype = True
+        # atomic targets
+        if target is None or isinstance(target, (str, int, float)):
+            nested = ()
+        # nested nodes
+        else:
+            nested = target
+            target = nested[0]
+        data.append(model.normalize((id, role, target)))
+        if role_epi:
+            data.append(role_epi)
+        if target_epi:
+            data.append(target_epi)
+        # recurse to nested nodes
+        if nested:
+            _interpret(nested, model, data)
+
+    # ensure there is a triple for the node label
+    if not has_nodetype:
+        data.insert(start_index, (id, model.nodetype_role, None))
+
 
 def configure(g: graph.Graph, model: _model.Model):
     """

@@ -4,7 +4,7 @@
 Serialization of PENMAN graphs.
 """
 
-from typing import Type, Union, Iterable, Iterator, Tuple
+from typing import Optional, Type, Iterable, Iterator, Tuple
 from collections import defaultdict
 import re
 import logging
@@ -32,8 +32,6 @@ class PENMANCodec(object):
     IDENTIFIERS = 'SYMBOL', 'INTEGER'
     # ATOMS are the valid non-node targets of edges
     ATOMS = set(['SYMBOL', 'STRING', 'INTEGER', 'FLOAT'])
-    # The special role / specifies a node's type/label/concept
-    NODETYPE_ROLE = 'instance'
 
     def __init__(self, model: _model.Model = None):
         if model is None:
@@ -45,7 +43,7 @@ class PENMANCodec(object):
         Deserialize PENMAN-notation string *s* into its Graph object.
 
         Args:
-            s: a string containing a single PENMAN-serialized grap
+            s: a string containing a single PENMAN-serialized graph
             triples: if `True`, parse *s* as a triple conjunction
         Returns:
             The :class:`Graph` object described by *s*.
@@ -59,138 +57,109 @@ class PENMANCodec(object):
             ... )
             <Graph object (top=b) at ...>
         """
-        lines = s.splitlines()
         if triples:
-            tokens = lexer.lex(lines, pattern=lexer.TRIPLE_RE)
-            top, data = self.parse_triples(tokens)
+            data = self.parse_triples(s)
+            g = graph.Graph(data)
         else:
-            tokens = lexer.lex(lines, pattern=lexer.PENMAN_RE)
-            top, data = self.parse_node(tokens)
+            tree = self.parse(s)
+            g = layout.interpret(tree, self.model)
+        return g
 
-        normalize = self.model.normalize
-        data = [t if isinstance(t, graph.Epidatum) else normalize(t)
-                for t in data]
+    def parse(self, s: str):
+        """
+        Parse PENMAN-notation string *s* into its tree structure.
 
-        return graph.Graph(data, top=top)
+        Args:
+            s: a string containing a single PENMAN-serialized graph
+        Returns:
+            The tree structure described by *s*.
+        Example:
+            >>> codec = PENMANCodec()
+            >>> codec.parse('(b / bark :ARG1 (d / dog))')
+            ('b', [('/', 'bark')], [('ARG1', ('d', [('/', 'dog')], []))])
+        """
+        tokens = lexer.lex(s, pattern=lexer.PENMAN_RE)
+        return self._parse_node(tokens)
 
-    def parse_node(self, tokens: lexer.TokenIterator):
+    def _parse_node(self, tokens: lexer.TokenIterator):
         """
         Parse a PENMAN node from *tokens*.
 
-        The grammar rule for Nodes is::
+        Nodes have the following pattern::
 
-            Node <- '(' Identifier Label? Edge* ')'
-
-        Returns:
-            A 2-tuple containing a node identifier and a list of graph
-            data.
+            Node := '(' ID ('/' Label)? Edge* ')'
         """
         tokens.expect('LPAREN')
-        token = tokens.expect(*self.IDENTIFIERS)
-        id = token.value
 
-        data = [layout.Push(id)]
+        id = tokens.expect(*self.IDENTIFIERS).value
+        attrs = []
+        edges = []
 
-        data.extend(self.parse_node_label(tokens, id))
-
-        while tokens.peek_type() != 'RPAREN':
-            data.extend(self.parse_edge(tokens, id))
-
-        tokens.expect('RPAREN')
-        data.append(layout.POP)
-
-        return id, data
-
-    def parse_node_label(self,
-                         tokens: lexer.TokenIterator,
-                         source: _Identifier):
-        """
-        Parse a PENMAN node label from *tokens*.
-
-        The grammar rule for a Role is::
-
-            Label <- '/' Atom
-
-        Returns:
-            A 2-tuple containing a role and a :class:`RoleAlignment`
-        """
-        data = []
-        label = prefix = indices = None
         if tokens.accept('SLASH') is not None:
+            label = aln = None
             if tokens.peek_type() in self.ATOMS:
                 label = tokens.next().value
-                data.extend(self.parse_alignment(tokens, surface.Alignment))
-            else:
-                pass  # return default label of None
+                aln = self._parse_alignment(tokens, surface.Alignment)
+            attrs.append(('/', None, label, aln) if aln else ('/', label))
 
-        edge = (source, self.NODETYPE_ROLE, label)
+        while tokens.peek_type() != 'RPAREN':
+            edges.append(self._parse_edge(tokens))
 
-        return [edge] + data
+        tokens.expect('RPAREN')
 
-    def parse_edge(self,
-                   tokens: lexer.TokenIterator,
-                   source: _Identifier):
+        return (id, attrs, edges)
+
+    def _parse_edge(self, tokens: lexer.TokenIterator):
         """
-        Parse a PENMAN edge originating at *source* from *tokens*.
+        Parse a PENMAN edge from *tokens*.
 
-        The grammar rule for an Edge is::
+        Edges have the following pattern::
 
-            Edge <- Role RoleAlignment? ( Atom Alignment? | Node )
-
-        Valid Atoms are defined by the codec class. By default they
-        include: `SYMBOL`, `STRING`, `INTEGER`, and `FLOAT`. If the
-        Value is an Atom, the value itself is the target of an
-        edge. If the Value is a Node, the Node's identifier is the
-        target. Only Atoms may have Alignments. For robustness, a
-        missing value (a role followed by another role or `')'`) is
-        interpreted as a value of `None` rather than raising an error.
-
-        Returns:
-            A list of graph data.
+            Edge := Role (Constant | Node)
         """
-        data = []
-        role = tokens.expect('ROLE').text[1:]  # strip :
-        data.extend(self.parse_alignment(tokens, surface.RoleAlignment))
+        role = tokens.expect('ROLE').text[1:]  # strip the leading :
+        raln = self._parse_alignment(tokens, surface.RoleAlignment)
+        aln = None
+        target = None
 
         _next = tokens.peek()
         next_type = _next.type
         if next_type in self.ATOMS:
             target = tokens.next().value
-            data.extend(self.parse_alignment(tokens, surface.Alignment))
+            aln = self._parse_alignment(tokens, surface.Alignment)
         elif next_type == 'LPAREN':
-            target, _data = self.parse_node(tokens)
-            data.extend(_data)
+            target = self._parse_node(tokens)
         # for robustness in parsing, allow edges with no target:
         #    (x :ROLE :ROLE2...  <- followed by another role
-        #    (x :ROLE /...       <- followed by a node type
         #    (x :ROLE )          <- end of node
-        elif next_type in ('ROLE', 'RPAREN'):
-            target = None
-        else:
+        elif next_type not in ('ROLE', 'RPAREN'):
             tokens.raise_error('Expected: ATOM, LPAREN', token=_next)
 
-        edge = (source, role, target)
+        if raln is aln is None:
+            return (role, target)
+        else:
+            return (role, raln, target, aln)
 
-        return [edge] + data
-
-    def parse_alignment(self,
-                        tokens: lexer.TokenIterator,
-                        cls: Type[surface.Alignment]):
+    def _parse_alignment(self,
+                         tokens: lexer.TokenIterator,
+                         cls: Type[surface.Alignment]):
         """
         Parse a PENMAN surface alignment from *tokens*.
         """
+        aln = None
         token = tokens.accept('ALIGNMENT')
         if token is not None:
-            m = re.match((r'~(?:(?P<prefix>[a-zA-Z])\.?)?'
+            m = re.match((r'~(?P<prefix>[a-zA-Z]\.?)?'
                           r'(?P<indices>\d+(?:,\d+)*)'),
                          token.text)
             prefix = m.group('prefix')
             indices = list(map(int, m.group('indices').split(',')))
-            return [cls(indices, prefix=prefix)]
-        else:
-            return []
+            aln = cls(indices, prefix=prefix)
+        return aln
 
-    def parse_triples(self, tokens: lexer.TokenIterator):
+    def parse_triples(self, s: str):
+        tokens = lexer.lex(s, pattern=lexer.TRIPLE_RE)
+
         data = []
         while True:
             role = tokens.expect('SYMBOL').text
@@ -212,12 +181,12 @@ class PENMANCodec(object):
             else:
                 break
 
-        return graph.Graph(data)
+        return data
 
     def encode(self,
                g: graph.Graph,
                triples: bool = False,
-               indent: Union[int, bool] = None) -> str:
+               indent: Optional[int] = -1) -> str:
         """
         Serialize the graph *g* into PENMAN notation.
 
@@ -237,15 +206,69 @@ class PENMANCodec(object):
 
         """
         if triples:
-            return self.format_triples(g, indent=indent)
+            return self.format_triples(g, indent=(indent is not None))
         else:
-            tree = layout.assemble(g, top=top, model=self.model)
-            return self.format_node(tree, indent=indent)
+            tree = layout.configure(g, self.model)
+            return self._format_node(tree, indent=indent)
 
-    def format_node(self,
-                    tree: layout.Tree,
-                    indent: Union[int, bool] = None) -> str:
-        pass
+    def format(self, tree, indent: Optional[int] = -1):
+        """
+        Format *tree* into a PENMAN string.
+        """
+        return self._format_node(tree, indent=indent, column=0)
+
+    def _format_node(self,
+                     node,
+                     indent: Optional[int] = -1,
+                     column: int = 0) -> str:
+        """
+        Format tree *node* into a PENMAN string.
+        """
+        id, attrs, edges = node
+        id = str(id)  # ids can be ints
+
+        if indent is None:
+            joiner = ' '
+        else:
+            if indent == -1:
+                column += len(id) + 2  # +2 for ( and a space
+            else:
+                column += indent
+            joiner = '\n' + ' ' * column
+
+        _attrs = [self._format_edge(attr, indent, column) for attr in attrs]
+        parts = [' '.join([id] + _attrs)]
+        for edge in edges:
+            parts.append(self._format_edge(edge, indent, column))
+        return '({})'.format(joiner.join(parts))
+
+    def _format_edge(self, edge, indent, column):
+        """
+        Format tree *edge* into a PENMAN string.
+        """
+        if len(edge) == 2:
+            role, target, role_epi, target_epi = *edge, None, None
+        else:
+            role, role_epi, target, target_epi = edge
+
+        if role != '/' and not role.startswith(':'):
+            role = ':' + role
+
+        if indent == -1:
+            column += len(role) + 2  # +2 for : and a space
+        elif indent:
+            column += indent
+
+        if target is None:
+            target = ''
+        elif not isinstance(target, (str, int, float)):
+            target = self._format_node(target, indent=indent, column=column)
+
+        return '{}{!s} {!s}{!s}'.format(
+            role,
+            role_epi or '',
+            target,
+            target_epi or '')
 
     def format_triples(self,
                        g: graph.Graph,
