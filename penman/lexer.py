@@ -60,6 +60,7 @@ class Token(NamedTuple):
     text: str    #: The matched string for the token.
     lineno: int  #: The line number the token appears on.
     offset: int  #: The character offset of the token.
+    line: str    #: The line the token appears in.
 
     @property
     def value(self):
@@ -179,16 +180,17 @@ class TokenIterator(Iterator[Token]):
 
     def raise_error(self, message, token=None):
         if token is None:
-            type = text = None
+            type = line = None
             if self._last is not None:
                 lineno = self._last.lineno
                 offset = self._last.offset + len(self._last.text)
+                line = self._last.line
             else:
                 lineno = offset = 0
         else:
-            type, text, lineno, offset = token
+            type, _, lineno, offset, line = token
 
-        raise DecodeError(message, lineno=lineno, offset=offset, text=text)
+        raise DecodeError(message, lineno=lineno, offset=offset, text=line)
 
 
 def lex(lines: Union[Iterable[str], str],
@@ -229,4 +231,4 @@ def _lex(lines: Iterable[str], regex: Pattern[str]) -> Iterator[Token]:
                 raise ValueError(
                     'Lexer pattern generated a match without a named '
                     'capturing group:\n{}'.format(regex.pattern))
-            yield Token(m.lastgroup, m.group(), i, m.start())
+            yield Token(m.lastgroup, m.group(), i, m.start(), line)
