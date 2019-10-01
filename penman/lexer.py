@@ -24,11 +24,11 @@ PATTERNS = {
        |\d+[eE][-+]?\d+        # 1e2
       )''',
     'INTEGER':    r'[-+]?\d+(?=[ )/:])',
-    'ALIGNMENT':  r'~(?:[a-zA-Z]\.?)?\d+(?:,\d+)*',
     # ROLE cannot be made up of COLON + SYMBOL because it then becomes
     # difficult to detect anonymous roles: (a : b) vs (a :b c)
-    'ROLE':       r':[^\s()\/,:~^]*',
-    'SYMBOL':     r'[^\s()\/,:~^]+',
+    'ROLE':       r':[^\s()\/,:~]*',
+    'SYMBOL':     r'[^\s()\/,:~]+',
+    'ALIGNMENT':  r'~(?:[a-zA-Z]\.?)?\d+(?:,\d+)*',
     'LPAREN':     r'\(',
     'RPAREN':     r'\)',
     'SLASH':      r'\/',  # node label role
@@ -46,10 +46,14 @@ def _compile(*names: str) -> Pattern[str]:
 
 # The order matters in these pattern lists as more permissive patterns
 # can short-circuit stricter patterns.
-PENMAN_RE = _compile('STRING', 'FLOAT', 'INTEGER', 'ALIGNMENT', 'ROLE',
-                     'SYMBOL', 'LPAREN', 'RPAREN', 'SLASH', 'UNEXPECTED')
-TRIPLE_RE = _compile('STRING', 'FLOAT', 'INTEGER', 'SYMBOL',
-                     'LPAREN', 'RPAREN', 'COMMA', 'CARET', 'UNEXPECTED')
+PENMAN_RE = _compile('STRING', 'FLOAT', 'INTEGER',
+                     'LPAREN', 'RPAREN', 'SLASH',
+                     'ALIGNMENT', 'ROLE', 'SYMBOL',
+                     'UNEXPECTED')
+TRIPLE_RE = _compile('STRING', 'FLOAT', 'INTEGER',
+                     'LPAREN', 'RPAREN', 'COMMA', 'CARET',
+                     'SYMBOL',
+                     'UNEXPECTED')
 
 
 class Token(NamedTuple):
