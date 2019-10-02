@@ -139,7 +139,7 @@ class Graph(object):
 
     @property
     def data(self) -> List[Datum]:
-        data = self._epidata.get(None, [])
+        data = []
         for triple in self._triples:
             data.append(triple)
             data.extend(self._epidata.get(triple, []))

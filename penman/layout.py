@@ -135,53 +135,6 @@ def alphanum_order(triples: _TripleIter) -> _TripleList:
         ]
     )
 
-
-
-def has_valid_layout(g: graph.Graph):
-    """
-    Return True if *g* contains the information for a valid layout.
-
-    Having a valid layout means that the graph data allows a
-    depth-first traversal that reconstructs a spanning tree used for
-    serialization.
-    """
-    ## NEW
-    return len(branches(g)) == 1
-    ## OLD
-    variables = g.variables()
-    stack = []
-    for datum in g._data:
-
-        try:
-            if datum is POP:
-                stack.pop()
-            # some other epidatum; ignore
-            elif not isinstance(graph.Triple):
-                continue
-            # regular edge or attribute
-            elif datum.source == stack[-1]:
-                if isinstance(datum, graph.Edge):
-                    stack.append(datum.target)
-            # inverted edge
-            elif datum.target == stack[-1]:
-                assert isinstance(datum, graph.Edge)
-                stack.append(datum.source)
-            else:
-                # neither the triple's source nor target connect to
-                # the current branch
-                return False
-
-        except IndexError:
-            # stack is empty but there are more triples to consider
-            return False
-
-        except AttributeError:
-            raise LayoutError('Unexpected graph datum: {!r}'.format(datum))
-
-    # full traversal complete
-    return True
-
-
 def branches(g: graph.Graph) -> List[Branch]:
     """
     (b / buy-01
@@ -210,74 +163,6 @@ def branches(g: graph.Graph) -> List[Branch]:
         pass
     return bs
 
-def _branches(node_id, data, variables, strict):
-    children = []
-    push_candidate = None
-    while data:
-        datum = data.pop()
-
-        if datum is POP:
-            break
-
-        elif datum is PUSH:
-            if push_candidate is None:
-                if strict:
-                    raise LayoutError('invalid layout')
-            else:
-                children.append(
-                    _branches(push_candidate, data, variables, strict))
-
-        elif not isinstance(datum, graph.Marker):
-            source, role, target = datum
-            # regular edge
-            if source == node_id and target in variables:
-                push_candidate = target
-            # inverted edge
-            elif target == node_id and source in variables:
-                push_candidate = source
-            # attribute
-            elif node_id in (source, target):
-                continue
-            # misplaced triple
-            else:
-                data.append((source, role, target))
-                break
-
-    return node_id, children
-
-    # source,
-    # id, children = None, []
-    # stack = []
-    # for datum in g.data:
-
-    #     try:
-    #         if datum is POP:
-    #             children = stack.pop()
-    #         # some other marker; ignore
-    #         elif isinstance(graph.Marker):
-    #             continue
-    #         # regular edge or attribute
-    #         elif datum.source == stack[-1]:
-    #             if isinstance(datum, graph.Edge):
-    #                 stack.append(datum.target)
-    #         # inverted edge
-    #         elif datum.target == stack[-1]:
-    #             assert isinstance(datum, graph.Edge)
-    #             stack.append(datum.source)
-    #         else:
-    #             # neither the triple's source nor target connect to
-    #             # the current branch
-    #             return False
-
-    #     except IndexError:
-    #         # stack is empty but there are more triples to consider
-    #         return False
-
-    #     except AttributeError:
-    #         raise LayoutError('Unexpected graph datum: {!r}'.format(datum))
-
-    # # full traversal complete
-    # return True
 
 def interpret(t: graph.Tree, model: _model.Model):
     """
@@ -320,16 +205,126 @@ def _interpret(t: graph.Tree, model: _model.Model, data):
         data.insert(start_index, (id, model.nodetype_role, None))
 
 
-def configure(g: graph.Graph, model: _model.Model):
+def configure(g: graph.Graph, model: _model.Model, strict=False):
     """
     Create a tree from a graph by making as few decisions as possible.
     """
-    pass
+    nodemap = {}
+    data = list(reversed(_preconfigure(g, strict)))
+    tree = _configure(g.top, data, g.variables(), nodemap, model, strict)
+    # if any data remain, the graph was not properly annotated for a tree
+    if data:
+        _reconfigure(tree, data, nodemap, model)
+    return tree
+
+def _preconfigure(g, strict):
+    """
+    Arrange the triples and epidata for ordered traversal.
+
+    Also perform some basic validation.
+    """
+    data = []
+    epidata = g.epidata
+    pushed = set()
+    for triple in g.triples():
+        push, pops, others = None, [], []
+        for epi in epidata.get(triple, []):
+            if isinstance(epi, Push):
+                if strict:
+                    if push is not None:
+                        raise LayoutError(
+                            'multiple node contexts for the same triple: {}'
+                            .format(triple))
+                    if epi.id not in (triple[0], triple[1]):
+                        raise LayoutError(
+                            "node context '{}' invalid for triple: {}"
+                            .format(epi.id, triple))
+                    if epi.id in pushed:
+                        raise LayoutError(
+                            'multiple node contexts for the same node: {}'
+                            .format(epi.id))
+                pushed.add(epi.id)
+                push = epi
+            elif epi is POP:
+                pops.append(epi)
+            else:
+                others.append(epi)
+        if strict and push and pops:
+            raise LayoutError(
+                'incompatible node context changes on triple: {}'
+                .format(triple))
+        # insert in this (reversed) order
+        data.append((triple, others, push))
+        data.extend(pops)
+    return data
+
+def _configure(id, data, variables, nodemap, model, strict):
+    """
+    Side-effects:
+      * *data* is modified
+      * nodemap is modified
+    """
+    attrs = []
+    edges = []
+    node = (id, attrs, edges)
+    nodemap[id] = node
+
+    while data:
+        datum = data.pop()
+
+        if datum is POP:
+            break
+
+        triple, epidata, push = datum
+        if triple[0] == id:
+            source, role, target = triple
+        elif triple[2] == id:
+            source, role, target = model.invert(triple)
+        else:
+            # misplaced triple
+            data.append((triple, epidata))
+            break
+
+        if push and push.id not in nodemap:
+            target = _configure(
+                push.id, data, variables, nodemap, model, strict)
+
+        if role == model.nodetype_role:
+            role = '/'
+
+        # simplify if no epidata
+        if epidata:
+            edge = (role, target, epidata)
+        else:
+            edge = (role, target)
+
+        # determine whether to add to node attrs or edges
+        if role == '/':
+            attrs.append(edge)
+        else:
+            edges.append(edge)
+
+    return node
+
+
+def has_valid_layout(g: graph.Graph):
+    """
+    Return True if *g* contains the information for a valid layout.
+
+    Having a valid layout means that the graph data allows a
+    depth-first traversal that reconstructs a spanning tree used for
+    serialization.
+    """
+    tree, nodemap, remaining = _configure(data, model)
+    return len(remaining) == 0
 
 
 def reconfigure(g: graph.Graph, top=None):
     pass
 
+
+def _reconfigure(tree, data, nodemap, model):
+    pass
 
 def rearrange(g: graph.Graph):
     pass
