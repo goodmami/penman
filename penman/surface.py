@@ -19,6 +19,12 @@ class AlignmentMarker(graph.Epidatum):
         self.indices = indices
         self.prefix = prefix
 
+    def __repr__(self):
+        args = repr(self.indices)
+        if self.prefix:
+            args += ', prefix={}'.format(repr(self.prefix))
+        return '{}({})'.format(type(self).__name__, args)
+
     def __str__(self):
         return '~{}{}'.format(self.prefix or '',
                               ','.join(map(str, self.indices)))
