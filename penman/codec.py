@@ -95,12 +95,8 @@ class PENMANCodec(object):
         attrs = []
         edges = []
 
-        if tokens.accept('SLASH') is not None:
-            label = aln = None
-            if tokens.peek_type() in self.ATOMS:
-                label = tokens.next().value
-                aln = self._parse_alignment(tokens, surface.Alignment)
-            attrs.append(('/', None, label, aln) if aln else ('/', label))
+        if tokens.peek_type() == 'SLASH':
+            attrs.append(self._parse_node_label(tokens))
 
         while tokens.peek_type() != 'RPAREN':
             edges.append(self._parse_edge(tokens))
@@ -108,6 +104,18 @@ class PENMANCodec(object):
         tokens.expect('RPAREN')
 
         return (id, attrs, edges)
+
+    def _parse_node_label(self, tokens: lexer.TokenIterator):
+        tokens.expect('SLASH')
+        label = None
+        # for robustness, don't assume next token is the label
+        if tokens.peek_type() in self.ATOMS:
+            label = tokens.next().value
+            if tokens.peek_type() == 'ALIGNMENT':
+                aln = self._parse_alignment(tokens, surface.Alignment)
+                return ('/', label, [aln])
+        # no alignment or maybe no label
+        return ('/', label)
 
     def _parse_edge(self, tokens: lexer.TokenIterator):
         """
@@ -117,16 +125,20 @@ class PENMANCodec(object):
 
             Edge := Role (Constant | Node)
         """
+        epidata = []
         role = tokens.expect('ROLE').text[1:]  # strip the leading :
-        raln = self._parse_alignment(tokens, surface.RoleAlignment)
-        aln = None
+        if tokens.peek_type() == 'ALIGNMENT':
+            epidata.append(
+                self._parse_alignment(tokens, surface.RoleAlignment))
         target = None
 
         _next = tokens.peek()
         next_type = _next.type
         if next_type in self.ATOMS:
             target = tokens.next().value
-            aln = self._parse_alignment(tokens, surface.Alignment)
+            if tokens.peek_type() == 'ALIGNMENT':
+                epidata.append(
+                    self._parse_alignment(tokens, surface.Alignment))
         elif next_type == 'LPAREN':
             target = self._parse_node(tokens)
         # for robustness in parsing, allow edges with no target:
@@ -135,10 +147,10 @@ class PENMANCodec(object):
         elif next_type not in ('ROLE', 'RPAREN'):
             tokens.raise_error('Expected: ATOM, LPAREN', token=_next)
 
-        if raln is aln is None:
-            return (role, target)
+        if epidata:
+            return (role, target, epidata)
         else:
-            return (role, raln, target, aln)
+            return (role, target)
 
     def _parse_alignment(self,
                          tokens: lexer.TokenIterator,
@@ -146,16 +158,13 @@ class PENMANCodec(object):
         """
         Parse a PENMAN surface alignment from *tokens*.
         """
-        aln = None
-        token = tokens.accept('ALIGNMENT')
-        if token is not None:
-            m = re.match((r'~(?P<prefix>[a-zA-Z]\.?)?'
-                          r'(?P<indices>\d+(?:,\d+)*)'),
-                         token.text)
-            prefix = m.group('prefix')
-            indices = list(map(int, m.group('indices').split(',')))
-            aln = cls(indices, prefix=prefix)
-        return aln
+        token = tokens.expect('ALIGNMENT')
+        m = re.match((r'~(?P<prefix>[a-zA-Z]\.?)?'
+                      r'(?P<indices>\d+(?:,\d+)*)'),
+                     token.text)
+        prefix = m.group('prefix')
+        indices = list(map(int, m.group('indices').split(',')))
+        return cls(indices, prefix=prefix)
 
     def parse_triples(self, s: str):
         tokens = lexer.lex(s, pattern=lexer.TRIPLE_RE)
@@ -247,9 +256,9 @@ class PENMANCodec(object):
         Format tree *edge* into a PENMAN string.
         """
         if len(edge) == 2:
-            role, target, role_epi, target_epi = *edge, None, None
+            role, target, epidata = *edge, []
         else:
-            role, role_epi, target, target_epi = edge
+            role, target, epidata = edge
 
         if role != '/' and not role.startswith(':'):
             role = ':' + role
@@ -264,11 +273,14 @@ class PENMANCodec(object):
         elif not isinstance(target, (str, int, float)):
             target = self._format_node(target, indent=indent, column=column)
 
-        return '{}{!s} {!s}{!s}'.format(
+        role_epi = ''.join(str(epi) for epi in epidata if epi.mode == 1)
+        target_epi = ''.join(str(epi) for epi in epidata if epi.mode == 2)
+
+        return '{}{} {!s}{}'.format(
             role,
-            role_epi or '',
+            role_epi,
             target,
-            target_epi or '')
+            target_epi)
 
     def format_triples(self,
                        g: graph.Graph,

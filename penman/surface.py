@@ -26,10 +26,12 @@ class AlignmentMarker(graph.Epidatum):
 
 class Alignment(AlignmentMarker):
     __slots__ = ()
+    mode = 2
 
 
 class RoleAlignment(AlignmentMarker):
     __slots__ = ()
+    mode = 1
 
 
 _Alignments = Mapping[graph.Triple, AlignmentMarker]

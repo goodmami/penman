@@ -280,6 +280,9 @@ def _branches(node_id, data, variables, strict):
     # return True
 
 def interpret(t: graph.Tree, model: _model.Model):
+    """
+    Interpret tree *t* as a graph using *model*.
+    """
     data = []
     _interpret(t, model, data)
     return graph.Graph(data)
@@ -291,9 +294,9 @@ def _interpret(t: graph.Tree, model: _model.Model, data):
     has_nodetype = False
     for edge in (attrs + edges):
         if len(edge) == 2:
-            role, target, role_epi, target_epi = *edge, None, None
+            role, target, epidata = *edge, []
         else:
-            role, role_epi, target, target_epi = edge
+            role, target, epidata = edge
         if role == '/':
             role = model.nodetype_role
             has_nodetype = True
@@ -305,13 +308,12 @@ def _interpret(t: graph.Tree, model: _model.Model, data):
             nested = target
             target = nested[0]
         data.append(model.normalize((id, role, target)))
-        if role_epi:
-            data.append(role_epi)
-        if target_epi:
-            data.append(target_epi)
+        data.extend(epidata)
         # recurse to nested nodes
         if nested:
+            data.append(Push(target))
             _interpret(nested, model, data)
+            data.append(POP)
 
     # ensure there is a triple for the node label
     if not has_nodetype:
