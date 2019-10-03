@@ -164,8 +164,10 @@ class Graph(object):
         """
         return set(self._variables)
 
-    @property
     def epidata(self) -> _Epidata:
+        """
+        Return the mapping of triples to epigraphical data.
+        """
         return dict(self._epidata)
 
     def triples(self,
