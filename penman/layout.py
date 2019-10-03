@@ -322,12 +322,28 @@ def has_valid_layout(g: graph.Graph):
 def reconfigure(g: graph.Graph, top=None):
     pass
 
+def is_atomic(x):
+    """
+    Return `True` if *x* is a valid atomic value.
+    """
+    return x is None or isinstance(x, (str, int, float))
 
 def _reconfigure(tree, data, nodemap, model):
     pass
 
 def rearrange(g: graph.Graph):
     pass
+def tree_node_identifiers(t: graph.Tree):
+    """
+    Return the list of node identifiers in the tree.
+    """
+    id, edges = t
+    ids = [id]
+    for _, target, *_ in edges:
+        # if target is not atomic, assume it's a valid tree node
+        if not is_atomic(target):
+            ids.extend(tree_node_identifiers(target))
+    return ids
 
 
 def inspect(g: graph.Graph):
