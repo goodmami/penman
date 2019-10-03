@@ -190,13 +190,16 @@ class PENMANCodec(object):
     def encode(self,
                g: graph.Graph,
                triples: bool = False,
-               indent: Optional[int] = -1) -> str:
+               indent: Optional[int] = -1,
+               compact: bool = False) -> str:
         """
         Serialize the graph *g* into PENMAN notation.
 
         Args:
             g: the Graph object
             triples: if True, serialize as a conjunction of logical triples
+            indent: how to indent formatted strings
+            compact: if `True`, put initial attributes on the first line
         Returns:
             the PENMAN-serialized string of the Graph *g*
         Example:
@@ -213,18 +216,20 @@ class PENMANCodec(object):
             return self.format_triples(g, indent=(indent is not None))
         else:
             tree = layout.configure(g, self.model)
-            return self._format_node(tree, indent=indent)
+            return self.format(tree, indent=indent, compact=compact)
 
-    def format(self, tree, indent: Optional[int] = -1):
+    def format(self, tree, indent: Optional[int] = -1, compact: bool = False):
         """
         Format *tree* into a PENMAN string.
         """
-        return self._format_node(tree, indent=indent, column=0)
+        ids = layout.tree_node_identifiers(tree) if compact else []
+        return self._format_node(tree, indent, 0, set(ids))
 
     def _format_node(self,
                      node,
-                     indent: Optional[int] = -1,
-                     column: int = 0) -> str:
+                     indent: Optional[int],
+                     column: int,
+                     ids: set) -> str:
         """
         Format tree *node* into a PENMAN string.
         """
@@ -245,12 +250,22 @@ class PENMANCodec(object):
                 column += indent
             joiner = '\n' + ' ' * column
 
+        # format the edges and join them
+        # if ids is non-empty, all initial attributes are compactly
+        # joined on the same line, otherwise they use joiner
         parts = []
+        compact = bool(ids)
         for edge in edges:
-            parts.append(self._format_edge(edge, indent, column))
-        return '({})'.format(joiner.join(parts))
+            target = edge[1]
+            if compact and (not layout.is_atomic(target) or target in ids):
+                compact = False
+                if parts:
+                    parts = [' '.join(parts)]
+            parts.append(self._format_edge(edge, indent, column, ids))
 
-    def _format_edge(self, edge, indent, column):
+        return '({} {})'.format(id, joiner.join(parts))
+
+    def _format_edge(self, edge, indent, column, ids):
         """
         Format tree *edge* into a PENMAN string.
         """
