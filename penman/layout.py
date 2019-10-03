@@ -175,9 +175,9 @@ def interpret(t: graph.Tree, model: _model.Model):
 
 def _interpret(t: graph.Tree, model: _model.Model, data):
     start_index = len(data)
-    id, attrs, edges = t
+    id, edges = t
     has_nodetype = False
-    for edge in (attrs + edges):
+    for edge in edges:
         if len(edge) == 2:
             role, target, epidata = *edge, []
         else:
@@ -186,7 +186,7 @@ def _interpret(t: graph.Tree, model: _model.Model, data):
             role = model.nodetype_role
             has_nodetype = True
         # atomic targets
-        if target is None or isinstance(target, (str, int, float)):
+        if is_atomic(target):
             nested = ()
         # nested nodes
         else:
@@ -264,9 +264,8 @@ def _configure(id, data, variables, nodemap, model, strict):
       * *data* is modified
       * nodemap is modified
     """
-    attrs = []
     edges = []
-    node = (id, attrs, edges)
+    node = (id, edges)
     nodemap[id] = node
 
     while data:
@@ -292,17 +291,13 @@ def _configure(id, data, variables, nodemap, model, strict):
         if role == model.nodetype_role:
             role = '/'
 
-        # simplify if no epidata
+        # simplify structure if no epidata
         if epidata:
             edge = (role, target, epidata)
         else:
             edge = (role, target)
 
-        # determine whether to add to node attrs or edges
-        if role == '/':
-            attrs.append(edge)
-        else:
-            edges.append(edge)
+        edges.append(edge)
 
     return node
 

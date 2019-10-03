@@ -24,13 +24,9 @@ class PENMANCodec(object):
     """
     An encoder/decoder for PENMAN-serialized graphs.
     """
-    # The top id and role are implicit except in serialized triple
-    # conjunctions
-    TOP_ID = 'top'
-    TOP_ROLE = 'TOP'
-    # IDENTIFIERS are the valid tokens for node identifers
+    # The valid tokens for node identifers.
     IDENTIFIERS = 'SYMBOL', 'INTEGER'
-    # ATOMS are the valid non-node targets of edges
+    #: The valid non-node targets of edges.
     ATOMS = set(['SYMBOL', 'STRING', 'INTEGER', 'FLOAT'])
 
     def __init__(self, model: _model.Model = None):
@@ -92,18 +88,17 @@ class PENMANCodec(object):
         tokens.expect('LPAREN')
 
         id = tokens.expect(*self.IDENTIFIERS).value
-        attrs = []
         edges = []
 
         if tokens.peek_type() == 'SLASH':
-            attrs.append(self._parse_node_label(tokens))
+            edges.append(self._parse_node_label(tokens))
 
         while tokens.peek_type() != 'RPAREN':
             edges.append(self._parse_edge(tokens))
 
         tokens.expect('RPAREN')
 
-        return (id, attrs, edges)
+        return (id, edges)
 
     def _parse_node_label(self, tokens: lexer.TokenIterator):
         tokens.expect('SLASH')
@@ -233,9 +228,14 @@ class PENMANCodec(object):
         """
         Format tree *node* into a PENMAN string.
         """
-        id, attrs, edges = node
+        id, edges = node
         id = str(id)  # ids can be ints
 
+        # unlabeled nodes; just return now
+        if not edges:
+            return '({})'.format(id)
+
+        # determine appropriate joiner based on value of indent
         if indent is None:
             joiner = ' '
         else:
@@ -245,8 +245,7 @@ class PENMANCodec(object):
                 column += indent
             joiner = '\n' + ' ' * column
 
-        _attrs = [self._format_edge(attr, indent, column) for attr in attrs]
-        parts = [' '.join([id] + _attrs)]
+        parts = []
         for edge in edges:
             parts.append(self._format_edge(edge, indent, column))
         return '({})'.format(joiner.join(parts))
@@ -270,8 +269,8 @@ class PENMANCodec(object):
 
         if target is None:
             target = ''
-        elif not isinstance(target, (str, int, float)):
-            target = self._format_node(target, indent=indent, column=column)
+        elif not layout.is_atomic(target):
+            target = self._format_node(target, indent, column, ids)
 
         role_epi = ''.join(str(epi) for epi in epidata if epi.mode == 1)
         target_epi = ''.join(str(epi) for epi in epidata if epi.mode == 2)
