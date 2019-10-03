@@ -168,13 +168,12 @@ def interpret(t: graph.Tree, model: _model.Model):
     """
     Interpret tree *t* as a graph using *model*.
     """
-    data = []
-    _interpret(t, model, data)
+    data = _interpret_node(t, model)
     return graph.Graph(data)
 
 
-def _interpret(t: graph.Tree, model: _model.Model, data):
-    start_index = len(data)
+def _interpret_node(t: graph.Tree, model: _model.Model):
+    data = []
     id, edges = t
     has_nodetype = False
     for edge in edges:
@@ -197,13 +196,14 @@ def _interpret(t: graph.Tree, model: _model.Model, data):
         # recurse to nested nodes
         if nested:
             data.append(Push(target))
-            _interpret(nested, model, data)
+            data.extend(_interpret_node(nested, model))
             data.append(POP)
 
     # ensure there is a triple for the node label
     if not has_nodetype:
-        data.insert(start_index, (id, model.nodetype_role, None))
+        data.insert(0, (id, model.nodetype_role, None))
 
+    return data
 
 def configure(g: graph.Graph, model: _model.Model, strict=False):
     """
