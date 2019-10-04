@@ -4,7 +4,7 @@ import sys
 import argparse
 import json
 
-from penman import __version__, PENMANCodec, AMRCodec, Model, dump
+from penman import __version__, PENMANCodec, Model, dump
 
 
 def main():
@@ -29,24 +29,24 @@ def main():
     add('--indent', metavar='N',
         help='indent N spaces per level ("no" for no newlines)')
     add('--amr', action='store_true',
-        help='use AMR codec instead of generic PENMAN one')
+        help='use AMR model instead of generic PENMAN one')
 
     args = parser.parse_args()
 
     codec = AMRCodec if args.amr else PENMANCodec
 
-    indent = True
+    indent = -1
     if args.indent:
         if args.indent.lower() in ("no", "none", "false"):
-            indent = False
+            indent = None
         else:
             try:
                 indent = int(args.indent)
-                if indent < 0:
+                if indent < -1:
                     raise ValueError
             except ValueError:
-                sys.exit('error: --indent value must be "no" or a '
-                         ' positive integer')
+                sys.exit('error: --indent value must be "no" or an '
+                         'integer >= -1')
 
     if args.model:
         model = Model(**json.load(args.model))
