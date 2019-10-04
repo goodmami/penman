@@ -262,6 +262,9 @@ class PENMANCodec(object):
                 if parts:
                     parts = [' '.join(parts)]
             parts.append(self._format_edge(edge, indent, column, ids))
+        # check if all edges can be compactly written
+        if compact:
+            parts = [' '.join(parts)]
 
         return '({} {})'.format(id, joiner.join(parts))
 
@@ -277,18 +280,17 @@ class PENMANCodec(object):
         if role != '/' and not role.startswith(':'):
             role = ':' + role
 
+        role_epi = ''.join(str(epi) for epi in epidata if epi.mode == 1)
+        target_epi = ''.join(str(epi) for epi in epidata if epi.mode == 2)
+
         if indent == -1:
-            column += len(role) + 2  # +2 for : and a space
-        elif indent:
-            column += indent
+            column += len(role) + len(role_epi) + 1 # +1 for :
 
         if target is None:
             target = ''
         elif not layout.is_atomic(target):
             target = self._format_node(target, indent, column, ids)
 
-        role_epi = ''.join(str(epi) for epi in epidata if epi.mode == 1)
-        target_epi = ''.join(str(epi) for epi in epidata if epi.mode == 2)
 
         return '{}{} {!s}{}'.format(
             role,
