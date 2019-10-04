@@ -85,23 +85,6 @@ class _Pop(graph.Epidatum):
 POP = _Pop()
 
 
-# Layout structures
-
-class Branch(NamedTuple):
-    triple: graph.BasicTriple
-    branches: List[Any]  # should be recursive: List[Branch]
-
-    @property
-    def top(self) -> _Identifier:
-        return self.triple[0]
-
-
-class Tree(object):
-    def __init__(self, top, branches: Iterable[Branch]):
-        self.top = top
-        self.branches = branches
-
-
 _TripleIter = Iterable[graph.Triple]
 _TripleList = List[graph.Triple]
 
@@ -135,41 +118,15 @@ def alphanum_order(triples: _TripleIter) -> _TripleList:
         ]
     )
 
-def branches(g: graph.Graph) -> List[Branch]:
-    """
-    (b / buy-01
-       :ARG0 (k / Kim)
-       :ARG1 (a / apple :quant 3))
 
-    [((None, 'TOP', 'b'), [
-       (('b', 'instance', 'buy-01'), []),
-       (('b', 'ARG0', 'k'), [
-          (('k', 'instance', 'Kim'), [])
-        ])
-       (('b', 'ARG1', 'a'), [
-          (('a', 'instance', 'apple'), []),
-          (('a', 'quant', 3), [])
-        ])
-      ])
-    ]
-    """
-    variables = g.variables()
-    data = reversed(g.data)
-    bs = []
-    try:
-        while data:
-            bs.append(_branches(None, data, variables, strict))
-    except IndexError:
-        pass
-    return bs
-
+# Tree to graph interpretation ################################################
 
 def interpret(t: graph.Tree, model: _model.Model):
     """
     Interpret tree *t* as a graph using *model*.
     """
-    data = _interpret_node(t, model)
-    return graph.Graph(data)
+    top, data = _interpret_node(t, model)
+    return graph.Graph(data, top=top)
 
 
 def _interpret_node(t: graph.Tree, model: _model.Model):
@@ -196,26 +153,36 @@ def _interpret_node(t: graph.Tree, model: _model.Model):
         # recurse to nested nodes
         if nested:
             data.append(Push(target))
-            data.extend(_interpret_node(nested, model))
+            data.extend(_interpret_node(nested, model)[1])
             data.append(POP)
 
-    # ensure there is a triple for the node label
-    if not has_nodetype:
-        data.insert(0, (id, model.nodetype_role, None))
+    return id, data
 
-    return data
 
-def configure(g: graph.Graph, model: _model.Model, strict=False):
+# Graph to tree configuration #################################################
+
+def configure(g: graph.Graph, model: _model.Model, top=None, strict=False):
     """
     Create a tree from a graph by making as few decisions as possible.
     """
-    nodemap = {}
+    if top is None:
+        top = g.top
     data = list(reversed(_preconfigure(g, strict)))
-    tree = _configure(g.top, data, g.variables(), nodemap, model, strict)
+    variables = g.variables()
+    nodemap = {top: (top, [])}
+    tree = _configure_node(top, data, variables, nodemap, model)
     # if any data remain, the graph was not properly annotated for a tree
-    if data:
-        _reconfigure(tree, data, nodemap, model)
+    while data:
+        skipped, id, data = _find_next(data, nodemap)
+        data_count = len(data)
+        if id is None or data_count == 0:
+            raise LayoutError('possibly disconnected graph')
+        _configure_node(id, data, variables, nodemap, model)
+        if len(data) >= data_count:
+            raise LayoutError('cycle in configuration')
+        data = skipped + data
     return tree
+
 
 def _preconfigure(g, strict):
     """
@@ -230,43 +197,43 @@ def _preconfigure(g, strict):
         push, pops, others = None, [], []
         for epi in epidata.get(triple, []):
             if isinstance(epi, Push):
-                if strict:
-                    if push is not None:
+                if push is not None or epi.id in pushed:
+                    if strict:
                         raise LayoutError(
-                            'multiple node contexts for the same triple: {}'
-                            .format(triple))
-                    if epi.id not in (triple[0], triple[1]):
+                            "multiple node contexts for '{}'"
+                            .format(epi.id))
+                    pass  # change to 'continue' to disallow multiple contexts
+                if epi.id not in (triple[0], triple[2]):
+                    if strict:
                         raise LayoutError(
                             "node context '{}' invalid for triple: {}"
                             .format(epi.id, triple))
-                    if epi.id in pushed:
-                        raise LayoutError(
-                            'multiple node contexts for the same node: {}'
-                            .format(epi.id))
+                    continue
                 pushed.add(epi.id)
                 push = epi
             elif epi is POP:
                 pops.append(epi)
             else:
                 others.append(epi)
+
         if strict and push and pops:
             raise LayoutError(
                 'incompatible node context changes on triple: {}'
                 .format(triple))
-        # insert in this (reversed) order
+
         data.append((triple, others, push))
         data.extend(pops)
+
     return data
 
-def _configure(id, data, variables, nodemap, model, strict):
+def _configure_node(id, data, variables, nodemap, model):
     """
     Side-effects:
       * *data* is modified
-      * nodemap is modified
+      * *nodemap* is modified
     """
-    edges = []
-    node = (id, edges)
-    nodemap[id] = node
+    node = nodemap[id]
+    edges = node[1]
 
     while data:
         datum = data.pop()
@@ -281,15 +248,22 @@ def _configure(id, data, variables, nodemap, model, strict):
             source, role, target = model.invert(triple)
         else:
             # misplaced triple
-            data.append((triple, epidata))
+            data.append(datum)
             break
 
-        if push and push.id not in nodemap:
-            target = _configure(
-                push.id, data, variables, nodemap, model, strict)
+        if push and push.id == target:
+            nodemap[push.id] = (push.id, [])
+            target = _configure_node(
+                push.id, data, variables, nodemap, model)
+        elif target in variables and target not in nodemap:
+            # site of potential node context
+            nodemap[target] = node
 
         if role == model.nodetype_role:
             role = '/'
+            index = 0
+        else:
+            index = len(edges)
 
         # simplify structure if no epidata
         if epidata:
@@ -297,9 +271,46 @@ def _configure(id, data, variables, nodemap, model, strict):
         else:
             edge = (role, target)
 
-        edges.append(edge)
+        edges.insert(index, edge)
 
     return node
+
+
+def _find_next(data, nodemap):
+    """
+    Find the next node context; establish if necessary.
+    """
+    id = None
+    for i in range(len(data)-1, -1, -1):
+        datum = data[i]
+        if datum is POP:
+            continue
+        source, _, target = datum[0]
+        for endpoint in (source, target):
+            if endpoint in nodemap:
+                _id, edges = nodemap[endpoint]
+                if _id != endpoint:
+                    _establish_site(endpoint, edges, nodemap)
+                id = endpoint
+                break
+    return data[i+1:], id, data[:i+1]
+
+
+def _establish_site(id, edges, nodemap):
+    """
+    Turn a node identifier target into a node context.
+    """
+    node = (id, [])
+    nodemap[id] = node
+    for i in range(len(edges)):
+        if edges[i][1] == id:
+            edge = list(edges[i])
+            edge[1] = node
+            edges[i] = tuple(edge)
+
+
+def rearrange(g: graph.Graph):
+    pass
 
 
 def has_valid_layout(g: graph.Graph):
@@ -310,12 +321,9 @@ def has_valid_layout(g: graph.Graph):
     depth-first traversal that reconstructs a spanning tree used for
     serialization.
     """
-    tree, nodemap, remaining = _configure(data, model)
+    tree, nodemap, remaining = _configure_node(data, model)
     return len(remaining) == 0
 
-
-def reconfigure(g: graph.Graph, top=None):
-    pass
 
 def is_atomic(x):
     """
@@ -323,11 +331,7 @@ def is_atomic(x):
     """
     return x is None or isinstance(x, (str, int, float))
 
-def _reconfigure(tree, data, nodemap, model):
-    pass
 
-def rearrange(g: graph.Graph):
-    pass
 def tree_node_identifiers(t: graph.Tree):
     """
     Return the list of node identifiers in the tree.
