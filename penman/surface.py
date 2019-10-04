@@ -29,6 +29,12 @@ class AlignmentMarker(graph.Epidatum):
         return '~{}{}'.format(self.prefix or '',
                               ','.join(map(str, self.indices)))
 
+    def __eq__(self, other):
+        if not isinstance(other, AlignmentMarker):
+            return False
+        return (self.prefix == other.prefix
+                and self.indices == other.indices)
+
 
 class Alignment(AlignmentMarker):
     __slots__ = ()
