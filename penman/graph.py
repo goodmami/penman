@@ -115,12 +115,14 @@ class Graph(object):
                 triples.append(datum)
                 current = datum
 
-        if not triples:
+        if not triples and not top:
             raise ValueError('Cannot instantiate an empty Graph')
 
         ids = [t[0] for t in triples]
         if top is None:
             top = ids[0]  # implicit top: source of first triple
+        elif len(ids) == 0:
+            ids = [top]
         if not metadata:
             metadata = {}
 

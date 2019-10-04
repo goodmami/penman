@@ -12,47 +12,33 @@ class TestPENMANCodec(object):
     def test_decode(self, x1, x2):
         # unlabeled single node
         g = decode('(a)')
-        assert g.triples() == [('a', 'instance', None)]
+        assert g.top == 'a'
+        assert g.triples() == []
 
         # labeled node
         g = decode('(a / alpha)')
+        assert g.top == 'a'
         assert g.triples() == [('a', 'instance', 'alpha')]
 
         # unlabeled edge to unlabeled node
         g = decode('(a : (b))')
-        assert g.triples() == [
-            ('a', 'instance', None),
-            ('a', '', 'b'),
-            ('b', 'instance', None),
-        ]
         assert g.top == 'a'
+        assert g.triples() == [('a', '', 'b')]
 
         # inverted unlabeled edge
         g = decode('(b :-of (a))')
-        assert g.triples() == [
-            ('b', 'instance', None),
-            ('a', '', 'b'),
-            ('a', 'instance', None),
-        ]
         assert g.top == 'b'
+        assert g.triples() == [('a', '', 'b')]
 
         # labeled edge to unlabeled node
         g = decode('(a :ARG (b))')
-        assert g.triples() == [
-            ('a', 'instance', None),
-            ('a', 'ARG', 'b'),
-            ('b', 'instance', None),
-        ]
         assert g.top == 'a'
+        assert g.triples() == [('a', 'ARG', 'b')]
 
         # inverted edge
         g = decode('(b :ARG-of (a))')
-        assert g.triples() == [
-            ('b', 'instance', None),
-            ('a', 'ARG', 'b'),
-            ('a', 'instance', None),
-        ]
         assert g.top == 'b'
+        assert g.triples() == [('a', 'ARG', 'b')]
 
         # fuller examples
         assert decode(x1[0]).triples() == x1[1]
@@ -62,28 +48,24 @@ class TestPENMANCodec(object):
         # string value
         g = decode('(a :ARG "string")')
         assert g.triples() == [
-            ('a', 'instance', None),
             ('a', 'ARG', '"string"'),
         ]
 
         # symbol value
         g = decode('(a :ARG symbol)')
         assert g.triples() == [
-            ('a', 'instance', None),
             ('a', 'ARG', 'symbol')
         ]
 
         # float value
         g = decode('(a :ARG -1.0e-2)')
         assert g.triples() == [
-            ('a', 'instance', None),
             ('a', 'ARG', -0.01)
         ]
 
         # int value
         g = decode('(a :ARG 15)')
         assert g.triples() == [
-            ('a', 'instance', None),
             ('a', 'ARG', 15)
         ]
 
