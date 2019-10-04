@@ -3,12 +3,102 @@
 import pytest
 
 import penman
+from penman import layout
+from penman import surface
 
 codec = penman.PENMANCodec()
 decode = codec.decode
-encode = penman.encode
+encode = codec.encode
 
 class TestPENMANCodec(object):
+    def test_parse(self):
+        assert codec.parse('(a)') == (
+            'a', [])
+        assert codec.parse('(a / alpha)') == (
+            'a', [('/', 'alpha')])
+        assert codec.parse('(a : b)') == (
+            'a', [('', 'b')])
+        assert codec.parse('(a : (b))') == (
+            'a', [('', ('b', []))])
+        assert codec.parse('(a / alpha :ARG (b / beta))') == (
+            'a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))])
+        assert codec.parse('(a :ARG-of b)') == (
+            'a', [('ARG-of', 'b')])
+        assert codec.parse('(a :ARG~1 b~2)') == (
+            'a', [('ARG', 'b', [surface.RoleAlignment([1]),
+                                surface.Alignment([2])])])
+
+    def test_format(self):
+        assert codec.format(
+            ('a', [])
+        ) == '(a)'
+        assert codec.format(
+            ('a', [('/', 'alpha')])
+        ) == '(a / alpha)'
+        assert codec.format(
+            ('a', [('', 'b')])
+        ) == '(a : b)'
+        assert codec.format(
+            ('a', [('', ('b', []))])
+        ) == '(a : (b))'
+        assert codec.format(
+            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
+            indent=None
+        ) == '(a / alpha :ARG (b / beta))'
+        assert codec.format(
+            ('a', [('ARG-of', 'b')])
+        ) == '(a :ARG-of b)'
+        assert codec.format(
+            ('a', [('ARG', 'b', [surface.RoleAlignment([1]),
+                                 surface.Alignment([2])])])
+        ) == '(a :ARG~1 b~2)'
+
+    def test_format_with_parameters(self):
+        # no indent
+        assert codec.format(
+            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
+            indent=None
+        ) == '(a / alpha :ARG (b / beta))'
+        # default (adaptive) indent
+        assert codec.format(
+            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
+            indent=-1
+        ) == ('(a / alpha\n'
+              '   :ARG (b / beta))')
+        # fixed indent
+        assert codec.format(
+            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
+            indent=6
+        ) == ('(a / alpha\n'
+              '      :ARG (b / beta))')
+        # default compactness of attributes
+        assert codec.format(
+            ('a', [('/', 'alpha'),
+                   ('polarity', '-'),
+                   ('ARG', ('b', [('/', 'beta')]))]),
+            compact=False
+        ) == ('(a / alpha\n'
+              '   :polarity -\n'
+              '   :ARG (b / beta))')
+        # compact of attributes
+        assert codec.format(
+            ('a', [('/', 'alpha'),
+                   ('polarity', '-'),
+                   ('ARG', ('b', [('/', 'beta')]))]),
+            compact=True
+        ) == ('(a / alpha :polarity -\n'
+              '   :ARG (b / beta))')
+        # compact of attributes (only initial)
+        assert codec.format(
+            ('a', [('/', 'alpha'),
+                   ('polarity', '-'),
+                   ('ARG', ('b', [('/', 'beta')])),
+                   ('mode', 'expressive')]),
+            compact=True
+        ) == ('(a / alpha :polarity -\n'
+              '   :ARG (b / beta)\n'
+              '   :mode expressive)')
+
     def test_decode(self, x1, x2):
         # unlabeled single node
         g = decode('(a)')
@@ -133,6 +223,62 @@ class TestPENMANCodec(object):
         with pytest.raises(penman.DecodeError):
             decode('(a :ARG1 ())')
 
+    def test_encode(self, x1, x2):
+        # unlabeled single node
+        g = penman.Graph([], top='a')
+        assert encode(g) == '(a)'
+
+        # labeled node
+        g = penman.Graph([('a', 'instance', 'alpha')])
+        assert encode(g) == '(a / alpha)'
+
+        # unlabeled edge to unlabeled node
+        g = penman.Graph([('a', '', 'b')])
+        assert encode(g) == '(a : b)'
+        g = penman.Graph([('a', '', 'b'), layout.Push('b')])
+        assert encode(g) == '(a : (b))'
+
+        # inverted unlabeled edge
+        g = penman.Graph(
+            [('a', '', 'b')], top='b')
+        assert encode(g) == '(b :-of a)'
+
+        # labeled edge to unlabeled node
+        g = penman.Graph([('a', 'ARG', 'b')])
+        assert encode(g) == '(a :ARG b)'
+
+        # inverted edge
+        g = penman.Graph([('a', 'ARG', 'b')], top='b')
+        assert encode(g) == '(b :ARG-of a)'
+
+    def test_encode_atoms(self):
+        # string value
+        g = penman.Graph([('a', 'ARG', '"string"')])
+        assert encode(g) == '(a :ARG "string")'
+
+        # symbol value
+        g = penman.Graph([('a', 'ARG', 'symbol')])
+        assert encode(g) == '(a :ARG symbol)'
+
+        # float value
+        g = penman.Graph([('a', 'ARG', -0.01)])
+        assert encode(g) == '(a :ARG -0.01)'
+
+        # int value
+        g = penman.Graph([('a', 'ARG', 15)])
+        assert encode(g) == '(a :ARG 15)'
+
+        # numeric node type
+        g = penman.Graph([('one', 'instance', 1)])
+        assert encode(g) == '(one / 1)'
+
+        # string node type
+        g = penman.Graph([('one', 'instance', '"a string"')])
+        assert encode(g) == '(one / "a string")'
+
+        # numeric "variable"
+        g = penman.Graph([(1, 'instance', 'one')])
+        assert encode(g) == '(1 / one)'
 
 # def test_iterdecode():
 #     codec = penman.PENMANCodec()
@@ -147,93 +293,6 @@ class TestPENMANCodec(object):
 #     # assert len(list(codec.iterdecode('(h / hello)(g / goodbye'))) == 1
 
 
-    # def test_encode(self, x1, x2):
-    #     # unlabeled single node
-    #     g = penman.Graph([('a', 'instance', None)])
-    #     assert encode(g) == '(a)'
-
-    #     # labeled node
-    #     g = penman.Graph([('a', 'instance', 'alpha')])
-    #     assert encode(g) == '(a / alpha)'
-
-    #     # unlabeled edge to unlabeled node
-    #     g = penman.Graph([
-    #         ('a', 'instance', None),
-    #         ('a', None, 'b'),
-    #         ('b', 'instance', None),
-    #     ])
-    #     assert encode(g) == '(a : (b))'
-
-    #     # inverted unlabeled edge
-    #     g = penman.Graph([
-    #         ('b', 'instance', None),
-    #         ('a', None, 'b'),
-    #         ('a', 'instance', None),
-    #     ])
-    #     assert encode(g) == '(b :-of (a))'
-
-    #     # labeled edge to unlabeled node
-    #     g = penman.Graph([
-    #         ('a', 'instance', None),
-    #         ('a', 'ARG', 'b'),
-    #         ('b', 'instance', None),
-    #     ])
-    #     assert encode(g) == '(a :ARG (b))'
-
-    #     # inverted edge
-    #     g = penman.Graph([
-    #         ('b', 'instance', None),
-    #         ('a', 'ARG', 'b'),
-    #         ('a', 'instance', None),
-    #     ])
-    #     assert encode(g) == '(b :ARG-of (a))'
-
-    # def test_encode_atoms(self):
-    #     # string value
-    #     g = penman.Graph([
-    #         ('a', 'instance', None),
-    #         ('a', 'ARG', '"string"'),
-    #     ])
-    #     assert encode(g) == '(a :ARG "string")'
-
-    #     # symbol value
-    #     g = penman.Graph([
-    #         ('a', 'instance', None),
-    #         ('a', 'ARG', 'symbol'),
-    #     ])
-    #     assert encode(g) == '(a :ARG symbol)'
-
-    #     # float value
-    #     g = penman.Graph([
-    #         ('a', 'instance', None),
-    #         ('a', 'ARG', -0.01),
-    #     ])
-    #     assert encode(g) == '(a :ARG -0.01)'
-
-    #     # int value
-    #     g = penman.Graph([
-    #         ('a', 'instance', None),
-    #         ('a', 'ARG', 15),
-    #     ])
-    #     assert encode(g) == '(a :ARG 15)'
-
-    #     # numeric node type
-    #     g = penman.Graph([
-    #         ('one', 'instance', 1),
-    #     ])
-    #     assert encode(g) == '(one / 1)'
-
-    #     # string node type
-    #     g = penman.Graph([
-    #         ('one', 'instance', '"a string"'),
-    #     ])
-    #     assert encode(g) == '(one / "a string")'
-
-    #     # numeric "variable"
-    #     g = penman.Graph([
-    #         (1, 'instance', 'one'),
-    #     ])
-    #     assert encode(g) == '(1 / one)'
 
 
 #     assert encode(penman.Graph(x1[1])) == x1[0]
