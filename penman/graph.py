@@ -129,7 +129,7 @@ class Graph(object):
         self._triples = triples
         self._variables = set(ids)
         self._top = top
-        self._epidata = epidata
+        self.epidata = epidata
         self.metadata = metadata
 
     def __repr__(self):
@@ -165,12 +165,6 @@ class Graph(object):
         Return the set of variables (nonterminal node identifiers).
         """
         return set(self._variables)
-
-    def epidata(self) -> _Epidata:
-        """
-        Return the mapping of triples to epigraphical data.
-        """
-        return dict(self._epidata)
 
     def triples(self,
                 source: _Identifier = None,

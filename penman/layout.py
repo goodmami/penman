@@ -191,7 +191,7 @@ def _preconfigure(g, strict):
     Also perform some basic validation.
     """
     data = []
-    epidata = g.epidata()
+    epidata = g.epidata
     pushed = set()
     for triple in g.triples():
         push, pops, others = None, [], []

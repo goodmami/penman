@@ -79,7 +79,7 @@ def _get_alignments(g: graph.Graph,
                     alignment_type: Type[AlignmentMarker]) -> _Alignments:
     alns = {}
     triple = None
-    for triple, epidata in g.epidata().items():
+    for triple, epidata in g.epidata.items():
         for epidatum in epidata:
             if isinstance(epidatum, alignment_type):
                 alns[triple] = datum
