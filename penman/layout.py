@@ -290,31 +290,45 @@ def _find_next(data, nodemap):
         if datum is POP:
             continue
         source, _, target = datum[0]
-        for endpoint in (source, target):
-            if endpoint in nodemap:
-                _id, edges = nodemap[endpoint]
-                if _id != endpoint:
-                    _establish_site(endpoint, edges, nodemap)
-                id = endpoint
-                break
-    return data[i+1:], id, data[:i+1]
+        if _get_or_establish_site(source, nodemap):
+            id = source
+            break
+        elif _get_or_establish_site(target, nodemap):
+            id = target
+            break
+    return data[:i], id, data[i:]
 
 
-def _establish_site(id, edges, nodemap):
+def _get_or_establish_site(id, nodemap):
     """
     Turn a node identifier target into a node context.
     """
-    node = (id, [])
-    nodemap[id] = node
-    for i in range(len(edges)):
-        if edges[i][1] == id:
-            edge = list(edges[i])
-            edge[1] = node
-            edges[i] = tuple(edge)
+    # first check if the id is available at all
+    if id in nodemap:
+        _id, edges = nodemap[id]
+        # if the mapped node's id doesn't match it can be established
+        if id != _id:
+            node = (id, [])
+            nodemap[id] = node
+            for i in range(len(edges)):
+                # replace the identifier in the tree with the new node
+                if edges[i][1] == id:
+                    edge = list(edges[i])
+                    edge[1] = node
+                    edges[i] = tuple(edge)
+        else:
+            pass  # otherwise the node already exists so we're good
+        return True
+    # id is not yet available
+    return False
 
 
-def rearrange(g: graph.Graph):
-    pass
+def reconfigure(g: graph.Graph, model: _model.Model, top=None, strict=False):
+    """
+    Create a tree from a graph after any discarding layout markers.
+    """
+    graph.clear_epidata(g, LayoutMarker)
+    return configure(g, model, top=top, strict=strict)
 
 
 def has_valid_layout(g: graph.Graph):
