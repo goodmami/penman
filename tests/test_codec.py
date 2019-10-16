@@ -25,8 +25,8 @@ class TestPENMANCodec(object):
         assert codec.parse('(a :ARG-of b)') == (
             'a', [('ARG-of', 'b')])
         assert codec.parse('(a :ARG~1 b~2)') == (
-            'a', [('ARG', 'b', [surface.RoleAlignment([1]),
-                                surface.Alignment([2])])])
+            'a', [('ARG', 'b', [surface.RoleAlignment((1,)),
+                                surface.Alignment((2,))])])
 
     def test_format(self):
         assert codec.format(
@@ -49,8 +49,8 @@ class TestPENMANCodec(object):
             ('a', [('ARG-of', 'b')])
         ) == '(a :ARG-of b)'
         assert codec.format(
-            ('a', [('ARG', 'b', [surface.RoleAlignment([1]),
-                                 surface.Alignment([2])])])
+            ('a', [('ARG', 'b', [surface.RoleAlignment((1,)),
+                                 surface.Alignment((2,))])])
         ) == '(a :ARG~1 b~2)'
 
     def test_format_with_parameters(self):

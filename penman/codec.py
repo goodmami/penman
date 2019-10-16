@@ -149,7 +149,7 @@ class PENMANCodec(object):
 
     def _parse_alignment(self,
                          tokens: lexer.TokenIterator,
-                         cls: Type[surface.Alignment]):
+                         cls: Type[surface.AlignmentMarker]):
         """
         Parse a PENMAN surface alignment from *tokens*.
         """
@@ -157,8 +157,11 @@ class PENMANCodec(object):
         m = re.match((r'~(?P<prefix>[a-zA-Z]\.?)?'
                       r'(?P<indices>\d+(?:,\d+)*)'),
                      token.text)
-        prefix = m.group('prefix')
-        indices = list(map(int, m.group('indices').split(',')))
+        if m is not None:
+            prefix = m.group('prefix')
+            indices = tuple(map(int, m.group('indices').split(',')))
+        else:
+            prefix, indices = None, ()
         return cls(indices, prefix=prefix)
 
     def parse_triples(self, s: str):
