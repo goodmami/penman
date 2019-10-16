@@ -249,3 +249,18 @@ class Graph(object):
 Branch = Tuple[_Role, Optional[Epidatum],
                Union[_Target, 'Tree'], Optional[Epidatum]]
 Tree = Tuple[_Identifier, List[Branch], List[Branch]]
+
+
+def clear_epidata(g, epidata_class=None):
+    """
+    Remove all epigraphical data in *g*.
+
+    If *epidata_class* is given and is not `None`, only subtypes of
+    *epidata_class* will be removed.
+    """
+    for epilist in g.epidata.values():
+        if epidata_class is not None:
+            epilist[:] = [epi for epi in epilist
+                          if not isinstance(epi, epidata_class)]
+        else:
+            epilist[:] = []

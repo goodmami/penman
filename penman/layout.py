@@ -61,7 +61,11 @@ _Identifier = graph._Identifier
 
 # Epigraphical markers
 
-class Push(graph.Epidatum):
+class LayoutMarker(graph.Epidatum):
+    """Epigraph marker for layout choices."""
+
+
+class Push(LayoutMarker):
     """Epigraph marker to indicate a new node context."""
 
     __slots__ = 'id',
@@ -73,7 +77,7 @@ class Push(graph.Epidatum):
         return 'Push({})'.format(self.id)
 
 
-class _Pop(graph.Epidatum):
+class _Pop(LayoutMarker):
     """Epigraph marker to indicate the end of a node context."""
 
     __slots__ = ()
