@@ -25,7 +25,7 @@ class PENMANCodec(object):
     An encoder/decoder for PENMAN-serialized graphs.
     """
     # The valid tokens for node identifers.
-    IDENTIFIERS = 'SYMBOL', 'INTEGER'
+    IDENTIFIERS = 'SYMBOL',
     #: The valid non-node targets of edges.
     ATOMS = set(['SYMBOL', 'STRING', 'INTEGER', 'FLOAT'])
 
@@ -171,7 +171,7 @@ class PENMANCodec(object):
         while True:
             role = tokens.expect('SYMBOL').text
             tokens.expect('LPAREN')
-            source = tokens.expect('SYMBOL', 'INTEGER').text
+            source = tokens.expect(*self.IDENTIFIERS).text
             tokens.expect('COMMA')
             _next = tokens.peek().type
             if _next in self.ATOMS:

@@ -11,7 +11,7 @@ from typing import (
 from collections import defaultdict
 
 
-_Identifier = Union[str, int]
+_Identifier = str
 _Constant = Union[str, float, int]
 _Role = str                                    # '' for anonymous relations
 _Target = Union[_Identifier, _Constant, None]  # None for untyped nodes

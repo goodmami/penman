@@ -22,19 +22,3 @@ def x1():
             ('e3', 'ARG1', 'x1'),
         ]
     )
-
-
-@pytest.fixture
-def x2():
-    return (
-        '(10000 / _bark_v_1\n'
-        '       :ARG1 (10001 / _dog_n_1\n'
-        '                    :RSTR-of (10002 / udef_q)))',
-        [
-            (10000, 'instance', '_bark_v_1'),
-            (10000, 'ARG1', 10001),
-            (10001, 'instance', '_dog_n_1'),
-            (10002, 'RSTR', 10001),
-            (10002, 'instance', 'udef_q'),
-        ]
-    )

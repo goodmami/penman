@@ -99,7 +99,7 @@ class TestPENMANCodec(object):
               '   :ARG (b / beta)\n'
               '   :mode expressive)')
 
-    def test_decode(self, x1, x2):
+    def test_decode(self, x1):
         # unlabeled single node
         g = decode('(a)')
         assert g.top == 'a'
@@ -132,7 +132,6 @@ class TestPENMANCodec(object):
 
         # fuller examples
         assert decode(x1[0]).triples() == x1[1]
-        assert decode(x2[0]).triples() == x2[1]
 
     def test_decode_atoms(self):
         # string value
@@ -169,12 +168,6 @@ class TestPENMANCodec(object):
         g = decode('(one / "a string")')
         assert g.triples() == [
             ('one', 'instance', '"a string"')
-        ]
-
-        # numeric "variable"
-        g = decode('(1 / one)')
-        assert g.triples() == [
-            (1, 'instance', 'one')
         ]
 
         # numeric symbol (from https://github.com/goodmami/penman/issues/17)
@@ -222,8 +215,10 @@ class TestPENMANCodec(object):
             decode('()')
         with pytest.raises(penman.DecodeError):
             decode('(a :ARG1 ())')
+        with pytest.raises(penman.DecodeError):
+            decode('(1 / one)')
 
-    def test_encode(self, x1, x2):
+    def test_encode(self, x1):
         # unlabeled single node
         g = penman.Graph([], top='a')
         assert encode(g) == '(a)'
@@ -275,10 +270,6 @@ class TestPENMANCodec(object):
         # string node type
         g = penman.Graph([('one', 'instance', '"a string"')])
         assert encode(g) == '(one / "a string")'
-
-        # numeric "variable"
-        g = penman.Graph([(1, 'instance', 'one')])
-        assert encode(g) == '(1 / one)'
 
 # def test_iterdecode():
 #     codec = penman.PENMANCodec()
