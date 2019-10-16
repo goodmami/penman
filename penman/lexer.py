@@ -95,44 +95,17 @@ class TokenIterator(Iterator[Token]):
     def __next__(self):
         return self.next()
 
-    def peek(self, error_on_empty=True) -> Union[Token, None]:
+    def peek(self) -> Token:
         """
         Return the next token but do not advance the iterator.
 
         If the iterator is exhausted then a :exc:`DecodeError` is
-        raised if *error_on_empty* is ``True``, otherwise ``None`` is
-        returned.
+        raised.
         """
         if self._next is None:
-            if error_on_empty:
-                self.raise_error('Unexpected end of input')
-            return None
+            self.raise_error('Unexpected end of input')
         else:
             return self._next
-
-    def peek_type(self, error_on_empty=True) -> Union[str, None]:
-        """
-        Return the next token's type but do not advance the iterator.
-
-        If the iterator is exhausted then a :exc:`DecodeError` is
-        raised if *error_on_empty* is ``True``, otherwise ``None`` is
-        returned.
-
-        The :meth:`peek` method is not so useful for things like
-        while-loops as attempting to get the ``type`` attribute on a
-        ``None`` value would raise an error, so this method satisfies
-        that use-case:
-
-        .. code:: python
-
-           while tokens.peek_type() != 'RPAREN':
-               ...
-        """
-        _next = self.peek(error_on_empty=error_on_empty)
-        if _next is None:
-            return None
-        else:
-            return _next.type
 
     def next(self) -> Token:
         """

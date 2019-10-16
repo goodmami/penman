@@ -90,10 +90,10 @@ class PENMANCodec(object):
         id = tokens.expect(*self.IDENTIFIERS).value
         edges = []
 
-        if tokens.peek_type() == 'SLASH':
+        if tokens.peek().type == 'SLASH':
             edges.append(self._parse_node_label(tokens))
 
-        while tokens.peek_type() != 'RPAREN':
+        while tokens.peek().type != 'RPAREN':
             edges.append(self._parse_edge(tokens))
 
         tokens.expect('RPAREN')
@@ -104,9 +104,9 @@ class PENMANCodec(object):
         tokens.expect('SLASH')
         label = None
         # for robustness, don't assume next token is the label
-        if tokens.peek_type() in self.ATOMS:
+        if tokens.peek().type in self.ATOMS:
             label = tokens.next().value
-            if tokens.peek_type() == 'ALIGNMENT':
+            if tokens.peek().type == 'ALIGNMENT':
                 aln = self._parse_alignment(tokens, surface.Alignment)
                 return ('/', label, [aln])
         # no alignment or maybe no label
@@ -122,7 +122,7 @@ class PENMANCodec(object):
         """
         epidata = []
         role = tokens.expect('ROLE').text[1:]  # strip the leading :
-        if tokens.peek_type() == 'ALIGNMENT':
+        if tokens.peek().type == 'ALIGNMENT':
             epidata.append(
                 self._parse_alignment(tokens, surface.RoleAlignment))
         target = None
@@ -131,7 +131,7 @@ class PENMANCodec(object):
         next_type = _next.type
         if next_type in self.ATOMS:
             target = tokens.next().value
-            if tokens.peek_type() == 'ALIGNMENT':
+            if tokens.peek().type == 'ALIGNMENT':
                 epidata.append(
                     self._parse_alignment(tokens, surface.Alignment))
         elif next_type == 'LPAREN':
@@ -170,7 +170,7 @@ class PENMANCodec(object):
             tokens.expect('LPAREN')
             source = tokens.expect('SYMBOL', 'INTEGER').text
             tokens.expect('COMMA')
-            _next = tokens.peek_type()
+            _next = tokens.peek().type
             if _next in self.ATOMS:
                 target = tokens.next().text
             elif _next == 'RPAREN':  # special case for robustness
@@ -180,7 +180,7 @@ class PENMANCodec(object):
             data.append((source, role, target))
 
             # continue only if triple is followed by ^
-            if tokens.peek_type() == 'CARET':
+            if tokens.peek().type == 'CARET':
                 tokens.next()
             else:
                 break
