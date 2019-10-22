@@ -22,3 +22,24 @@ def x1():
             ('e3', 'ARG1', 'x1'),
         ]
     )
+
+@pytest.fixture
+def isi_aligned():
+    """He drives carelessly."""
+    return (
+        '(d / drive-01~e.2\n'
+        '   :ARG0 (h / he~e.1)\n'
+        '   :manner (c / care-04~e.3\n'
+        '              :polarity -))',
+        [
+            ('d', 'instance', 'drive-01'),
+            surface.Alignment((2,), prefix='e.'),
+            ('d', 'ARG0', 'h'),
+            ('h', 'instance', 'he'),
+            surface.Alignment((1,), prefix='e.'),
+            ('d', 'manner', 'c'),
+            ('c', 'instance', 'care-04'),
+            surface.Alignment((3,), prefix='e.'),
+            ('c', 'polarity', '-')
+        ]
+    )
