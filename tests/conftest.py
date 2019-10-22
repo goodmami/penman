@@ -33,13 +33,10 @@ def isi_aligned():
         '              :polarity -))',
         [
             ('d', 'instance', 'drive-01'),
-            surface.Alignment((2,), prefix='e.'),
             ('d', 'ARG0', 'h'),
             ('h', 'instance', 'he'),
-            surface.Alignment((1,), prefix='e.'),
             ('d', 'manner', 'c'),
             ('c', 'instance', 'care-04'),
-            surface.Alignment((3,), prefix='e.'),
             ('c', 'polarity', '-')
         ]
     )

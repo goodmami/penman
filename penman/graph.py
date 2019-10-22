@@ -110,7 +110,9 @@ class Graph(object):
         current = None
         for datum in data:
             if isinstance(datum, Epidatum):
-                epidata[current] = epidata.get(current, []) + [datum]
+                if current not in epidata:
+                    epidata[current] = []
+                epidata[current].append(datum)
             else:
                 triples.append(datum)
                 current = datum
@@ -144,7 +146,7 @@ class Graph(object):
         data = []
         for triple in self._triples:
             data.append(triple)
-            data.extend(self._epidata.get(triple, []))
+            data.extend(self.epidata.get(triple, []))
         return data
 
     @property
