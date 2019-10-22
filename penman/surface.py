@@ -82,5 +82,5 @@ def _get_alignments(g: graph.Graph,
     for triple, epidata in g.epidata.items():
         for epidatum in epidata:
             if isinstance(epidatum, alignment_type):
-                alns[triple] = datum
+                alns[triple] = epidatum
     return alns
