@@ -103,9 +103,8 @@ class TokenIterator(Iterator[Token]):
         raised.
         """
         if self._next is None:
-            self.raise_error('Unexpected end of input')
-        else:
-            return self._next
+            raise self.error('Unexpected end of input')
+        return self._next
 
     def next(self) -> Token:
         """
@@ -138,9 +137,9 @@ class TokenIterator(Iterator[Token]):
         try:
             token = self.next()
         except StopIteration:
-            self.raise_error('Unexpected end of input')
+            raise self.error('Unexpected end of input')
         if token.type not in choices:
-            self.raise_error('Expected: {}'.format(', '.join(choices)),
+            raise self.error('Expected: {}'.format(', '.join(choices)),
                              token=token)
         return token
 
@@ -155,7 +154,7 @@ class TokenIterator(Iterator[Token]):
             return self.next()
         return None
 
-    def raise_error(self, message, token=None):
+    def error(self, message: str, token=None) -> DecodeError:
         if token is None:
             type = line = None
             if self._last is not None:
@@ -167,7 +166,7 @@ class TokenIterator(Iterator[Token]):
         else:
             type, _, lineno, offset, line = token
 
-        raise DecodeError(message, lineno=lineno, offset=offset, text=line)
+        return DecodeError(message, lineno=lineno, offset=offset, text=line)
 
 
 def lex(lines: Union[Iterable[str], str],

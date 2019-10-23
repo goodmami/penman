@@ -140,7 +140,7 @@ class PENMANCodec(object):
         #    (x :ROLE :ROLE2...  <- followed by another role
         #    (x :ROLE )          <- end of node
         elif next_type not in ('ROLE', 'RPAREN'):
-            tokens.raise_error('Expected: ATOM, LPAREN', token=_next)
+            raise tokens.error('Expected: ATOM, LPAREN', token=_next)
 
         if epidata:
             return (role, target, epidata)
