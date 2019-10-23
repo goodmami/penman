@@ -46,7 +46,7 @@ class RoleAlignment(AlignmentMarker):
     mode = 1
 
 
-_Alignments = Mapping[graph.Triple, AlignmentMarker]
+_Alignments = Mapping[graph.BasicTriple, AlignmentMarker]
 
 
 def alignments(g: graph.Graph) -> _Alignments:

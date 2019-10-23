@@ -4,6 +4,8 @@
 Semantic models for interpreting graphs.
 """
 
+from typing import cast
+
 from penman import graph
 
 class Model(object):
@@ -36,6 +38,11 @@ class Model(object):
             inverse = role[:-3]
         else:
             inverse = role + '-of'
+
+        # casting is just for the benefit of the type checker; it does
+        # not actually check that target is a valid identifier type
+        target = cast(graph._Identifier, target)
+
         return (target, inverse, source)
 
     def normalize(self, triple: graph.BasicTriple) -> graph.BasicTriple:
@@ -44,7 +51,7 @@ class Model(object):
         return triple
 
     def is_reifiable(self, triple: graph.BasicTriple) -> bool:
-        relation_data = self.relations.get(triple.role, {})
+        relation_data = self.relations.get(triple[1], {})
         return len(relation_data.get('reifications', [])) > 0
 
     def reify(self, triple:graph.BasicTriple) -> bool:

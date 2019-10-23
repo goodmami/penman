@@ -4,7 +4,7 @@
 Serialization of PENMAN graphs.
 """
 
-from typing import Optional, Type, Iterable, Iterator, Tuple
+from typing import Optional, Type, Iterable, Iterator, Tuple, List
 from collections import defaultdict
 import re
 import logging
@@ -61,7 +61,7 @@ class PENMANCodec(object):
             g = layout.interpret(tree, self.model)
         return g
 
-    def parse(self, s: str):
+    def parse(self, s: str) -> graph.Tree:
         """
         Parse PENMAN-notation string *s* into its tree structure.
 
@@ -163,6 +163,7 @@ class PENMANCodec(object):
 
     def parse_triples(self, s: str):
         tokens = lexer.lex(s, pattern=lexer.TRIPLE_RE)
+        target: graph._Target
 
         triples = []
         while True:
@@ -172,7 +173,7 @@ class PENMANCodec(object):
             tokens.expect('COMMA')
             _next = tokens.peek().type
             if _next in self.ATOMS:
-                target = tokens.next().text
+                target = tokens.next().value
             elif _next == 'RPAREN':  # special case for robustness
                 target = None
             tokens.expect('RPAREN')
@@ -215,7 +216,7 @@ class PENMANCodec(object):
         if triples:
             return self.format_triples(g, indent=(indent is not None))
         else:
-            tree = layout.configure(g, self.model)
+            tree = layout.configure(g, model=self.model)
             return self.format(tree, indent=indent, compact=compact)
 
     def format(self, tree, indent: Optional[int] = -1, compact: bool = False):
@@ -253,7 +254,7 @@ class PENMANCodec(object):
         # format the edges and join them
         # if ids is non-empty, all initial attributes are compactly
         # joined on the same line, otherwise they use joiner
-        parts = []
+        parts: List[str] = []
         compact = bool(ids)
         for edge in edges:
             target = edge[1]

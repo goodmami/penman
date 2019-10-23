@@ -47,7 +47,7 @@ above (repeated here) has the following data::
 
 """
 
-from typing import Any, Iterable, List, NamedTuple
+from typing import Any, Iterable, Mapping, List, NamedTuple
 import re
 
 from penman.exceptions import LayoutError
@@ -57,7 +57,7 @@ from penman import (
 )
 
 _Identifier = graph._Identifier
-
+_Nodemap = Mapping[_Identifier, graph.Tree]
 
 # Epigraphical markers
 
@@ -87,40 +87,6 @@ class _Pop(LayoutMarker):
 
 
 POP = _Pop()
-
-
-_TripleIter = Iterable[graph.Triple]
-_TripleList = List[graph.Triple]
-
-
-def original_order(triples: _TripleIter) -> _TripleList:
-    """
-    Return a list of triples in the original order.
-    """
-    return list(triples)
-
-
-def out_first_order(triples: _TripleIter) -> _TripleList:
-    """
-    Sort a list of triples so outward (true) edges appear first.
-    """
-    return sorted(triples, key=lambda t: t.inverted)
-
-
-def alphanum_order(triples: _TripleIter) -> _TripleList:
-    """
-    Sort a list of triples by relation name.
-
-    Embedded integers are sorted numerically, but otherwise the
-    sorting is alphabetic.
-    """
-    return sorted(
-        triples,
-        key=lambda t: [
-            int(t) if t.isdigit() else t
-            for t in re.split(r'([0-9]+)', t.relation or '')
-        ]
-    )
 
 
 # Tree to graph interpretation ################################################
@@ -166,16 +132,14 @@ def _interpret_node(t: graph.Tree, model: _model.Model):
 
 # Graph to tree configuration #################################################
 
-def configure(g: graph.Graph, model: _model.Model, top=None, strict=False):
+def configure(g: graph.Graph,
+              top: _Identifier = None,
+              model: _model.Model = None,
+              strict: bool = False) -> graph.Tree:
     """
     Create a tree from a graph by making as few decisions as possible.
     """
-    if top is None:
-        top = g.top
-    data = list(reversed(_preconfigure(g, strict)))
-    variables = g.variables()
-    nodemap = {top: (top, [])}
-    tree = _configure_node(top, data, variables, nodemap, model)
+    tree, data, nodemap, variables = _configure(g, top, model, strict)
     # if any data remain, the graph was not properly annotated for a tree
     while data:
         skipped, id, data = _find_next(data, nodemap)
@@ -187,6 +151,21 @@ def configure(g: graph.Graph, model: _model.Model, top=None, strict=False):
             raise LayoutError('cycle in configuration')
         data = skipped + data
     return tree
+
+
+def _configure(g, top, model, strict):
+    """
+    Create the tree that can be created without any improvising.
+    """
+    if model is None:
+        model = _model.Model()
+    if top is None:
+        top = g.top
+    data = list(reversed(_preconfigure(g, strict)))
+    variables = g.variables()
+    nodemap: _Nodemap = {top: (top, [])}
+    tree = _configure_node(top, data, variables, nodemap, model)
+    return tree, data, nodemap, variables
 
 
 def _preconfigure(g, strict):
@@ -242,7 +221,6 @@ def _configure_node(id, data, variables, nodemap, model):
 
     while data:
         datum = data.pop()
-
         if datum is POP:
             break
 
@@ -318,15 +296,21 @@ def _get_or_establish_site(id, nodemap):
     return False
 
 
-def reconfigure(g: graph.Graph, model: _model.Model, top=None, strict=False):
+def reconfigure(g: graph.Graph,
+                top: _Identifier = None,
+                model: _model.Model = None,
+                strict: bool = False) -> graph.Tree:
     """
     Create a tree from a graph after any discarding layout markers.
     """
     graph.clear_epidata(g, LayoutMarker)
-    return configure(g, model, top=top, strict=strict)
+    return configure(g, top=top, model=model, strict=strict)
 
 
-def has_valid_layout(g: graph.Graph):
+def has_valid_layout(g: graph.Graph,
+                     top: _Identifier = None,
+                     model: _model.Model = None,
+                     strict: bool = False) -> bool:
     """
     Return True if *g* contains the information for a valid layout.
 
@@ -334,14 +318,11 @@ def has_valid_layout(g: graph.Graph):
     depth-first traversal that reconstructs a spanning tree used for
     serialization.
     """
-    data = list(reversed(_preconfigure(g, strict)))
-    variables = g.variables()
-    nodemap = {top: (top, [])}
-    tree = _configure_node(g.top, data, variables, nodemap, model)
+    tree, data, nodemap, variables = _configure(g, top, model, strict)
     return len(data) == 0
 
 
-def is_atomic(x):
+def is_atomic(x) -> bool:
     """
     Return `True` if *x* is a valid atomic value.
     """
@@ -359,22 +340,3 @@ def tree_node_identifiers(t: graph.Tree):
         if not is_atomic(target):
             ids.extend(tree_node_identifiers(target))
     return ids
-
-
-def inspect(g: graph.Graph):
-    stack = []
-    for t in g._data:
-        if t is POP:
-            stack.pop()
-        else:
-            # a properly laid-out graph should not need to pop any
-            # more ids off the stack, but otherwise keep popping until
-            # a suitable id is found or the stack is empty
-            while stack and stack[-1] not in (t.source, t.target):
-                stack.pop()
-            if stack and t.target == stack[-1]:
-                print('{3:>{0}} :{2} :{1}'.format(len(stack) * 3, *t))
-                stack.append(t.source)
-            else:
-                print('{1:>{0}} :{2} :{3}'.format(len(stack) * 3, *t))
-                stack.append(t.target)

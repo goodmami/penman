@@ -40,11 +40,6 @@ from penman.graph import (
     Graph
 )
 from penman.model import Model
-from penman.layout import (
-    original_order,
-    out_first_order,
-    alphanum_order,
-)
 from penman.codec import PENMANCodec
 
 from penman.interface import (
