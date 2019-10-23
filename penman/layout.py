@@ -138,30 +138,27 @@ def _interpret_node(t: graph.Tree, model: _model.Model):
     epidata = {}
     id, edges = t
     has_nodetype = False
-    for edge in edges:
-        if len(edge) == 2:
-            role, target, _epidata = *edge, []
-        else:
-            role, target, _epidata = edge
+    for role, target, epis in edges:
         if role == '/':
             role = model.nodetype_role
             has_nodetype = True
         # atomic targets
         if is_atomic(target):
-            nested = ()
+            child = ()
+            target_id = target
         # nested nodes
         else:
-            nested = target
-            target = nested[0]
-        triple = model.normalize((id, role, target))
+            child = target
+            target_id = target[0]
+        triple = model.normalize((id, role, target_id))
         triples.append(triple)
-        epidata[triple] = _epidata
+        epidata[triple] = epis
         # recurse to nested nodes
-        if nested:
-            epidata[triple].append(Push(target))
-            _, _triples, _epidata = _interpret_node(nested, model)
+        if child:
+            epidata[triple].append(Push(target_id))
+            _, _triples, _epis = _interpret_node(child, model)
             triples.extend(_triples)
-            epidata.update(_epidata)
+            epidata.update(_epis)
             epidata[triples[-1]].append(POP)
 
     return id, triples, epidata
@@ -273,13 +270,7 @@ def _configure_node(id, data, variables, nodemap, model):
         else:
             index = len(edges)
 
-        # simplify structure if no epidata
-        if epidata:
-            edge = (role, target, epidata)
-        else:
-            edge = (role, target)
-
-        edges.insert(index, edge)
+        edges.insert(index, (role, target, epidata))
 
     return node
 
@@ -363,7 +354,7 @@ def tree_node_identifiers(t: graph.Tree):
     """
     id, edges = t
     ids = [id]
-    for _, target, *_ in edges:
+    for _, target, _ in edges:
         # if target is not atomic, assume it's a valid tree node
         if not is_atomic(target):
             ids.extend(tree_node_identifiers(target))

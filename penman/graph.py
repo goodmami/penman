@@ -36,6 +36,9 @@ class Epidatum(object):
 
 _Epidata = Mapping[BasicTriple, List[Epidatum]]
 
+Branch = Tuple[_Role, Any, List[Epidatum]]
+Tree = Tuple[_Identifier, List[Branch]]
+
 
 class Triple(NamedTuple):
     """
@@ -223,11 +226,6 @@ class Graph(object):
         for t in self.edges():
             entrancies[t.target] += 1
         return dict((v, cnt - 1) for v, cnt in entrancies.items() if cnt >= 2)
-
-
-Branch = Tuple[_Role, Optional[Epidatum],
-               Union[_Target, 'Tree'], Optional[Epidatum]]
-Tree = Tuple[_Identifier, List[Branch], List[Branch]]
 
 
 def clear_epidata(g, epidata_class=None):

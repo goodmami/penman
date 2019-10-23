@@ -72,7 +72,7 @@ class PENMANCodec(object):
         Example:
             >>> codec = PENMANCodec()
             >>> codec.parse('(b / bark :ARG1 (d / dog))')
-            ('b', [('/', 'bark')], [('ARG1', ('d', [('/', 'dog')], []))])
+            ('b', [('/', 'bark', []), ('ARG1', ('d', [('/', 'dog', [])]), [])])
         """
         tokens = lexer.lex(s, pattern=lexer.PENMAN_RE)
         return self._parse_node(tokens)
@@ -103,14 +103,14 @@ class PENMANCodec(object):
     def _parse_node_label(self, tokens: lexer.TokenIterator):
         tokens.expect('SLASH')
         label = None
+        epis = []
         # for robustness, don't assume next token is the label
         if tokens.peek().type in self.ATOMS:
             label = tokens.next().value
             if tokens.peek().type == 'ALIGNMENT':
-                aln = self._parse_alignment(tokens, surface.Alignment)
-                return ('/', label, [aln])
-        # no alignment or maybe no label
-        return ('/', label)
+                epis.append(
+                    self._parse_alignment(tokens, surface.Alignment))
+        return ('/', label, epis)
 
     def _parse_edge(self, tokens: lexer.TokenIterator):
         """
@@ -142,10 +142,7 @@ class PENMANCodec(object):
         elif next_type not in ('ROLE', 'RPAREN'):
             raise tokens.error('Expected: ATOM, LPAREN', token=_next)
 
-        if epidata:
-            return (role, target, epidata)
-        else:
-            return (role, target)
+        return (role, target, epidata)
 
     def _parse_alignment(self,
                          tokens: lexer.TokenIterator,
@@ -275,10 +272,7 @@ class PENMANCodec(object):
         """
         Format tree *edge* into a PENMAN string.
         """
-        if len(edge) == 2:
-            role, target, epidata = *edge, []
-        else:
-            role, target, epidata = edge
+        role, target, epidata = edge
 
         if role != '/' and not role.startswith(':'):
             role = ':' + role

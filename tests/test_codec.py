@@ -10,90 +10,100 @@ codec = penman.PENMANCodec()
 decode = codec.decode
 encode = codec.encode
 
+
+def b(role, tgt, epis=None):
+    """
+    Make a tree branch with all 3 fields.
+    """
+    if not epis:
+        epis = []
+    return (role, tgt, epis)
+
+
 class TestPENMANCodec(object):
     def test_parse(self):
         assert codec.parse('(a)') == (
             'a', [])
         assert codec.parse('(a / alpha)') == (
-            'a', [('/', 'alpha')])
+            'a', [b('/', 'alpha')])
         assert codec.parse('(a : b)') == (
-            'a', [('', 'b')])
+            'a', [b('', 'b')])
         assert codec.parse('(a : (b))') == (
-            'a', [('', ('b', []))])
+            'a', [b('', ('b', []))])
         assert codec.parse('(a / alpha :ARG (b / beta))') == (
-            'a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))])
+            'a', [b('/', 'alpha'), b('ARG', ('b', [b('/', 'beta')]))])
         assert codec.parse('(a :ARG-of b)') == (
-            'a', [('ARG-of', 'b')])
+            'a', [b('ARG-of', 'b')])
         assert codec.parse('(a :ARG~1 b~2)') == (
-            'a', [('ARG', 'b', [surface.RoleAlignment((1,)),
-                                surface.Alignment((2,))])])
+            'a', [b('ARG', 'b', [surface.RoleAlignment((1,)),
+                                 surface.Alignment((2,))])])
 
     def test_format(self):
         assert codec.format(
             ('a', [])
         ) == '(a)'
         assert codec.format(
-            ('a', [('/', 'alpha')])
+            ('a', [b('/', 'alpha')])
         ) == '(a / alpha)'
         assert codec.format(
-            ('a', [('', 'b')])
+            ('a', [b('', 'b')])
         ) == '(a : b)'
         assert codec.format(
-            ('a', [('', ('b', []))])
+            ('a', [b('', ('b', []))])
         ) == '(a : (b))'
         assert codec.format(
-            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
+            ('a', [b('/', 'alpha'), b('ARG', ('b', [b('/', 'beta')]))]),
             indent=None
         ) == '(a / alpha :ARG (b / beta))'
         assert codec.format(
-            ('a', [('ARG-of', 'b')])
+            ('a', [b('ARG-of', 'b')])
         ) == '(a :ARG-of b)'
         assert codec.format(
-            ('a', [('ARG', 'b', [surface.RoleAlignment((1,)),
-                                 surface.Alignment((2,))])])
+            ('a', [b('ARG', 'b', [surface.RoleAlignment((1,)),
+                                  surface.Alignment((2,))])])
         ) == '(a :ARG~1 b~2)'
 
     def test_format_with_parameters(self):
         # no indent
         assert codec.format(
-            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
+            ('a', [b('/', 'alpha'), b('ARG', ('b', [b('/', 'beta')]))]),
             indent=None
         ) == '(a / alpha :ARG (b / beta))'
         # default (adaptive) indent
         assert codec.format(
-            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
+            ('a', [b('/', 'alpha'), b('ARG', ('b', [b('/', 'beta')]))]),
             indent=-1
         ) == ('(a / alpha\n'
               '   :ARG (b / beta))')
         # fixed indent
         assert codec.format(
-            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
+            ('a', [b('/', 'alpha'), b('ARG', ('b', [b('/', 'beta')]))]),
             indent=6
         ) == ('(a / alpha\n'
               '      :ARG (b / beta))')
         # default compactness of attributes
         assert codec.format(
-            ('a', [('/', 'alpha'),
-                   ('polarity', '-'),
-                   ('ARG', ('b', [('/', 'beta')]))]),
+            ('a', [b('/', 'alpha'),
+                   b('polarity', '-'),
+                   b('ARG', ('b', [b('/', 'beta')]))]),
             compact=False
         ) == ('(a / alpha\n'
               '   :polarity -\n'
               '   :ARG (b / beta))')
         # compact of attributes
         assert codec.format(
-            ('a', [('/', 'alpha'),
-                   ('polarity', '-'),
-                   ('ARG', ('b', [('/', 'beta')]))]),
+            ('a', [b('/', 'alpha'),
+                   b('polarity', '-'),
+                   b('ARG', ('b', [b('/', 'beta')]))]),
             compact=True
         ) == ('(a / alpha :polarity -\n'
               '   :ARG (b / beta))')
         # compact of attributes (only initial)
         assert codec.format(
-            ('a', [('/', 'alpha'),
-                   ('polarity', '-'),
-                   ('ARG', ('b', [('/', 'beta')])),
-                   ('mode', 'expressive')]),
+            ('a', [b('/', 'alpha'),
+                   b('polarity', '-'),
+                   b('ARG', ('b', [b('/', 'beta')])),
+                   b('mode', 'expressive')]),
             compact=True
         ) == ('(a / alpha :polarity -\n'
               '   :ARG (b / beta)\n'
