@@ -54,8 +54,8 @@ class PENMANCodec(object):
             <Graph object (top=b) at ...>
         """
         if triples:
-            data = self.parse_triples(s)
-            g = graph.Graph(data)
+            _triples = self.parse_triples(s)
+            g = graph.Graph(_triples)
         else:
             tree = self.parse(s)
             g = layout.interpret(tree, self.model)
@@ -167,7 +167,7 @@ class PENMANCodec(object):
     def parse_triples(self, s: str):
         tokens = lexer.lex(s, pattern=lexer.TRIPLE_RE)
 
-        data = []
+        triples = []
         while True:
             role = tokens.expect('SYMBOL').text
             tokens.expect('LPAREN')
@@ -180,7 +180,7 @@ class PENMANCodec(object):
                 target = None
             tokens.expect('RPAREN')
 
-            data.append((source, role, target))
+            triples.append((source, role, target))
 
             # continue only if triple is followed by ^
             if tokens.peek().type == 'CARET':
@@ -188,7 +188,7 @@ class PENMANCodec(object):
             else:
                 break
 
-        return data
+        return triples
 
     def encode(self,
                g: graph.Graph,

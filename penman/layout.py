@@ -129,19 +129,20 @@ def interpret(t: graph.Tree, model: _model.Model):
     """
     Interpret tree *t* as a graph using *model*.
     """
-    top, data = _interpret_node(t, model)
-    return graph.Graph(data, top=top)
+    top, triples, epidata = _interpret_node(t, model)
+    return graph.Graph(triples, top=top, epidata=epidata)
 
 
 def _interpret_node(t: graph.Tree, model: _model.Model):
-    data = []
+    triples = []
+    epidata = {}
     id, edges = t
     has_nodetype = False
     for edge in edges:
         if len(edge) == 2:
-            role, target, epidata = *edge, []
+            role, target, _epidata = *edge, []
         else:
-            role, target, epidata = edge
+            role, target, _epidata = edge
         if role == '/':
             role = model.nodetype_role
             has_nodetype = True
@@ -152,15 +153,18 @@ def _interpret_node(t: graph.Tree, model: _model.Model):
         else:
             nested = target
             target = nested[0]
-        data.append(model.normalize((id, role, target)))
-        data.extend(epidata)
+        triple = model.normalize((id, role, target))
+        triples.append(triple)
+        epidata[triple] = _epidata
         # recurse to nested nodes
         if nested:
-            data.append(Push(target))
-            data.extend(_interpret_node(nested, model)[1])
-            data.append(POP)
+            epidata[triple].append(Push(target))
+            _, _triples, _epidata = _interpret_node(nested, model)
+            triples.extend(_triples)
+            epidata.update(_epidata)
+            epidata[triples[-1]].append(POP)
 
-    return id, data
+    return id, triples, epidata
 
 
 # Graph to tree configuration #################################################
@@ -339,8 +343,11 @@ def has_valid_layout(g: graph.Graph):
     depth-first traversal that reconstructs a spanning tree used for
     serialization.
     """
-    tree, nodemap, remaining = _configure_node(data, model)
-    return len(remaining) == 0
+    data = list(reversed(_preconfigure(g, strict)))
+    variables = g.variables()
+    nodemap = {top: (top, [])}
+    tree = _configure_node(g.top, data, variables, nodemap, model)
+    return len(data) == 0
 
 
 def is_atomic(x):

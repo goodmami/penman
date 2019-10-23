@@ -18,9 +18,9 @@ _Target = Union[_Identifier, _Constant, None]  # None for untyped nodes
 
 # This type-checks with basic tuples, unlike Triple below
 BasicTriple = Tuple[_Identifier, _Role, _Target]
+_Triples = Iterable[BasicTriple]
 
 # These are the main data containers on graphs
-# _Data = Iterable[BasicTriple]
 _Metadata = Mapping[str, str]
 
 
@@ -34,8 +34,6 @@ class Epidatum(object):
     #:  * `mode=2` -- target epidata
     mode = 0
 
-Datum = Union[BasicTriple, Epidatum]
-_Data = Iterable[Datum]
 _Epidata = Mapping[BasicTriple, List[Epidatum]]
 
 
@@ -85,13 +83,11 @@ class Graph(object):
     :meth:`attributes` methods.
 
     Args:
-        data: an iterable of triples (:class:`Triple` or 3-tuples)
+        triples: an iterable of triples (:class:`Triple` or 3-tuples)
         top: the node identifier of the top node; if unspecified,
             the source of the first triple is used
-        alignments: a mapping of ISI-style surface alignments (triples
-            to token indices) for nodes
-        role_alignments: a mapping of ISI-style surface alignments
-            (triples to token indices) for roles
+        epidata: a mapping of triples to epigraphical markers
+        metadata: a mapping of metadata types to descriptions
     Example:
         >>> Graph([('b', 'instance', 'bark'),
         ...        ('d', 'instance', 'dog'),
@@ -99,34 +95,22 @@ class Graph(object):
     """
 
     def __init__(self,
-                 data: _Data,
+                 triples: _Triples,
                  top: _Identifier = None,
                  epidata: _Epidata = None,
                  metadata: _Metadata = None):
-        # split triples and epidata
-        if not epidata:
-            epidata = {}
-        triples = []
-        current = None
-        for datum in data:
-            if isinstance(datum, Epidatum):
-                if current not in epidata:
-                    epidata[current] = []
-                epidata[current].append(datum)
-            else:
-                triples.append(datum)
-                current = datum
-
         if not triples and not top:
             raise ValueError('Cannot instantiate an empty Graph')
+        if not epidata:
+            epidata = {}
+        if not metadata:
+            metadata = {}
 
         ids = [t[0] for t in triples]
         if top is None:
             top = ids[0]  # implicit top: source of first triple
         elif len(ids) == 0:
             ids = [top]
-        if not metadata:
-            metadata = {}
 
         self._triples = triples
         self._variables = set(ids)
@@ -141,13 +125,6 @@ class Graph(object):
             id(self)
         )
 
-    @property
-    def data(self) -> List[Datum]:
-        data = []
-        for triple in self._triples:
-            data.append(triple)
-            data.extend(self.epidata.get(triple, []))
-        return data
 
     @property
     def top(self) -> _Identifier:
