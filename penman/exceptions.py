@@ -5,6 +5,10 @@ class PenmanError(Exception):
     """Base class for errors in the Penman package."""
 
 
+class GraphError(PenmanError):
+    """Raises on invalid graph structures or operations."""
+
+
 class LayoutError(PenmanError):
     """Raised on invalid graph layouts."""
 

@@ -7,14 +7,16 @@ Data structures for Penman graphs and triples.
 from typing import (
     Union, Iterable, Optional, Mapping, Any,
     List, Tuple, Dict, Set, NamedTuple)
-
 from collections import defaultdict
+
+from penman.exceptions import GraphError
 
 
 _Identifier = str
 _Constant = Union[str, float, int]
 _Role = str                                    # '' for anonymous relations
 _Target = Union[_Identifier, _Constant, None]  # None for untyped nodes
+_Variables = Set[_Identifier]
 
 # This type-checks with basic tuples, unlike Triple below
 BasicTriple = Tuple[_Identifier, _Role, _Target]
@@ -34,8 +36,10 @@ class Epidatum(object):
     #:  * `mode=2` -- target epidata
     mode = 0
 
+
 _Epidata = Mapping[BasicTriple, List[Epidatum]]
 
+# Tree types
 Branch = Tuple[_Role, Any, List[Epidatum]]
 Tree = Tuple[_Identifier, List[Branch]]
 
@@ -102,21 +106,14 @@ class Graph(object):
                  top: _Identifier = None,
                  epidata: _Epidata = None,
                  metadata: _Metadata = None):
-        if not triples and not top:
-            raise ValueError('Cannot instantiate an empty Graph')
         if not epidata:
             epidata = {}
         if not metadata:
             metadata = {}
 
-        ids = [t[0] for t in triples]
-        if top is None:
-            top = ids[0]  # implicit top: source of first triple
-        elif len(ids) == 0:
-            ids = [top]
-
-        self._triples = triples
-        self._variables = set(ids)
+        # the following (a) creates a new list and (b) validates that
+        # they are triples
+        self._triples = [(src, role, tgt) for src, role, tgt in triples]
         self._top = top
         self.epidata = epidata
         self.metadata = metadata
@@ -134,19 +131,22 @@ class Graph(object):
         """
         The top variable.
         """
-        return self._top
+        top = self._top
+        if top is None and len(self._triples) > 0:
+            top = self._triples[0][0]  # implicit top
+        return top
 
     @top.setter
     def top(self, top: _Identifier):
-        if top not in self._variables:
-            raise ValueError('top must be a valid node')
+        if top is not None and top not in self.variables():
+            raise GraphError('top must be a valid node')
         self._top = top  # check if top is valid variable?
 
-    def variables(self) -> Set[_Identifier]:
+    def variables(self) -> _Variables:
         """
         Return the set of variables (nonterminal node identifiers).
         """
-        return set(self._variables)
+        return set(src for src, _, _ in self._triples)
 
     def triples(self,
                 source: _Identifier = None,
@@ -155,9 +155,10 @@ class Graph(object):
         """
         Return triples filtered by their *source*, *role*, or *target*.
         """
-        variables = self._variables
+        variables = self.variables()
         triples = [Edge(*t) if t[2] in variables else Attribute(*t)
-                   for t in self._filter_triples(None, source, role, target)]
+                   for t in self._filter_triples(
+                           None, source, role, target, variables)]
         return triples
 
     def edges(self,
@@ -190,14 +191,16 @@ class Graph(object):
                         is_edge: Union[bool, None],
                         source: Optional[_Identifier],
                         role: Optional[_Role],
-                        target: Optional[_Target]) -> List[BasicTriple]:
+                        target: Optional[_Target],
+                        variables: _Variables = None) -> List[BasicTriple]:
         """
         Filter triples based on their source, role, and/or target.
         """
         if is_edge is source is role is target is None:
             triples = list(self._triples)
         else:
-            variables = self._variables
+            if variables is None:
+                variables = self.variables()
 
             def triplematch(t: BasicTriple) -> bool:
                 return ((is_edge is None or (t[2] in variables) == is_edge)
