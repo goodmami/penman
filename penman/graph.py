@@ -127,6 +127,52 @@ class Graph(object):
             id(self)
         )
 
+    def __or__(self, other):
+        if isinstance(other, Graph):
+            g = Graph(list(self._triples),
+                      top=self.top,
+                      epidata={t: list(epis)
+                               for t, epis in self.epidata.items()})
+            g |= other
+            return g
+        else:
+            return NotImplemented
+
+    def __ior__(self, other):
+        if isinstance(other, Graph):
+            new = set(other._triples) - set(self._triples)
+            self._triples.extend(t for t in other._triples if t in new)
+            for t in new:
+                if t in other.epidata:
+                    self.epidata[t] = list(other.epidata[t])
+            self.epidata.update(other.epidata)
+            return self
+        else:
+            return NotImplemented
+
+    def __sub__(self, other):
+        if isinstance(other, Graph):
+            g = Graph(list(self._triples),
+                      top=self.top,
+                      epidata={t: list(epis)
+                               for t, epis in self.epidata.items()})
+            g -= other
+            return g
+        else:
+            return NotImplemented
+
+    def __isub__(self, other):
+        if isinstance(other, Graph):
+            removed = set(other._triples)
+            self._triples[:] = [t for t in self._triples if t not in removed]
+            for t in removed:
+                if t in self.epidata:
+                    del self.epidata[t]
+            if self._top not in self.variables():
+                self._top = None
+            return self
+        else:
+            return NotImplemented
 
     @property
     def top(self) -> Union[_Identifier, None]:
