@@ -22,16 +22,23 @@ def b(role, tgt, epis=None):
 
 class TestPENMANCodec(object):
     def test_parse(self):
+        assert codec.parse('()') == (
+            None, [])
         assert codec.parse('(a)') == (
             'a', [])
+        assert codec.parse('(a / )') == (
+            'a', [b('/', None)])
         assert codec.parse('(a / alpha)') == (
             'a', [b('/', 'alpha')])
         assert codec.parse('(a : b)') == (
             'a', [b('', 'b')])
+        assert codec.parse('(a : ())') == (
+            'a', [b('', (None, []))])
         assert codec.parse('(a : (b))') == (
             'a', [b('', ('b', []))])
         assert codec.parse('(a / alpha :ARG (b / beta))') == (
-            'a', [b('/', 'alpha'), b('ARG', ('b', [b('/', 'beta')]))])
+            'a', [b('/', 'alpha'),
+                  b('ARG', ('b', [b('/', 'beta')]))])
         assert codec.parse('(a :ARG-of b)') == (
             'a', [b('ARG-of', 'b')])
         assert codec.parse('(a :ARG~1 b~2)') == (
@@ -40,8 +47,17 @@ class TestPENMANCodec(object):
 
     def test_format(self):
         assert codec.format(
+            (None, [])
+        ) == '()'
+        assert codec.format(
             ('a', [])
         ) == '(a)'
+        assert codec.format(
+            ('a', [b('/', None)])
+        ) == '(a / )'
+        assert codec.format(
+            ('a', [b('/', '')])
+        ) == '(a / )'
         assert codec.format(
             ('a', [b('/', 'alpha')])
         ) == '(a / alpha)'
@@ -52,7 +68,8 @@ class TestPENMANCodec(object):
             ('a', [b('', ('b', []))])
         ) == '(a : (b))'
         assert codec.format(
-            ('a', [b('/', 'alpha'), b('ARG', ('b', [b('/', 'beta')]))]),
+            ('a', [b('/', 'alpha'),
+                   b('ARG', ('b', [b('/', 'beta')]))]),
             indent=None
         ) == '(a / alpha :ARG (b / beta))'
         assert codec.format(
@@ -222,13 +239,13 @@ class TestPENMANCodec(object):
         with pytest.raises(penman.DecodeError):
             decode('(a b)')
         with pytest.raises(penman.DecodeError):
-            decode('()')
-        with pytest.raises(penman.DecodeError):
-            decode('(a :ARG1 ())')
-        with pytest.raises(penman.DecodeError):
             decode('(1 / one)')
 
     def test_encode(self, x1):
+        # empty graph
+        g = penman.Graph([])
+        assert encode(g) == '()'
+
         # unlabeled single node
         g = penman.Graph([], top='a')
         assert encode(g) == '(a)'

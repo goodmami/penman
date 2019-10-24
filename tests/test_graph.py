@@ -8,8 +8,9 @@ import penman
 class TestGraph(object):
     def test_init(self):
         # empty graph
-        with pytest.raises(TypeError):
-            g = penman.Graph()
+        g = penman.Graph()
+        assert g.triples() == []
+        assert g.top is None
 
         # single node
         g = penman.Graph([('a', 'instance', None)])

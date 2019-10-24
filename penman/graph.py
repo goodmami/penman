@@ -102,10 +102,12 @@ class Graph(object):
     """
 
     def __init__(self,
-                 triples: _Triples,
+                 triples: _Triples = None,
                  top: _Identifier = None,
                  epidata: _Epidata = None,
                  metadata: _Metadata = None):
+        if not triples:
+            triples = []
         if not epidata:
             epidata = {}
         if not metadata:
@@ -127,7 +129,7 @@ class Graph(object):
 
 
     @property
-    def top(self) -> _Identifier:
+    def top(self) -> Union[_Identifier, None]:
         """
         The top variable.
         """
@@ -137,7 +139,7 @@ class Graph(object):
         return top
 
     @top.setter
-    def top(self, top: _Identifier):
+    def top(self, top: Union[_Identifier, None]):
         if top is not None and top not in self.variables():
             raise GraphError('top must be a valid node')
         self._top = top  # check if top is valid variable?
@@ -201,14 +203,13 @@ class Graph(object):
         else:
             if variables is None:
                 variables = self.variables()
-
-            def triplematch(t: BasicTriple) -> bool:
-                return ((is_edge is None or (t[2] in variables) == is_edge)
-                        and (source is None or source == t[0])
-                        and (role is None or role == t[1])
-                        and (target is None or target == t[2]))
-
-            triples = list(filter(triplematch, self._triples))
+            triples = [
+                t for t in self._triples
+                if ((is_edge is None or (t[2] in variables) == is_edge)
+                    and (source is None or source == t[0])
+                    and (role is None or role == t[1])
+                    and (target is None or target == t[2]))
+            ]
 
         return triples
 
@@ -225,7 +226,8 @@ class Graph(object):
         re-entrant.
         """
         entrancies: Dict[_Identifier, int] = defaultdict(int)
-        entrancies[self.top] += 1  # implicit entrancy to top
+        if self.top is not None:
+            entrancies[self.top] += 1  # implicit entrancy to top
         for t in self.edges():
             entrancies[t.target] += 1
         return dict((v, cnt - 1) for v, cnt in entrancies.items() if cnt >= 2)

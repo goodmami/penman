@@ -87,14 +87,15 @@ class PENMANCodec(object):
         """
         tokens.expect('LPAREN')
 
-        id = tokens.expect(*self.IDENTIFIERS).value
+        id = None
         edges = []
 
-        if tokens.peek().type == 'SLASH':
-            edges.append(self._parse_node_label(tokens))
-
-        while tokens.peek().type != 'RPAREN':
-            edges.append(self._parse_edge(tokens))
+        if tokens.peek().type != 'RPAREN':
+            id = tokens.expect(*self.IDENTIFIERS).value
+            if tokens.peek().type == 'SLASH':
+                edges.append(self._parse_node_label(tokens))
+            while tokens.peek().type != 'RPAREN':
+                edges.append(self._parse_edge(tokens))
 
         tokens.expect('RPAREN')
 
@@ -235,18 +236,17 @@ class PENMANCodec(object):
         Format tree *node* into a PENMAN string.
         """
         id, edges = node
-        id = str(id)  # ids can be ints
-
-        # unlabeled nodes; just return now
+        if not id:
+            return '()'  # empty node
         if not edges:
-            return '({})'.format(id)
+            return '({!s})'.format(id)  # id-only node
 
         # determine appropriate joiner based on value of indent
         if indent is None:
             joiner = ' '
         else:
             if indent == -1:
-                column += len(id) + 2  # +2 for ( and a space
+                column += len(str(id)) + 2  # +2 for ( and a space
             else:
                 column += indent
             joiner = '\n' + ' ' * column
@@ -267,7 +267,7 @@ class PENMANCodec(object):
         if compact:
             parts = [' '.join(parts)]
 
-        return '({} {})'.format(id, joiner.join(parts))
+        return '({!s} {})'.format(id, joiner.join(parts))
 
     def _format_edge(self, edge, indent, column, ids):
         """

@@ -334,7 +334,7 @@ def tree_node_identifiers(t: graph.Tree):
     Return the list of node identifiers in the tree.
     """
     id, edges = t
-    ids = [id]
+    ids = [] if id is None else [id]
     for _, target, _ in edges:
         # if target is not atomic, assume it's a valid tree node
         if not is_atomic(target):
