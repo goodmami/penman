@@ -55,6 +55,9 @@ class Attribute(Triple):
     """The target constant."""
 
 
+T = TypeVar('T', bound='Graph')  # needed for type-checking Graph.copy()
+
+
 class Graph(object):
     """
     A basic class for modeling a rooted, directed acyclic graph.
@@ -106,10 +109,7 @@ class Graph(object):
 
     def __or__(self, other):
         if isinstance(other, Graph):
-            g = Graph(list(self._triples),
-                      top=self.top,
-                      epidata={t: list(epis)
-                               for t, epis in self.epidata.items()})
+            g = self.copy(epidata=True, metadata=False)
             g |= other
             return g
         else:
@@ -129,10 +129,7 @@ class Graph(object):
 
     def __sub__(self, other):
         if isinstance(other, Graph):
-            g = Graph(list(self._triples),
-                      top=self.top,
-                      epidata={t: list(epis)
-                               for t, epis in self.epidata.items()})
+            g = self.copy(epidata=True, metadata=False)
             g -= other
             return g
         else:
@@ -255,17 +252,58 @@ class Graph(object):
             entrancies[t.target] += 1
         return dict((v, cnt - 1) for v, cnt in entrancies.items() if cnt >= 2)
 
+    def copy(self: T, epidata: bool = True, metadata: bool = True) -> T:
+        """
+        Return a copy of the graph.
 
-def clear_epidata(g, epidata_class=None):
-    """
-    Remove all epigraphical data in *g*.
+        This is a "deep" copy in that mutable substructures are copied
+        as well, but immutable ones like individual triples use the
+        original instances. Also, epidata may be mutable but copies
+        are not created.
 
-    If *epidata_class* is given and is not `None`, only subtypes of
-    *epidata_class* will be removed.
-    """
-    for epilist in g.epidata.values():
-        if epidata_class is not None:
-            epilist[:] = [epi for epi in epilist
-                          if not isinstance(epi, epidata_class)]
+        Args:
+            epidata: if `True`, include any epidata
+            metadata: if `True`, include any metadata
+        """
+        g = self.__class__(
+            list(self._triples),
+            top=self.top,
+            epidata=None if not epidata else {
+                t: list(epis) for t, epis in self.epidata.items()},
+            metadata=None if not metadata else dict(self.metadata))
+        return g
+
+    def clear(self,
+              triples: bool = True,
+              epidata: Union[bool, Type[Epidatum]] = True,
+              metadata: bool = True) -> None:
+        """
+        Remove triples, epidata, and/or metadata from the graph.
+
+        If *triples* is `True`, the graph's top will be set to `None`.
+
+        The *epidata* parameter may be a subclass of :class:`Epidatum`,
+        in which case only epidata that are subtypes of *epidata* will
+        be removed.
+
+        Args:
+            triples: if `True`, remove all triples from the graph
+            epidata: if `True`, remove all epidata from the graph; if
+                a subclass of :class:`Epidatum`, only remove instances
+                of that class and its subclasses
+            metadata: if `True`, remove all metadata from the graph
+        """
+        if triples:
+            self._triples.clear()
+            self._top = None
+
+        if epidata is True or epidata is Epidatum:
+            self.epidata.clear()
         else:
-            epilist[:] = []
+            assert isinstance(epidata, Epidatum)
+            for epilist in self.epidata.values():
+                epilist[:] = [epi for epi in epilist
+                              if not isinstance(epi, epidata)]
+
+        if metadata:
+            self.metadata.clear()

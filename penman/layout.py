@@ -307,13 +307,14 @@ def reconfigure(g: Graph,
     """
     Create a tree from a graph after any discarding layout markers.
     """
-    graph.clear_epidata(g, LayoutMarker)
-    return configure(g, top=top, model=model, strict=strict)
+    p = g.copy()
+    p.clear(triples=False, epidata=LayoutMarker, metadata=False)
+    return configure(p, top=top, model=model, strict=strict)
 
 
-def has_valid_layout(g: graph.Graph,
-                     top: _Identifier = None,
-                     model: _model.Model = None,
+def has_valid_layout(g: Graph,
+                     top: Identifier = None,
+                     model: Model = None,
                      strict: bool = False) -> bool:
     """
     Return True if *g* contains the information for a valid layout.
