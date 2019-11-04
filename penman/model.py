@@ -6,7 +6,10 @@ Semantic models for interpreting graphs.
 
 from typing import cast
 
-from penman import graph
+from penman.types import (
+    Identifier,
+    BasicTriple
+)
 
 class Model(object):
 
@@ -24,13 +27,13 @@ class Model(object):
     def from_dict(cls, d):
         return cls(**d)
 
-    def is_inverted(self, triple: graph.BasicTriple) -> bool:
+    def is_inverted(self, triple: BasicTriple) -> bool:
         return self.is_role_inverted(triple[1])
 
     def is_role_inverted(self, role: str) -> bool:
         return role not in self.relations and role.endswith('-of')
 
-    def invert(self, triple: graph.BasicTriple) -> graph.BasicTriple:
+    def invert(self, triple: BasicTriple) -> BasicTriple:
         source, role, target = triple
         if role in self.relations:
             inverse = self.relations[role].get('inverse', role + '-of')
@@ -41,18 +44,18 @@ class Model(object):
 
         # casting is just for the benefit of the type checker; it does
         # not actually check that target is a valid identifier type
-        target = cast(graph._Identifier, target)
+        target = cast(Identifier, target)
 
         return (target, inverse, source)
 
-    def normalize(self, triple: graph.BasicTriple) -> graph.BasicTriple:
+    def normalize(self, triple: BasicTriple) -> BasicTriple:
         if self.is_role_inverted(triple[1]):
             triple = self.invert(triple)
         return triple
 
-    def is_reifiable(self, triple: graph.BasicTriple) -> bool:
+    def is_reifiable(self, triple: BasicTriple) -> bool:
         relation_data = self.relations.get(triple[1], {})
         return len(relation_data.get('reifications', [])) > 0
 
-    def reify(self, triple:graph.BasicTriple) -> bool:
+    def reify(self, triple: BasicTriple) -> bool:
         pass

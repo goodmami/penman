@@ -6,11 +6,13 @@ Surface strings, tokens, and alignments.
 
 from typing import Type, Union, Mapping, Tuple, List
 
-from penman import graph
+from penman.types import BasicTriple
+from penman.graph import Graph
+from penman.epigraph import Epidatum
 from penman.exceptions import SurfaceError
 
 
-class AlignmentMarker(graph.Epidatum):
+class AlignmentMarker(Epidatum):
 
     __slots__ = 'indices', 'prefix',
 
@@ -46,10 +48,10 @@ class RoleAlignment(AlignmentMarker):
     mode = 1
 
 
-_Alignments = Mapping[graph.BasicTriple, AlignmentMarker]
+_Alignments = Mapping[BasicTriple, AlignmentMarker]
 
 
-def alignments(g: graph.Graph) -> _Alignments:
+def alignments(g: Graph) -> _Alignments:
     """
     Return a mapping of triples to alignments in graph *g*.
 
@@ -62,7 +64,7 @@ def alignments(g: graph.Graph) -> _Alignments:
     return _get_alignments(g, Alignment)
 
 
-def role_alignments(g: graph.Graph) -> _Alignments:
+def role_alignments(g: Graph) -> _Alignments:
     """
     Return a mapping of triples to role alignments in graph *g*.
 
@@ -75,7 +77,7 @@ def role_alignments(g: graph.Graph) -> _Alignments:
     return _get_alignments(g, RoleAlignment)
 
 
-def _get_alignments(g: graph.Graph,
+def _get_alignments(g: Graph,
                     alignment_type: Type[AlignmentMarker]) -> _Alignments:
     alns = {}
     triple = None

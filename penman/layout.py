@@ -51,17 +51,21 @@ from typing import Any, Iterable, Mapping, List, NamedTuple
 import re
 
 from penman.exceptions import LayoutError
-from penman import (
-    graph,
-    model as _model,
+from penman.types import (
+    Identifier,
 )
+from penman.epigraph import Epidatum
+from penman.tree import Tree
+from penman.graph import Graph
+from penman.model import Model
 
-_Identifier = graph._Identifier
-_Nodemap = Mapping[_Identifier, graph.Tree]
+
+_Nodemap = Mapping[Identifier, Tree]
+
 
 # Epigraphical markers
 
-class LayoutMarker(graph.Epidatum):
+class LayoutMarker(Epidatum):
     """Epigraph marker for layout choices."""
 
 
@@ -91,15 +95,15 @@ POP = _Pop()
 
 # Tree to graph interpretation ################################################
 
-def interpret(t: graph.Tree, model: _model.Model):
+def interpret(t: Tree, model: Model):
     """
     Interpret tree *t* as a graph using *model*.
     """
     top, triples, epidata = _interpret_node(t, model)
-    return graph.Graph(triples, top=top, epidata=epidata)
+    return Graph(triples, top=top, epidata=epidata)
 
 
-def _interpret_node(t: graph.Tree, model: _model.Model):
+def _interpret_node(t: Tree, model: Model):
     triples = []
     epidata = {}
     id, edges = t
@@ -132,10 +136,10 @@ def _interpret_node(t: graph.Tree, model: _model.Model):
 
 # Graph to tree configuration #################################################
 
-def configure(g: graph.Graph,
-              top: _Identifier = None,
-              model: _model.Model = None,
-              strict: bool = False) -> graph.Tree:
+def configure(g: Graph,
+              top: Identifier = None,
+              model: Model = None,
+              strict: bool = False) -> Tree:
     """
     Create a tree from a graph by making as few decisions as possible.
     """
@@ -158,7 +162,7 @@ def _configure(g, top, model, strict):
     Create the tree that can be created without any improvising.
     """
     if model is None:
-        model = _model.Model()
+        model = Model()
     if top is None:
         top = g.top
     data = list(reversed(_preconfigure(g, strict)))
@@ -296,10 +300,10 @@ def _get_or_establish_site(id, nodemap):
     return False
 
 
-def reconfigure(g: graph.Graph,
-                top: _Identifier = None,
-                model: _model.Model = None,
-                strict: bool = False) -> graph.Tree:
+def reconfigure(g: Graph,
+                top: Identifier = None,
+                model: Model = None,
+                strict: bool = False) -> Tree:
     """
     Create a tree from a graph after any discarding layout markers.
     """
@@ -329,7 +333,7 @@ def is_atomic(x) -> bool:
     return x is None or isinstance(x, (str, int, float))
 
 
-def tree_node_identifiers(t: graph.Tree):
+def tree_node_identifiers(t: Tree):
     """
     Return the list of node identifiers in the tree.
     """

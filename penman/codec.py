@@ -9,15 +9,22 @@ from collections import defaultdict
 import re
 import logging
 
-from penman import (
-    graph,
-    layout,
-    surface,
-    model as _model,
-    lexer)
-
-
-_Identifier = graph._Identifier
+from penman.types import Target
+from penman.tree import Tree
+from penman.graph import Graph
+from penman.model import Model
+from penman.surface import (
+    AlignmentMarker,
+    Alignment,
+    RoleAlignment
+)
+from penman.lexer import (
+    PENMAN_RE,
+    TRIPLE_RE,
+    lex,
+    TokenIterator,
+)
+from penman import layout
 
 
 class PENMANCodec(object):
@@ -29,12 +36,12 @@ class PENMANCodec(object):
     #: The valid non-node targets of edges.
     ATOMS = set(['SYMBOL', 'STRING', 'INTEGER', 'FLOAT'])
 
-    def __init__(self, model: _model.Model = None):
+    def __init__(self, model: Model = None):
         if model is None:
-            model = _model.Model()
+            model = Model()
         self.model = model
 
-    def decode(self, s: str, triples: bool = False) -> graph.Graph:
+    def decode(self, s: str, triples: bool = False) -> Graph:
         """
         Deserialize PENMAN-notation string *s* into its Graph object.
 
@@ -55,13 +62,13 @@ class PENMANCodec(object):
         """
         if triples:
             _triples = self.parse_triples(s)
-            g = graph.Graph(_triples)
+            g = Graph(_triples)
         else:
             tree = self.parse(s)
             g = layout.interpret(tree, self.model)
         return g
 
-    def parse(self, s: str) -> graph.Tree:
+    def parse(self, s: str) -> Tree:
         """
         Parse PENMAN-notation string *s* into its tree structure.
 
@@ -74,10 +81,10 @@ class PENMANCodec(object):
             >>> codec.parse('(b / bark :ARG1 (d / dog))')
             ('b', [('/', 'bark', []), ('ARG1', ('d', [('/', 'dog', [])]), [])])
         """
-        tokens = lexer.lex(s, pattern=lexer.PENMAN_RE)
+        tokens = lex(s, pattern=PENMAN_RE)
         return self._parse_node(tokens)
 
-    def _parse_node(self, tokens: lexer.TokenIterator):
+    def _parse_node(self, tokens: TokenIterator):
         """
         Parse a PENMAN node from *tokens*.
 
@@ -101,7 +108,7 @@ class PENMANCodec(object):
 
         return (id, edges)
 
-    def _parse_node_label(self, tokens: lexer.TokenIterator):
+    def _parse_node_label(self, tokens: TokenIterator):
         tokens.expect('SLASH')
         label = None
         epis = []
@@ -110,10 +117,10 @@ class PENMANCodec(object):
             label = tokens.next().value
             if tokens.peek().type == 'ALIGNMENT':
                 epis.append(
-                    self._parse_alignment(tokens, surface.Alignment))
+                    self._parse_alignment(tokens, Alignment))
         return ('/', label, epis)
 
-    def _parse_edge(self, tokens: lexer.TokenIterator):
+    def _parse_edge(self, tokens: TokenIterator):
         """
         Parse a PENMAN edge from *tokens*.
 
@@ -125,7 +132,7 @@ class PENMANCodec(object):
         role = tokens.expect('ROLE').text[1:]  # strip the leading :
         if tokens.peek().type == 'ALIGNMENT':
             epidata.append(
-                self._parse_alignment(tokens, surface.RoleAlignment))
+                self._parse_alignment(tokens, RoleAlignment))
         target = None
 
         _next = tokens.peek()
@@ -134,7 +141,7 @@ class PENMANCodec(object):
             target = tokens.next().value
             if tokens.peek().type == 'ALIGNMENT':
                 epidata.append(
-                    self._parse_alignment(tokens, surface.Alignment))
+                    self._parse_alignment(tokens, Alignment))
         elif next_type == 'LPAREN':
             target = self._parse_node(tokens)
         # for robustness in parsing, allow edges with no target:
@@ -146,8 +153,8 @@ class PENMANCodec(object):
         return (role, target, epidata)
 
     def _parse_alignment(self,
-                         tokens: lexer.TokenIterator,
-                         cls: Type[surface.AlignmentMarker]):
+                         tokens: TokenIterator,
+                         cls: Type[AlignmentMarker]):
         """
         Parse a PENMAN surface alignment from *tokens*.
         """
@@ -163,8 +170,8 @@ class PENMANCodec(object):
         return cls(indices, prefix=prefix)
 
     def parse_triples(self, s: str):
-        tokens = lexer.lex(s, pattern=lexer.TRIPLE_RE)
-        target: graph._Target
+        tokens = lex(s, pattern=TRIPLE_RE)
+        target: Target
 
         triples = []
         while True:
@@ -190,7 +197,7 @@ class PENMANCodec(object):
         return triples
 
     def encode(self,
-               g: graph.Graph,
+               g: Graph,
                triples: bool = False,
                indent: Optional[int] = -1,
                compact: bool = False) -> str:
@@ -297,7 +304,7 @@ class PENMANCodec(object):
             target_epi)
 
     def format_triples(self,
-                       g: graph.Graph,
+                       g: Graph,
                        indent: bool = True):
         delim = ' ^\n' if indent else ' ^ '
         return delim.join(

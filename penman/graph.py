@@ -5,43 +5,20 @@ Data structures for Penman graphs and triples.
 """
 
 from typing import (
-    Union, Iterable, Optional, Mapping, Any,
-    List, Tuple, Dict, Set, NamedTuple)
+    Type, TypeVar, Union, Optional, Mapping, List, Dict, NamedTuple)
 from collections import defaultdict
 
 from penman.exceptions import GraphError
-
-
-_Identifier = str
-_Constant = Union[str, float, int]
-_Role = str                                    # '' for anonymous relations
-_Target = Union[_Identifier, _Constant, None]  # None for untyped nodes
-_Variables = Set[_Identifier]
-
-# This type-checks with basic tuples, unlike Triple below
-BasicTriple = Tuple[_Identifier, _Role, _Target]
-_Triples = Iterable[BasicTriple]
-
-# These are the main data containers on graphs
-_Metadata = Mapping[str, str]
-
-
-class Epidatum(object):
-    __slots__ = ()
-
-    #: The `mode` attribute specifies what the Epidatum annotates:
-    #:
-    #:  * `mode=0` -- unspecified
-    #:  * `mode=1` -- role epidata
-    #:  * `mode=2` -- target epidata
-    mode = 0
-
-
-_Epidata = Mapping[BasicTriple, List[Epidatum]]
-
-# Tree types
-Branch = Tuple[_Role, Any, List[Epidatum]]
-Tree = Tuple[_Identifier, List[Branch]]
+from penman.types import (
+    Identifier,
+    IdSet,
+    Constant,
+    Role,
+    Target,
+    BasicTriple,
+    Triples,
+)
+from penman.epigraph import (Epidatum, Epidata)
 
 
 class Triple(NamedTuple):
@@ -54,27 +31,27 @@ class Triple(NamedTuple):
         target: the target node identifier or constant
     """
 
-    source: _Identifier
+    source: Identifier
     """The source node identifier of the triple."""
 
-    role: _Role
+    role: Role
     """The relation (edge label) between the source and target."""
 
-    target: _Target
+    target: Target
     """The target node identifier or constant."""
 
 
 class Edge(Triple):
     """A relation between nodes."""
 
-    target: _Identifier
+    target: Identifier
     """The target node identifier."""
 
 
 class Attribute(Triple):
     """A relation between a node and a constant."""
 
-    target: _Constant
+    target: Constant
     """The target constant."""
 
 
@@ -102,10 +79,10 @@ class Graph(object):
     """
 
     def __init__(self,
-                 triples: _Triples = None,
-                 top: _Identifier = None,
-                 epidata: _Epidata = None,
-                 metadata: _Metadata = None):
+                 triples: Triples = None,
+                 top: Identifier = None,
+                 epidata: Mapping[BasicTriple, Epidata] = None,
+                 metadata: Mapping[str, str] = None):
         if not triples:
             triples = []
         if not epidata:
@@ -117,8 +94,8 @@ class Graph(object):
         # they are triples
         self._triples = [(src, role, tgt) for src, role, tgt in triples]
         self._top = top
-        self.epidata = epidata
-        self.metadata = metadata
+        self.epidata = dict(epidata)
+        self.metadata = dict(metadata)
 
     def __repr__(self):
         return '<{} object (top={}) at {}>'.format(
@@ -175,7 +152,7 @@ class Graph(object):
             return NotImplemented
 
     @property
-    def top(self) -> Union[_Identifier, None]:
+    def top(self) -> Union[Identifier, None]:
         """
         The top variable.
         """
@@ -185,21 +162,21 @@ class Graph(object):
         return top
 
     @top.setter
-    def top(self, top: Union[_Identifier, None]):
+    def top(self, top: Union[Identifier, None]):
         if top is not None and top not in self.variables():
             raise GraphError('top must be a valid node')
         self._top = top  # check if top is valid variable?
 
-    def variables(self) -> _Variables:
+    def variables(self) -> IdSet:
         """
         Return the set of variables (nonterminal node identifiers).
         """
         return set(src for src, _, _ in self._triples)
 
     def triples(self,
-                source: _Identifier = None,
-                role: _Role = None,
-                target: _Target = None) -> List[Triple]:
+                source: Identifier = None,
+                role: Role = None,
+                target: Target = None) -> List[Triple]:
         """
         Return triples filtered by their *source*, *role*, or *target*.
         """
@@ -210,9 +187,9 @@ class Graph(object):
         return triples
 
     def edges(self,
-              source: Optional[_Identifier] = None,
-              role: _Role = None,
-              target: _Identifier = None) -> List[Edge]:
+              source: Optional[Identifier] = None,
+              role: Role = None,
+              target: Identifier = None) -> List[Edge]:
         """
         Return edges filtered by their *source*, *role*, or *target*.
 
@@ -223,9 +200,9 @@ class Graph(object):
         return triples
 
     def attributes(self,
-                   source: Optional[_Identifier] = None,
-                   role: _Role = None,
-                   target: _Constant = None) -> List[Attribute]:
+                   source: Optional[Identifier] = None,
+                   role: Role = None,
+                   target: Constant = None) -> List[Attribute]:
         """
         Return attributes filtered by their *source*, *role*, or *target*.
 
@@ -237,10 +214,10 @@ class Graph(object):
 
     def _filter_triples(self,
                         is_edge: Union[bool, None],
-                        source: Optional[_Identifier],
-                        role: Optional[_Role],
-                        target: Optional[_Target],
-                        variables: _Variables = None) -> List[BasicTriple]:
+                        source: Optional[Identifier],
+                        role: Optional[Role],
+                        target: Optional[Target],
+                        variables: IdSet = None) -> List[BasicTriple]:
         """
         Filter triples based on their source, role, and/or target.
         """
@@ -259,7 +236,7 @@ class Graph(object):
 
         return triples
 
-    def reentrancies(self) -> Dict[_Identifier, int]:
+    def reentrancies(self) -> Dict[Identifier, int]:
         """
         Return a mapping of variables to their re-entrancy count.
 
@@ -271,7 +248,7 @@ class Graph(object):
         for the linearized form, so inverted edges are always
         re-entrant.
         """
-        entrancies: Dict[_Identifier, int] = defaultdict(int)
+        entrancies: Dict[Identifier, int] = defaultdict(int)
         if self.top is not None:
             entrancies[self.top] += 1  # implicit entrancy to top
         for t in self.edges():
