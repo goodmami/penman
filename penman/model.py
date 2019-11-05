@@ -49,6 +49,8 @@ class Model(object):
         return (target, inverse, source)
 
     def normalize(self, triple: BasicTriple) -> BasicTriple:
+    def deinvert(self, triple: BasicTriple) -> BasicTriple:
+        """De-invert *triple* if it is inverted."""
         if self.is_role_inverted(triple[1]):
             triple = self.invert(triple)
         return triple

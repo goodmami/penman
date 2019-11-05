@@ -120,7 +120,7 @@ def _interpret_node(t: Tree, model: Model):
         else:
             child = target
             target_id = target[0]
-        triple = model.normalize((id, role, target_id))
+        triple = model.deinvert((id, role, target_id))
         triples.append(triple)
         epidata[triple] = epis
         # recurse to nested nodes
