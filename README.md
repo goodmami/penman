@@ -37,7 +37,7 @@ the example [below](#library-usage).
 >>> import penman
 >>> g = penman.decode('(b / bark :ARG0 (d / dog))')
 >>> g.triples()
-[Triple(source='b', relation='instance', target='bark'), Triple(source='d', relation='instance', target='dog'), Triple(source='b', relation='ARG0', target='d')]
+[Attribute(source='b', role=':instance', target='bark'), Edge(source='b', role=':ARG0', target='d'), Attribute(source='d', role=':instance', target='dog')]
 >>> print(penman.encode(g))
 (b / bark
    :ARG0 (d / dog))
@@ -50,24 +50,27 @@ the example [below](#library-usage).
 
 ### Script Usage
 
-```
-$ python penman.py --help
-Penman
+```console
+$ penman --help
+usage: penman [-h] [-V] [--model FILE | --amr] [--indent N] [--compact]
+              [--triples]
+              [FILE [FILE ...]]
 
-An API and utility for working with graphs in PENMAN notation.
+Read and write graphs in the PENMAN notation.
 
-Usage: penman.py [-h|--help] [-V|--version] [options]
+positional arguments:
+  FILE           read graphs from FILEs instead of stdin
 
-Options:
-  -h, --help                display this help and exit
-  -V, --version             display the version and exit
-  -i FILE, --input FILE     read graphs from FILE instead of stdin
-  -o FILE, --output FILE    write output to FILE instead of stdout
-  -t, --triples             print graphs as triple conjunctions
-  --indent N                indent N spaces per level ("no" for no newlines)
-  --amr                     use AMR codec instead of generic PENMAN one
+optional arguments:
+  -h, --help     show this help message and exit
+  -V, --version  show program's version number and exit
+  --model FILE   JSON model file describing the semantic model
+  --amr          use the AMR model
+  --indent N     indent N spaces per level ("no" for no newlines)
+  --compact      compactly print node attributes on one line
+  --triples      print graphs as triple conjunctions
 
-$ python penman.py <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
+$ penman <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 (w / want-01
    :ARG0 (b / boy)
    :ARG1 (g / go
@@ -88,41 +91,42 @@ less specific to sentence representations, e.g., in case someone wants to
 use the format to encode arbitrary graphs.
 
 This module expands the notation slightly to allow for untyped nodes
-(e.g., `(x)`) and anonymous relations (e.g., `(x : (y))`). It is also
-very permissive for the form of node identifiers (and other atoms). A
-[PEG][]\* definition for the notation is given below (for simplicity,
-whitespace is not explicitly included; assume all nonterminals can be
-surrounded by `/\s+/`):
+(e.g., `(x)`) and anonymous relations (e.g., `(x : (y))`). A [PEG][]\*
+definition for the notation is given below (for simplicity, whitespace
+is not explicitly included; assume all nonterminals can be surrounded
+by `/\s+/`):
 
 ```ruby
 Start     <- Node
-Node      <- '(' NodeData ')'
-NodeData  <- Variable ('/' NodeType)? Edge*
-NodeType  <- Atom Alignment?
-Variable  <- Atom
-Edge      <- Relation Alignment? Value
-Relation  <- /:[^\s(),]*/
-Value     <- Node | Atom Alignment?
-Atom      <- String | Float | Integer | Symbol
+Node      <- '(' Variable NodeLabel? Edge* ')'
+NodeLabel <- '/' Atom Alignment?
+Edge      <- Role Alignment? Target
+Target    <- Node | Atom Alignment?
+Atom      <- String | Float | Integer | Variable | Constant
+Variable  <- Symbol
+Constant  <- Symbol
+Role      <- /:[^\s()\/,:~]*/
 String    <- /"[^"\\]*(?:\\.[^"\\]*)*"/
 Float     <- /[-+]?(((\d+\.\d*|\.\d+)([eE][-+]?\d+)?)|\d+[eE][-+]?\d+)/
-Integer   <- /[-+]?\d+/
-Symbol    <- /[^\s()\/,]+/
+Integer   <- /[-+]?\d+(?=[ )\/:])/
+Symbol    <- /[^\s()\/,:~]+/
 Alignment <- /~([a-zA-Z]\.?)?\d+(,\d+)*/
 ```
 
 \* *Note: I use `|` above for ordered-choice instead of `/` so that `/`
 can be used to surround regular expressions.*
 
-A more restricted variant of the grammar for AMR might make the `('/'
-NodeType)` group required, and NodeTypes (maybe renamed "Concepts")
-could be given as a disjunction of allowed names. Similarly, Relations
-could be a disjunction of allowed names and possible inversions, or
-otherwise require at least one character after `:`. It might also
-restrict Variables to a form like `/[a-z]+\d*/` and also restrict Atom
-values in some way. The included [AMRCodec][] employs most of these
-restrictions and raises `DecodeError`s for graphs it deems invalid. See
-also [Nathan Schneider's PEG for AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
+Both `Variable` and `Constant` above resolve as `Symbol`, making their
+use in the `Atom` production redundant, but they are shown like this
+for their semantic contribution. A `Variable` is distinguished from a
+`Constant` simply by its use as the identifier of a node.
+
+A more restricted variant of the grammar for AMR might further
+restrict this grammar by making the `NodeLabel` nonterminal required
+on `Node`, changing `Atom` to `Symbol` on `NodeLabel`, changing `Role`
+to disallow relations without labels, and changing `Variable` to a
+form like `/[a-z]+\d*/`. See also [Nathan Schneider's PEG for
+AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
 
 ### Disclaimer
 
