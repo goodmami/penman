@@ -51,16 +51,14 @@ from typing import Any, Iterable, Mapping, List, NamedTuple
 import re
 
 from penman.exceptions import LayoutError
-from penman.types import (
-    Identifier,
-)
+from penman.types import Identifier
 from penman.epigraph import Epidatum
-from penman.tree import Tree
+from penman.tree import (Tree, Node, is_atomic)
 from penman.graph import Graph
 from penman.model import Model
 
 
-_Nodemap = Mapping[Identifier, Tree]
+_Nodemap = Mapping[Identifier, Node]
 
 
 # Epigraphical markers
@@ -99,11 +97,11 @@ def interpret(t: Tree, model: Model):
     """
     Interpret tree *t* as a graph using *model*.
     """
-    top, triples, epidata = _interpret_node(t, model)
-    return Graph(triples, top=top, epidata=epidata)
+    top, triples, epidata = _interpret_node(t.node, model)
+    return Graph(triples, top=top, epidata=epidata, metadata=t.metadata)
 
 
-def _interpret_node(t: Tree, model: Model):
+def _interpret_node(t: Node, model: Model):
     triples = []
     epidata = {}
     id, edges = t
@@ -141,7 +139,7 @@ def configure(g: Graph,
     """
     Create a tree from a graph by making as few decisions as possible.
     """
-    tree, data, nodemap, variables = _configure(g, top, model, strict)
+    node, data, nodemap, variables = _configure(g, top, model, strict)
     # if any data remain, the graph was not properly annotated for a tree
     while data:
         skipped, id, data = _find_next(data, nodemap)
@@ -152,7 +150,7 @@ def configure(g: Graph,
         if len(data) >= data_count:
             raise LayoutError('cycle in configuration')
         data = skipped + data
-    return tree
+    return Tree(node, metadata=g.metadata)
 
 
 def _configure(g, top, model, strict):
@@ -324,23 +322,3 @@ def has_valid_layout(g: Graph,
     """
     tree, data, nodemap, variables = _configure(g, top, model, strict)
     return len(data) == 0
-
-
-def is_atomic(x) -> bool:
-    """
-    Return `True` if *x* is a valid atomic value.
-    """
-    return x is None or isinstance(x, (str, int, float))
-
-
-def tree_node_identifiers(t: Tree):
-    """
-    Return the list of node identifiers in the tree.
-    """
-    id, edges = t
-    ids = [] if id is None else [id]
-    for _, target, _ in edges:
-        # if target is not atomic, assume it's a valid tree node
-        if not is_atomic(target):
-            ids.extend(tree_node_identifiers(target))
-    return ids

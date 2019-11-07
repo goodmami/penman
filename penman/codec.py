@@ -4,13 +4,13 @@
 Serialization of PENMAN graphs.
 """
 
-from typing import Optional, Type, Iterable, Iterator, Tuple, List
+from typing import Optional, Union, Type, Iterable, Iterator, Tuple, List
 from collections import defaultdict
 import re
 import logging
 
-from penman.types import Target
-from penman.tree import Tree
+from penman.types import (Identifier, Target)
+from penman.tree import (Tree, is_atomic)
 from penman.graph import Graph
 from penman.model import Model
 from penman.surface import (
@@ -82,7 +82,23 @@ class PENMANCodec(object):
             ('b', [('/', 'bark', []), ('ARG1', ('d', [('/', 'dog', [])]), [])])
         """
         tokens = lex(s, pattern=PENMAN_RE)
-        return self._parse_node(tokens)
+        metadata = self._parse_comments(tokens)
+        node = self._parse_node(tokens)
+        return Tree(node, metadata=metadata)
+
+    def _parse_comments(self, tokens: TokenIterator):
+        """
+        Parse PENMAN comments from *tokens* and return any metadata.
+        """
+        metadata = {}
+        while tokens.peek().type == 'COMMENT':
+            comment = tokens.next().text
+            while comment:
+                comment, found, meta = comment.rpartition('::')
+                if found:
+                    key, _, value = meta.partition(' ')
+                    metadata[key] = value
+        return metadata
 
     def _parse_node(self, tokens: TokenIterator):
         """
@@ -198,6 +214,7 @@ class PENMANCodec(object):
 
     def encode(self,
                g: Graph,
+               top: Identifier = None,
                triples: bool = False,
                indent: Optional[int] = -1,
                compact: bool = False) -> str:
@@ -206,6 +223,7 @@ class PENMANCodec(object):
 
         Args:
             g: the Graph object
+            top: if given, the node to use as the top in serialization
             triples: if True, serialize as a conjunction of logical triples
             indent: how to indent formatted strings
             compact: if `True`, put initial attributes on the first line
@@ -224,15 +242,20 @@ class PENMANCodec(object):
         if triples:
             return self.format_triples(g, indent=(indent is not None))
         else:
-            tree = layout.configure(g, model=self.model)
+            tree = layout.configure(g, top=top, model=self.model)
             return self.format(tree, indent=indent, compact=compact)
 
     def format(self, tree, indent: Optional[int] = -1, compact: bool = False):
         """
         Format *tree* into a PENMAN string.
         """
-        ids = layout.tree_node_identifiers(tree) if compact else []
-        return self._format_node(tree, indent, 0, set(ids))
+        if not isinstance(tree, Tree):
+            tree = Tree(tree)
+        ids = [id for id, _ in tree.nodes()] if compact else []
+        parts = ['# ::{} {}'.format(key, value)
+                 for key, value in tree.metadata.items()]
+        parts.append(self._format_node(tree.node, indent, 0, set(ids)))
+        return '\n'.join(parts)
 
     def _format_node(self,
                      node,
@@ -265,7 +288,7 @@ class PENMANCodec(object):
         compact = bool(ids)
         for edge in edges:
             target = edge[1]
-            if compact and (not layout.is_atomic(target) or target in ids):
+            if compact and (not is_atomic(target) or target in ids):
                 compact = False
                 if parts:
                     parts = [' '.join(parts)]
@@ -293,7 +316,7 @@ class PENMANCodec(object):
 
         if target is None:
             target = ''
-        elif not layout.is_atomic(target):
+        elif not is_atomic(target):
             target = self._format_node(target, indent, column, ids)
 
 
