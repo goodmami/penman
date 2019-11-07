@@ -5,6 +5,7 @@ penman.surface
 .. automodule:: penman.surface
 
    .. autoclass:: AlignmentMarker
+      :show-inheritance:
       :members:
 
    .. autoclass:: Alignment

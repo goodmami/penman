@@ -7,9 +7,6 @@ penman.graph
    .. autoclass:: Graph
       :members:
 
-   .. autoclass:: Marker
-      :members:
-
    .. autoclass:: Triple
       :members:
 

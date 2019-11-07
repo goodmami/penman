@@ -19,13 +19,16 @@ Welcome to Penman's documentation!
    :maxdepth: 2
    :caption: Advanced API:
 
+   api/penman.codec
+   api/penman.epigraph
    api/penman.exceptions
    api/penman.graph
+   api/penman.layout
    api/penman.lexer
    api/penman.model
-   api/penman.layout
+   api/penman.models
    api/penman.surface
-   api/penman.codec
+   api/penman.tree
 
 
 Indices and tables

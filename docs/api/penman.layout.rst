@@ -4,7 +4,15 @@ penman.layout
 
 .. automodule:: penman.layout
 
-   .. autodata:: PUSH
+   .. autoclass:: LayoutMarker
+      :show-inheritance:
+
+   .. autoclass:: Push
+      :show-inheritance:
+
    .. autodata:: POP
 
+   .. autofunction:: interpret
+   .. autofunction:: configure
+   .. autofunction:: reconfigure
    .. autofunction:: has_valid_layout

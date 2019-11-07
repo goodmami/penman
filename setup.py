@@ -20,7 +20,8 @@ docs_require = [
     'sphinx-rtd-theme',
 ]
 tests_require = [
-    'pytest'
+    'pytest',
+    'mypy'
 ]
 
 

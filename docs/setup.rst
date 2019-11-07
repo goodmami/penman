@@ -73,9 +73,21 @@ the source code::
 For testing multiple Python versions, a tool like `tox`_ can automate
 the creation and activation of multiple virtual environments.
 
+
+Type-checking with Mypy
+-----------------------
+
+The Penman project heavily uses :pep:`484` and :pep:`526` type
+annotations for static type checking. The code can be type-checked
+using `Mypy`_::
+
+  (env) [~/penman]$ mypy penman
+
+
 .. _PyPI: https://pypi.org/project/Penman/
 .. _GitHub: https://github.com/goodmami/penman/
-.. _Python 3.5+: https://www.python.org/
+.. _Python 3.6: https://www.python.org/
 .. _virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _pytest: http://pytest.org/
 .. _tox: https://tox.readthedocs.io/en/latest/
+.. _Mypy: http://mypy-lang.org/
