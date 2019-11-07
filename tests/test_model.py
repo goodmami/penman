@@ -55,6 +55,10 @@ class TestModel:
         assert m.has_role(':consist-of')
         assert m.has_role(':consist-of-of')
         assert not m.has_role(':fake')
+        assert m.has_role(':op1')
+        assert m.has_role(':op10')
+        assert m.has_role(':op9999')
+        assert not m.has_role(':op[0-9]+')
 
     def test_is_role_inverted(self):
         m = Model()
