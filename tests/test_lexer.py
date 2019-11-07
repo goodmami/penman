@@ -22,6 +22,9 @@ def test_lex_penman():
         'LPAREN', 'SYMBOL',
         'ROLE', 'ALIGNMENT',
         'SYMBOL', 'ALIGNMENT', 'RPAREN']
+    assert _lex('# comment\n# (n / nope)\n(a / alpha)') == [
+        'COMMENT', 'COMMENT', 'LPAREN', 'SYMBOL', 'SLASH', 'SYMBOL', 'RPAREN']
+
 
 def test_lex_triples():
     def _lex(s):

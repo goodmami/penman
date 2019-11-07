@@ -15,6 +15,7 @@ from penman.exceptions import DecodeError
 # capturing groups. They are used during lexing and will be
 # checked by name during parsing.
 PATTERNS = {
+    'COMMENT':    r'\#.*$',
     'STRING':     r'"[^"\\]*(?:\\.[^"\\]*)*"',
     'FLOAT':      r'''
       [-+]?
@@ -46,11 +47,13 @@ def _compile(*names: str) -> Pattern[str]:
 
 # The order matters in these pattern lists as more permissive patterns
 # can short-circuit stricter patterns.
-PENMAN_RE = _compile('STRING', 'FLOAT', 'INTEGER',
+PENMAN_RE = _compile('COMMENT',
+                     'STRING', 'FLOAT', 'INTEGER',
                      'LPAREN', 'RPAREN', 'SLASH',
                      'ALIGNMENT', 'ROLE', 'SYMBOL',
                      'UNEXPECTED')
-TRIPLE_RE = _compile('STRING', 'FLOAT', 'INTEGER',
+TRIPLE_RE = _compile('COMMENT',
+                     'STRING', 'FLOAT', 'INTEGER',
                      'LPAREN', 'RPAREN', 'COMMA', 'CARET',
                      'SYMBOL',
                      'UNEXPECTED')
@@ -94,6 +97,9 @@ class TokenIterator(Iterator[Token]):
 
     def __next__(self):
         return self.next()
+
+    def __bool__(self):
+        return self._next is not None
 
     def peek(self) -> Token:
         """
