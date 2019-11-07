@@ -3,7 +3,7 @@
 from penman import PENMANCodec
 
 
-def decode(s, cls=PENMANCodec, **kwargs):
+def decode(s, cls=PENMANCodec, model=None, **kwargs):
     """
     Deserialize PENMAN-serialized *s* into its Graph object
 
@@ -19,11 +19,11 @@ def decode(s, cls=PENMANCodec, **kwargs):
         <Graph object (top=b) at ...>
 
     """
-    codec = cls(**kwargs)
-    return codec.decode(s)
+    codec = cls(model=model)
+    return codec.decode(s, **kwargs)
 
 
-def encode(g, top=None, cls=PENMANCodec, **kwargs):
+def encode(g, top=None, cls=PENMANCodec, model=None, **kwargs):
     """
     Serialize the graph *g* from *top* to PENMAN notation.
 
@@ -39,11 +39,11 @@ def encode(g, top=None, cls=PENMANCodec, **kwargs):
         >>> encode(Graph([('h', 'instance', 'hi')]))
         (h / hi)
     """
-    codec = cls(**kwargs)
-    return codec.encode(g, top=top)
+    codec = cls(model=model)
+    return codec.encode(g, top=top, **kwargs)
 
 
-def load(source, triples=False, cls=PENMANCodec, **kwargs):
+def load(source, triples=False, cls=PENMANCodec, model=None, **kwargs):
     """
     Deserialize a list of PENMAN-encoded graphs from *source*.
 
@@ -55,7 +55,7 @@ def load(source, triples=False, cls=PENMANCodec, **kwargs):
     Returns:
         a list of Graph objects
     """
-    decode = cls(**kwargs).iterdecode
+    decode = cls(model=model).iterdecode
     if hasattr(source, 'read'):
         return list(decode(source.read()))
     else:
@@ -79,7 +79,7 @@ def loads(string, triples=False, cls=PENMANCodec, **kwargs):
     return list(codec.iterdecode(string, triples=triples))
 
 
-def dump(graphs, file, triples=False, cls=PENMANCodec, **kwargs):
+def dump(graphs, file, cls=PENMANCodec, model=None, **kwargs):
     """
     Serialize each graph in *graphs* to PENMAN and write to *file*.
 
@@ -91,16 +91,16 @@ def dump(graphs, file, triples=False, cls=PENMANCodec, **kwargs):
         kwargs: keyword arguments passed to the constructor of *cls*
     """
     if hasattr(file, 'write'):
-        _dump(file, graphs, triples, cls, **kwargs)
+        _dump(file, graphs, cls, model, **kwargs)
     else:
         with open(file, 'w') as fh:
-            _dump(fh, graphs, triples, cls, **kwargs)
+            _dump(fh, graphs, cls, model, **kwargs)
 
 
-def _dump(fh, gs, triples, cls, **kwargs):
+def _dump(fh, gs, cls, model, **kwargs):
     """Helper method for dump() for incremental printing."""
-    codec = cls(**kwargs)
-    ss = (codec.encode(g, triples=triples) for g in gs)
+    codec = cls(model=model)
+    ss = (codec.encode(g, **kwargs) for g in gs)
     try:
         print(next(ss), file=fh)
     except StopIteration:

@@ -7,33 +7,48 @@ import json
 from penman import __version__, PENMANCodec, Model, dump
 
 
+def process(f, model, out, format_options):
+    data = PENMANCodec(model=model).iterdecode(f)
+    dump(
+        data,
+        out,
+        model=model,
+        **format_options
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description='An API and utility for working with graphs in the '
-                    'PENMAN notation.'
+        description='Read and write graphs in the PENMAN notation.'
     )
     add = parser.add_argument
     add('-V', '--version', action='version',
         version='Penman v{}'.format(__version__))
-    add('-i', '--input', metavar='FILE',
-        type=argparse.FileType('r'), default=sys.stdin,
-        help='read graphs from FILE instead of stdin')
-    add('-o', '--output', metavar='FILE',
-        type=argparse.FileType('w'), default=sys.stdout,
-        help='write output to FILE instead of stdout')
-    add('-m', '--model', metavar='FILE',
+    add('FILE', nargs='*',
+        help='read graphs from FILEs instead of stdin')
+    model_group = parser.add_mutually_exclusive_group()
+    model_group.add_argument(
+        '--model', metavar='FILE',
         type=argparse.FileType('r'),
-        help='JSON model file describing valid structures')
-    add('-t', '--triples', action='store_true',
-        help='print graphs as triple conjunctions')
+        help='JSON model file describing the semantic model')
+    model_group.add_argument(
+        '--amr', action='store_true',
+        help='use the AMR model')
     add('--indent', metavar='N',
         help='indent N spaces per level ("no" for no newlines)')
-    add('--amr', action='store_true',
-        help='use AMR model instead of generic PENMAN one')
+    add('--compact', action='store_true',
+        help='compactly print node attributes on one line')
+    add('--triples', action='store_true',
+        help='print graphs as triple conjunctions')
 
     args = parser.parse_args()
 
-    codec = AMRCodec if args.amr else PENMANCodec
+    if args.amr:
+        from penman.models.amr import model
+    elif args.model:
+        model = Model(**json.load(args.model))
+    else:
+        model = None
 
     indent = -1
     if args.indent:
@@ -48,19 +63,18 @@ def main():
                 sys.exit('error: --indent value must be "no" or an '
                          'integer >= -1')
 
-    if args.model:
-        model = Model(**json.load(args.model))
-    else:
-        model = None
+    format_options = {
+        'indent': indent,
+        'compact': args.compact,
+        'triples': args.triples,
+    }
 
-    data = codec(model=model).iterdecode(args.input.read())
-    dump(
-        data,
-        args.output,
-        triples=args.triples,
-        cls=codec,
-        indent=indent
-    )
+    if args.FILE:
+        for file in args.FILE:
+            with open(file) as f:
+                process(f, model, sys.stdout, format_options)
+    else:
+        process(sys.stdin, model, sys.stdout, format_options)
 
 
 if __name__ == '__main__':

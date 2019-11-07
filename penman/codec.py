@@ -68,6 +68,17 @@ class PENMANCodec(object):
             g = layout.interpret(tree, self.model)
         return g
 
+    def iterdecode(self, lines: Union[Iterable[str], str]) -> Iterator[Graph]:
+        """
+        Yield graphs parsed from *lines*.
+        """
+        tokens = lex(lines, pattern=PENMAN_RE)
+        while tokens and tokens.peek().type in ('COMMENT', 'LPAREN'):
+            metadata = self._parse_comments(tokens)
+            node = self._parse_node(tokens)
+            tree = Tree(node, metadata=metadata)
+            yield layout.interpret(tree, self.model)
+
     def parse(self, s: str) -> Tree:
         """
         Parse PENMAN-notation string *s* into its tree structure.
