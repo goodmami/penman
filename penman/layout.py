@@ -88,6 +88,7 @@ class _Pop(LayoutMarker):
         return 'POP'
 
 
+#: Epigraphical marker to indicate the end of a node context.
 POP = _Pop()
 
 

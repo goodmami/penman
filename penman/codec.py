@@ -90,7 +90,7 @@ class PENMANCodec(object):
         Example:
             >>> codec = PENMANCodec()
             >>> codec.parse('(b / bark :ARG1 (d / dog))')
-            ('b', [('/', 'bark', []), ('ARG1', ('d', [('/', 'dog', [])]), [])])
+            Tree(('b', [('/', 'bark', []), ('ARG1', ('d', [('/', 'dog', [])]), [])]))
         """
         tokens = lex(s, pattern=PENMAN_RE)
         metadata = self._parse_comments(tokens)

@@ -189,7 +189,7 @@ class Model(object):
         the reified triples, this identifier should be replaced.
 
         If the role of *triple* does not have a defined reification, a
-        :err:`ModelError` is raised.
+        :exc:`ModelError` is raised.
         """
         source, role, target = triple
         if role not in self.reifications:

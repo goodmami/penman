@@ -1,7 +1,15 @@
 
+"""
+AMR semantic model definition.
+"""
+
 from penman.model import Model
 
 
+#: The roles are the edge labels of reifications. The purpose of roles
+#: in a :class:`Model` is mainly to define the set of valid roles, but
+#: they map to arbitrary data which is not used by the :class:`Model`
+#: but may be inspected or used by client code.
 roles = {
     # role                  arbitrary data
     ":ARG0":                {"type": "frame"},
@@ -94,12 +102,20 @@ roles = {
     ":conj-as-if":          {"type": "conjunction"},
 }
 
+
+#: Normalizations are like role aliases. If the left side of the
+#: normalization is encountered by :meth:`Model.canonicalize_role`
+#: then it is replaced with the right side.
 normalizations = {
     ":mod-of":    ":domain",
     ":domain-of": ":mod",
 }
 
 
+#: Reifications are a particular kind of transformation that replaces
+#: an edge relation with a new node and two outgoing edge relations,
+#: one inverted. They are used when the edge needs to behave as a node,
+#: e.g., to be modified or focused.
 reifications = [
     # role           node label             source   target
     (":accompanier", "accompany-01",        ":ARG0", ":ARG1"),
@@ -142,6 +158,8 @@ reifications = [
 ]
 
 
+#: The AMR model is an instance of :class:`Model` using the roles,
+#: normalizations, and reifications defined in this module.
 model = Model(
     top_identifier='top',
     top_role=':TOP',

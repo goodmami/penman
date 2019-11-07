@@ -21,6 +21,9 @@ class Tree:
     Tree class is useful to contain any metadata and to provide
     tree-based methods.
     """
+
+    __slots__ = 'node', 'metadata'
+
     def __init__(self,
                  node: Node,
                  metadata: Mapping[str, str] = None):
@@ -31,6 +34,9 @@ class Tree:
         if isinstance(other, Tree):
             other = other.node
         return self.node == other
+
+    def __repr__(self) -> str:
+        return 'Tree({!r})'.format(self.node)
 
     def nodes(self):
         """

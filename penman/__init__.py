@@ -27,6 +27,7 @@ from penman.__about__ import (
 
 from penman.exceptions import (
     PenmanError,
+    GraphError,
     LayoutError,
     DecodeError,
     SurfaceError,
@@ -39,6 +40,7 @@ from penman.graph import (
     Attribute,
     Graph
 )
+from penman.tree import Tree
 from penman.model import Model
 from penman.codec import PENMANCodec
 
