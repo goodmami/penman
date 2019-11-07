@@ -129,7 +129,7 @@ class PENMANCodec(object):
             Edge := Role (Constant | Node)
         """
         epidata = []
-        role = tokens.expect('ROLE').text[1:]  # strip the leading :
+        role = tokens.expect('ROLE').text
         if tokens.peek().type == 'ALIGNMENT':
             epidata.append(
                 self._parse_alignment(tokens, RoleAlignment))

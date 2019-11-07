@@ -31,19 +31,19 @@ class TestPENMANCodec(object):
         assert codec.parse('(a / alpha)') == (
             'a', [b('/', 'alpha')])
         assert codec.parse('(a : b)') == (
-            'a', [b('', 'b')])
+            'a', [b(':', 'b')])
         assert codec.parse('(a : ())') == (
-            'a', [b('', (None, []))])
+            'a', [b(':', (None, []))])
         assert codec.parse('(a : (b))') == (
-            'a', [b('', ('b', []))])
+            'a', [b(':', ('b', []))])
         assert codec.parse('(a / alpha :ARG (b / beta))') == (
             'a', [b('/', 'alpha'),
-                  b('ARG', ('b', [b('/', 'beta')]))])
+                  b(':ARG', ('b', [b('/', 'beta')]))])
         assert codec.parse('(a :ARG-of b)') == (
-            'a', [b('ARG-of', 'b')])
+            'a', [b(':ARG-of', 'b')])
         assert codec.parse('(a :ARG~1 b~2)') == (
-            'a', [b('ARG', 'b', [surface.RoleAlignment((1,)),
-                                 surface.Alignment((2,))])])
+            'a', [b(':ARG', 'b', [surface.RoleAlignment((1,)),
+                                  surface.Alignment((2,))])])
 
     def test_format(self):
         assert codec.format(
@@ -65,6 +65,9 @@ class TestPENMANCodec(object):
             ('a', [b('', 'b')])
         ) == '(a : b)'
         assert codec.format(
+            ('a', [b(':', 'b')])
+        ) == '(a : b)'
+        assert codec.format(
             ('a', [b('', ('b', []))])
         ) == '(a : (b))'
         assert codec.format(
@@ -74,6 +77,9 @@ class TestPENMANCodec(object):
         ) == '(a / alpha :ARG (b / beta))'
         assert codec.format(
             ('a', [b('ARG-of', 'b')])
+        ) == '(a :ARG-of b)'
+        assert codec.format(
+            ('a', [b(':ARG-of', 'b')])
         ) == '(a :ARG-of b)'
         assert codec.format(
             ('a', [b('ARG', 'b', [surface.RoleAlignment((1,)),
@@ -135,27 +141,27 @@ class TestPENMANCodec(object):
         # labeled node
         g = decode('(a / alpha)')
         assert g.top == 'a'
-        assert g.triples() == [('a', 'instance', 'alpha')]
+        assert g.triples() == [('a', ':instance', 'alpha')]
 
         # unlabeled edge to unlabeled node
         g = decode('(a : (b))')
         assert g.top == 'a'
-        assert g.triples() == [('a', '', 'b')]
+        assert g.triples() == [('a', ':', 'b')]
 
         # inverted unlabeled edge
         g = decode('(b :-of (a))')
         assert g.top == 'b'
-        assert g.triples() == [('a', '', 'b')]
+        assert g.triples() == [('a', ':', 'b')]
 
         # labeled edge to unlabeled node
         g = decode('(a :ARG (b))')
         assert g.top == 'a'
-        assert g.triples() == [('a', 'ARG', 'b')]
+        assert g.triples() == [('a', ':ARG', 'b')]
 
         # inverted edge
         g = decode('(b :ARG-of (a))')
         assert g.top == 'b'
-        assert g.triples() == [('a', 'ARG', 'b')]
+        assert g.triples() == [('a', ':ARG', 'b')]
 
         # fuller examples
         assert decode(x1[0]).triples() == x1[1]
@@ -164,67 +170,67 @@ class TestPENMANCodec(object):
         # string value
         g = decode('(a :ARG "string")')
         assert g.triples() == [
-            ('a', 'ARG', '"string"'),
+            ('a', ':ARG', '"string"'),
         ]
 
         # symbol value
         g = decode('(a :ARG symbol)')
         assert g.triples() == [
-            ('a', 'ARG', 'symbol')
+            ('a', ':ARG', 'symbol')
         ]
 
         # float value
         g = decode('(a :ARG -1.0e-2)')
         assert g.triples() == [
-            ('a', 'ARG', -0.01)
+            ('a', ':ARG', -0.01)
         ]
 
         # int value
         g = decode('(a :ARG 15)')
         assert g.triples() == [
-            ('a', 'ARG', 15)
+            ('a', ':ARG', 15)
         ]
 
         # numeric node type
         g = decode('(one / 1)')
         assert g.triples() == [
-            ('one', 'instance', 1)
+            ('one', ':instance', 1)
         ]
 
         # string node type
         g = decode('(one / "a string")')
         assert g.triples() == [
-            ('one', 'instance', '"a string"')
+            ('one', ':instance', '"a string"')
         ]
 
         # numeric symbol (from https://github.com/goodmami/penman/issues/17)
         g = decode('(g / go :null_edge (x20 / 876-9))')
         assert g.triples() == [
-            ('g', 'instance', 'go'),
-            ('g', 'null_edge', 'x20'),
-            ('x20', 'instance', '876-9'),
+            ('g', ':instance', 'go'),
+            ('g', ':null_edge', 'x20'),
+            ('x20', ':instance', '876-9'),
         ]
 
     def test_decode_invalid_graphs(self):
         # some robustness
         g = decode('(g / )')
         assert g.triples() == [
-            ('g', 'instance', None)
+            ('g', ':instance', None)
         ]
 
         g = decode('(g / :ARG0 (i / i))')
         assert g.triples() == [
-            ('g', 'instance', None),
-            ('g', 'ARG0', 'i'),
-            ('i', 'instance', 'i')
+            ('g', ':instance', None),
+            ('g', ':ARG0', 'i'),
+            ('i', ':instance', 'i')
         ]
 
         g = decode('(g / go :ARG0 :ARG1 (t / there))')
         assert g.triples() == [
-            ('g', 'instance', 'go'),
-            ('g', 'ARG0', None),
-            ('g', 'ARG1', 't'),
-            ('t', 'instance', 'there')
+            ('g', ':instance', 'go'),
+            ('g', ':ARG0', None),
+            ('g', ':ARG1', 't'),
+            ('t', ':instance', 'there')
         ]
 
         # invalid strings
@@ -251,6 +257,10 @@ class TestPENMANCodec(object):
         assert encode(g) == '(a)'
 
         # labeled node
+        g = penman.Graph([('a', ':instance', 'alpha')])
+        assert encode(g) == '(a / alpha)'
+
+        # labeled node (without ':')
         g = penman.Graph([('a', 'instance', 'alpha')])
         assert encode(g) == '(a / alpha)'
 

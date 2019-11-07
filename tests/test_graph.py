@@ -118,76 +118,76 @@ class TestGraph(object):
     def test_triples(self, x1):
         g = Graph(x1[1])
         assert g.triples() == [
-            ('e2', 'instance', '_try_v_1'),
-            ('e2', 'ARG1', 'x1'),
-            ('x1', 'instance', 'named'),
-            ('x1', 'CARG', '"Abrams"'),
-            ('_1', 'RSTR', 'x1'),
-            ('_1', 'instance', 'proper_q'),
-            ('e2', 'ARG2', 'e3'),
-            ('e3', 'instance', '_sleep_v_1'),
-            ('e3', 'ARG1', 'x1'),
+            ('e2', ':instance', '_try_v_1'),
+            ('e2', ':ARG1', 'x1'),
+            ('x1', ':instance', 'named'),
+            ('x1', ':CARG', '"Abrams"'),
+            ('_1', ':RSTR', 'x1'),
+            ('_1', ':instance', 'proper_q'),
+            ('e2', ':ARG2', 'e3'),
+            ('e3', ':instance', '_sleep_v_1'),
+            ('e3', ':ARG1', 'x1'),
         ]
         assert g.triples(source='e2') == [
-            ('e2', 'instance', '_try_v_1'),
-            ('e2', 'ARG1', 'x1'),
-            ('e2', 'ARG2', 'e3'),
+            ('e2', ':instance', '_try_v_1'),
+            ('e2', ':ARG1', 'x1'),
+            ('e2', ':ARG2', 'e3'),
         ]
         assert g.triples(target='x1') == [
-            ('e2', 'ARG1', 'x1'),
-            ('_1', 'RSTR', 'x1'),
-            ('e3', 'ARG1', 'x1'),
+            ('e2', ':ARG1', 'x1'),
+            ('_1', ':RSTR', 'x1'),
+            ('e3', ':ARG1', 'x1'),
         ]
-        assert g.triples(role='instance') == [
-            ('e2', 'instance', '_try_v_1'),
-            ('x1', 'instance', 'named'),
-            ('_1', 'instance', 'proper_q'),
-            ('e3', 'instance', '_sleep_v_1'),
+        assert g.triples(role=':instance') == [
+            ('e2', ':instance', '_try_v_1'),
+            ('x1', ':instance', 'named'),
+            ('_1', ':instance', 'proper_q'),
+            ('e3', ':instance', '_sleep_v_1'),
         ]
 
     def test_edges(self, x1):
         g = Graph(x1[1])
         assert g.edges() == [
-            ('e2', 'ARG1', 'x1'),
-            ('_1', 'RSTR', 'x1'),
-            ('e2', 'ARG2', 'e3'),
-            ('e3', 'ARG1', 'x1'),
+            ('e2', ':ARG1', 'x1'),
+            ('_1', ':RSTR', 'x1'),
+            ('e2', ':ARG2', 'e3'),
+            ('e3', ':ARG1', 'x1'),
         ]
         assert g.edges(source='e2') == [
-            ('e2', 'ARG1', 'x1'),
-            ('e2', 'ARG2', 'e3'),
+            ('e2', ':ARG1', 'x1'),
+            ('e2', ':ARG2', 'e3'),
         ]
         assert g.edges(source='e3') == [
-            ('e3', 'ARG1', 'x1')
+            ('e3', ':ARG1', 'x1')
         ]
         assert g.edges(target='e3') == [
-            ('e2', 'ARG2', 'e3')
+            ('e2', ':ARG2', 'e3')
         ]
-        assert g.edges(role='RSTR') == [
-            ('_1', 'RSTR', 'x1')
+        assert g.edges(role=':RSTR') == [
+            ('_1', ':RSTR', 'x1')
         ]
 
     def test_attributes(self, x1):
         g = Graph(x1[1])
         assert g.attributes() == [
-            ('e2', 'instance', '_try_v_1'),
-            ('x1', 'instance', 'named'),
-            ('x1', 'CARG', '"Abrams"'),
-            ('_1', 'instance', 'proper_q'),
-            ('e3', 'instance', '_sleep_v_1'),
+            ('e2', ':instance', '_try_v_1'),
+            ('x1', ':instance', 'named'),
+            ('x1', ':CARG', '"Abrams"'),
+            ('_1', ':instance', 'proper_q'),
+            ('e3', ':instance', '_sleep_v_1'),
         ]
         assert g.attributes(source='x1') == [
-            ('x1', 'instance', 'named'),
-            ('x1', 'CARG', '"Abrams"'),
+            ('x1', ':instance', 'named'),
+            ('x1', ':CARG', '"Abrams"'),
         ]
         assert g.attributes(target='named') == [
-            ('x1', 'instance', 'named'),
+            ('x1', ':instance', 'named'),
         ]
-        assert g.attributes(role='instance') == [
-            ('e2', 'instance', '_try_v_1'),
-            ('x1', 'instance', 'named'),
-            ('_1', 'instance', 'proper_q'),
-            ('e3', 'instance', '_sleep_v_1'),
+        assert g.attributes(role=':instance') == [
+            ('e2', ':instance', '_try_v_1'),
+            ('x1', ':instance', 'named'),
+            ('_1', ':instance', 'proper_q'),
+            ('e3', ':instance', '_sleep_v_1'),
         ]
 
     def test_reentrancies(self, x1):
@@ -195,10 +195,10 @@ class TestGraph(object):
         assert g.reentrancies() == {'x1': 2}
         # top has an implicit entrancy
         g = Graph([
-            ('b', 'instance', 'bark'),
-            ('b', 'ARG1', 'd'),
-            ('d', 'instance', 'dog'),
-            ('w', 'ARG1', 'b'),
-            ('w', 'instance', 'wild'),
+            ('b', ':instance', 'bark'),
+            ('b', ':ARG1', 'd'),
+            ('d', ':instance', 'dog'),
+            ('w', ':ARG1', 'b'),
+            ('w', ':instance', 'wild'),
         ])
         assert g.reentrancies() == {'b': 1}

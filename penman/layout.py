@@ -107,11 +107,9 @@ def _interpret_node(t: Tree, model: Model):
     triples = []
     epidata = {}
     id, edges = t
-    has_nodetype = False
     for role, target, epis in edges:
         if role == '/':
             role = model.nodetype_role
-            has_nodetype = True
         # atomic targets
         if is_atomic(target):
             child = ()
@@ -246,7 +244,8 @@ def _configure_node(id, data, variables, nodemap, model):
             # site of potential node context
             nodemap[target] = node
 
-        if role == model.nodetype_role:
+        # since we don't normalize by default, check for a missing :
+        if model.nodetype_role in (role, ':' + role):
             role = '/'
             index = 0
         else:
