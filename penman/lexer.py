@@ -4,7 +4,7 @@
 Classes and functions for lexing PENMAN strings.
 """
 
-from typing import Union, Iterable, Iterator, NamedTuple, Pattern, cast
+from typing import Union, Iterable, Iterator, NamedTuple, Pattern
 import re
 import logging
 
@@ -42,7 +42,7 @@ PATTERNS = {
 def _compile(*names: str) -> Pattern[str]:
     pat = '\n|'.join('(?P<{}>{})'.format(name, PATTERNS[name])
                      for name in names)
-    return re.compile(pat, flags=re.VERBOSE|re.UNICODE)
+    return re.compile(pat, flags=re.VERBOSE)
 
 
 # The order matters in these pattern lists as more permissive patterns
@@ -194,7 +194,7 @@ def lex(lines: Union[Iterable[str], str],
         lines = lines.splitlines()
     if pattern is not None:
         if isinstance(pattern, str):
-            regex = re.compile(pattern, flags=re.UNICODE|re.VERBOSE)
+            regex = re.compile(pattern, flags=re.VERBOSE)
         else:
             regex = pattern
     else:

@@ -4,19 +4,21 @@
 Serialization of PENMAN graphs.
 """
 
-from typing import Optional, Union, Type, Iterable, Iterator, Tuple, List
-from collections import defaultdict
+from typing import Optional, Union, Type, Iterable, Iterator, List
 import re
-import logging
 
-from penman.types import (Identifier, Target, BasicTriple)
+from penman.types import (
+    Identifier,
+    Target,
+    BasicTriple,
+)
 from penman.tree import (Tree, is_atomic)
 from penman.graph import Graph
 from penman.model import Model
 from penman.surface import (
     AlignmentMarker,
     Alignment,
-    RoleAlignment
+    RoleAlignment,
 )
 from penman.lexer import (
     PENMAN_RE,
@@ -103,7 +105,7 @@ class PENMANCodec(object):
             The tree structure described by *s*.
         Example:
             >>> codec = PENMANCodec()
-            >>> codec.parse('(b / bark :ARG1 (d / dog))')
+            >>> codec.parse('(b / bark :ARG1 (d / dog))')  # noqa
             Tree(('b', [('/', 'bark', []), ('ARG1', ('d', [('/', 'dog', [])]), [])]))
         """
         tokens = lex(s, pattern=PENMAN_RE)
@@ -343,13 +345,12 @@ class PENMANCodec(object):
         target_epi = ''.join(str(epi) for epi in epidata if epi.mode == 2)
 
         if indent == -1:
-            column += len(role) + len(role_epi) + 1 # +1 for :
+            column += len(role) + len(role_epi) + 1  # +1 for :
 
         if target is None:
             target = ''
         elif not is_atomic(target):
             target = self._format_node(target, indent, column, ids)
-
 
         return '{}{} {!s}{}'.format(
             role,

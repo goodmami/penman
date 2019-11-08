@@ -4,12 +4,12 @@
 Surface strings, tokens, and alignments.
 """
 
-from typing import Type, Union, Mapping, Tuple, List
+from typing import Type, Mapping, Tuple
 
 from penman.types import BasicTriple
 from penman.graph import Graph
 from penman.epigraph import Epidatum
-from penman.exceptions import SurfaceError
+# from penman.exceptions import SurfaceError  # currently unused?
 
 
 class AlignmentMarker(Epidatum):

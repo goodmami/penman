@@ -12,6 +12,38 @@ such as conversion or reserialization, can be done by calling the
 module as a script.
 """
 
+__all__ = [
+    '__version__',
+    '__version_info__',
+    '__title__',
+    '__summary__',
+    '__uri__',
+    '__author__',
+    '__email__',
+    '__license__',
+    '__copyright__',
+    'PenmanError',
+    'GraphError',
+    'LayoutError',
+    'DecodeError',
+    'SurfaceError',
+    'ModelError',
+    'lex',
+    'Triple',
+    'Edge',
+    'Attribute',
+    'Graph',
+    'Tree',
+    'Model',
+    'PENMANCodec',
+    'decode',
+    'encode',
+    'load',
+    'loads',
+    'dump',
+    'dumps',
+]
+
 
 from penman.__about__ import (
     __version__,
@@ -31,14 +63,14 @@ from penman.exceptions import (
     LayoutError,
     DecodeError,
     SurfaceError,
-    ModelError
+    ModelError,
 )
 from penman.lexer import lex
 from penman.graph import (
     Triple,
     Edge,
     Attribute,
-    Graph
+    Graph,
 )
 from penman.tree import Tree
 from penman.model import Model

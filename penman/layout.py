@@ -47,8 +47,7 @@ above (repeated here) has the following data::
 
 """
 
-from typing import Any, Iterable, Mapping, List, NamedTuple
-import re
+from typing import Mapping
 
 from penman.exceptions import LayoutError
 from penman.types import Identifier
@@ -211,8 +210,11 @@ def _preconfigure(g, strict):
 
     return data
 
+
 def _configure_node(id, data, variables, nodemap, model):
     """
+    Configure a node and any descendants.
+
     Side-effects:
       * *data* is modified
       * *nodemap* is modified
@@ -260,7 +262,7 @@ def _find_next(data, nodemap):
     Find the next node context; establish if necessary.
     """
     id = None
-    for i in range(len(data)-1, -1, -1):
+    for i in range(len(data) - 1, -1, -1):
         datum = data[i]
         if datum is POP:
             continue

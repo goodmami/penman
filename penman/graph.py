@@ -180,7 +180,7 @@ class Graph(object):
         variables = self.variables()
         triples = [Edge(*t) if t[2] in variables else Attribute(*t)
                    for t in self._filter_triples(
-                           None, source, role, target, variables)]
+                       None, source, role, target, variables)]
         return triples
 
     def edges(self,
