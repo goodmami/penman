@@ -9,7 +9,7 @@ from collections import defaultdict
 import re
 import logging
 
-from penman.types import (Identifier, Target)
+from penman.types import (Identifier, Target, BasicTriple)
 from penman.tree import (Tree, is_atomic)
 from penman.graph import Graph
 from penman.model import Model
@@ -68,16 +68,30 @@ class PENMANCodec(object):
             g = layout.interpret(tree, self.model)
         return g
 
-    def iterdecode(self, lines: Union[Iterable[str], str]) -> Iterator[Graph]:
+    def iterdecode(self,
+                   lines: Union[Iterable[str], str],
+                   triples: bool = False) -> Iterator[Graph]:
         """
         Yield graphs parsed from *lines*.
+
+        Args:
+            lines: a string or open file with PENMAN-serialized graphs
+            triples: if `True`, parse *s* as a triple conjunction
+        Returns:
+            The :class:`Graph` object described by *s*.
         """
-        tokens = lex(lines, pattern=PENMAN_RE)
-        while tokens and tokens.peek().type in ('COMMENT', 'LPAREN'):
-            metadata = self._parse_comments(tokens)
-            node = self._parse_node(tokens)
-            tree = Tree(node, metadata=metadata)
-            yield layout.interpret(tree, self.model)
+        if triples:
+            tokens = lex(lines, pattern=TRIPLE_RE)
+            while tokens:
+                _triples = self._parse_triples(tokens)
+                yield Graph(_triples)
+        else:
+            tokens = lex(lines, pattern=PENMAN_RE)
+            while tokens and tokens.peek().type in ('COMMENT', 'LPAREN'):
+                metadata = self._parse_comments(tokens)
+                node = self._parse_node(tokens)
+                tree = Tree(node, metadata=metadata)
+                yield layout.interpret(tree, self.model)
 
     def parse(self, s: str) -> Tree:
         """
@@ -196,10 +210,14 @@ class PENMANCodec(object):
             prefix, indices = None, ()
         return cls(indices, prefix=prefix)
 
-    def parse_triples(self, s: str):
+    def parse_triples(self, s: str) -> List[BasicTriple]:
+        """ Parse a triple conjunction from *s*."""
         tokens = lex(s, pattern=TRIPLE_RE)
-        target: Target
+        return self._parse_triples(self, tokens)
 
+    def _parse_triples(self,
+                       tokens: TokenIterator) -> List[BasicTriple]:
+        target: Target
         triples = []
         while True:
             role = tokens.expect('SYMBOL').text
@@ -220,14 +238,13 @@ class PENMANCodec(object):
                 tokens.next()
             else:
                 break
-
         return triples
 
     def encode(self,
                g: Graph,
                top: Identifier = None,
                triples: bool = False,
-               indent: Optional[int] = -1,
+               indent: Union[int, None] = -1,
                compact: bool = False) -> str:
         """
         Serialize the graph *g* into PENMAN notation.
@@ -235,7 +252,7 @@ class PENMANCodec(object):
         Args:
             g: the Graph object
             top: if given, the node to use as the top in serialization
-            triples: if True, serialize as a conjunction of logical triples
+            triples: if `True`, serialize as a conjunction of triples
             indent: how to indent formatted strings
             compact: if `True`, put initial attributes on the first line
         Returns:
@@ -256,7 +273,10 @@ class PENMANCodec(object):
             tree = layout.configure(g, top=top, model=self.model)
             return self.format(tree, indent=indent, compact=compact)
 
-    def format(self, tree, indent: Optional[int] = -1, compact: bool = False):
+    def format(self,
+               tree: Tree,
+               indent: Union[int, None] = -1,
+               compact: bool = False) -> str:
         """
         Format *tree* into a PENMAN string.
         """
@@ -341,6 +361,7 @@ class PENMANCodec(object):
                        g: Graph,
                        indent: bool = True):
         delim = ' ^\n' if indent else ' ^ '
-        return delim.join(
-            map('{0[1]}({0[0]}, {0[2]})'.format, g.triples())
-        )
+        # need to remove initial : on roles for triples
+        triples = ['{}({}, {})'.format(role.lstrip(':'), source, target)
+                   for source, role, target in g.triples()]
+        return delim.join(triples)
