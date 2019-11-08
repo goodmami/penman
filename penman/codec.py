@@ -213,7 +213,7 @@ class PENMANCodec(object):
     def parse_triples(self, s: str) -> List[BasicTriple]:
         """ Parse a triple conjunction from *s*."""
         tokens = lex(s, pattern=TRIPLE_RE)
-        return self._parse_triples(self, tokens)
+        return self._parse_triples(tokens)
 
     def _parse_triples(self,
                        tokens: TokenIterator) -> List[BasicTriple]:

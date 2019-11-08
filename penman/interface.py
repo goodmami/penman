@@ -3,12 +3,13 @@
 Functions for basic reading and writing of PENMAN graphs.
 """
 
-from typing import Union, Iterable, List, IO
+from typing import Union, Iterable, List
+from pathlib import Path
 
 from penman.codec import PENMANCodec
 from penman.model import Model
 from penman.graph import Graph
-from penman.types import Identifier
+from penman.types import (Identifier, file_or_filename)
 
 
 def decode(s: str,
@@ -65,7 +66,7 @@ def encode(g: Graph,
                         compact=compact)
 
 
-def load(source: Union[str, Iterable[str]],
+def load(source: file_or_filename,
          model: Model = None,
          triples: bool = False) -> List[Graph]:
     """
@@ -79,11 +80,12 @@ def load(source: Union[str, Iterable[str]],
         a list of Graph objects
     """
     codec = PENMANCodec(model=model)
-    if hasattr(source, 'read'):
-        return list(codec.iterdecode(source, triples=triples))
-    else:
+    if isinstance(source, (str, Path)):
         with open(source) as fh:
             return list(codec.iterdecode(fh, triples=triples))
+    else:
+        assert hasattr(source, 'read')
+        return list(codec.iterdecode(source, triples=triples))
 
 
 def loads(string: str,
@@ -104,7 +106,7 @@ def loads(string: str,
 
 
 def dump(graphs: Iterable[Graph],
-         file: IO[str],
+         file: file_or_filename,
          model: Model = None,
          triples: bool = False,
          indent: Union[int, bool] = -1,
@@ -121,11 +123,12 @@ def dump(graphs: Iterable[Graph],
         compact: if `True`, put initial attributes on the first line
     """
     codec = PENMANCodec(model=model)
-    if hasattr(file, 'write'):
-        _dump(file, graphs, codec, triples, indent, compact)
-    else:
+    if isinstance(file, (str, Path)):
         with open(file, 'w') as fh:
             _dump(fh, graphs, codec, triples, indent, compact)
+    else:
+        assert hasattr(file, 'write')
+        _dump(file, graphs, codec, triples, indent, compact)
 
 
 def _dump(fh, gs, codec, triples, indent, compact):
