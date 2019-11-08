@@ -97,14 +97,16 @@ is not explicitly included; assume all nonterminals can be surrounded
 by `/\s+/`):
 
 ```ruby
+# Syntactic productions
 Start     <- Node
 Node      <- '(' Variable NodeLabel? Edge* ')'
 NodeLabel <- '/' Atom Alignment?
 Edge      <- Role Alignment? Target
-Target    <- Node | Atom Alignment?
-Atom      <- String | Float | Integer | Variable | Constant
+Target    <- (Variable | Atom) Alignment?
+           | Node
+Atom      <- String | Float | Integer | Symbol
 Variable  <- Symbol
-Constant  <- Symbol
+# Lexical productions
 Role      <- /:[^\s()\/,:~]*/
 String    <- /"[^"\\]*(?:\\.[^"\\]*)*"/
 Float     <- /[-+]?(((\d+\.\d*|\.\d+)([eE][-+]?\d+)?)|\d+[eE][-+]?\d+)/
@@ -116,16 +118,20 @@ Alignment <- /~([a-zA-Z]\.?)?\d+(,\d+)*/
 \* *Note: I use `|` above for ordered-choice instead of `/` so that `/`
 can be used to surround regular expressions.*
 
-Both `Variable` and `Constant` above resolve as `Symbol`, making their
-use in the `Atom` production redundant, but they are shown like this
-for their semantic contribution. A `Variable` is distinguished from a
-`Constant` simply by its use as the identifier of a node.
+Both `Variable` and `Atom` above can resolve to `Symbol`, making their
+use in the `Target` production redundant, but they are shown like this
+for their semantic contribution. A `Variable` is distinguished from
+other `Symbol` tokens simply by its use as the identifier of a node.
+Examples of non-variable `Symbol` tokens in AMR are concepts (e.g.,
+`want-01`), `-` in `:polarity -`, `expressive` in `:mode expressive`,
+etc.
 
-A more restricted variant of the grammar for AMR might further
-restrict this grammar by making the `NodeLabel` nonterminal required
-on `Node`, changing `Atom` to `Symbol` on `NodeLabel`, changing `Role`
-to disallow relations without labels, and changing `Variable` to a
-form like `/[a-z]+\d*/`. See also [Nathan Schneider's PEG for
+The above grammar is for the PENMAN graphs that this library supports,
+but AMR is more restrictive.  A variant for AMR might make the
+`NodeLabel` nonterminal required on `Node`, change `Atom` to `Symbol`
+on `NodeLabel`, change `Role` to require at least one character after
+`:` or even spell out all valid roles, and change `Variable` to a form
+like `/[a-z]+[0-9]*/`. See also [Nathan Schneider's PEG for
 AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
 
 ### Disclaimer
