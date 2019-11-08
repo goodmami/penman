@@ -29,6 +29,7 @@ Welcome to Penman's documentation!
    api/penman.model
    api/penman.models
    api/penman.surface
+   api/penman.transform
    api/penman.tree
 
 
