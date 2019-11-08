@@ -4,17 +4,23 @@ import sys
 import argparse
 import json
 
-from penman import __version__, PENMANCodec, Model, dump
-
+from penman.__about__ import __version__
+from penman.codec import PENMANCodec
+from penman.model import Model
 
 def process(f, model, out, format_options):
-    data = PENMANCodec(model=model).iterdecode(f)
-    dump(
-        data,
-        out,
-        model=model,
-        **format_options
-    )
+    codec = PENMANCodec(model=model)
+    graphs = codec.iterdecode(f)
+    substrings = (codec.encode(g, **format_options)
+                  for g in graphs)
+    # the try... block is to do an incremental '\n\n'.join(graphs)
+    try:
+        print(next(substrings))
+    except StopIteration:
+        return
+    for substring in substrings:
+        print()
+        print(substring)
 
 
 def main():
