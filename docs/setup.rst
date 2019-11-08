@@ -84,6 +84,20 @@ using `Mypy`_::
   (env) [~/penman]$ mypy penman
 
 
+Style-checking with Flake8
+--------------------------
+
+`Flake8`_ is used for style checking with the following checks disabled:
+
+* `E241` -- large data descriptions are easier to read with whitespace
+* `W503` -- binary operators should appear after a line break
+  (see `here <https://lintlyci.github.io/Flake8Rules/rules/W503.html>`_)
+
+::
+
+  (env) [~/penman]$ flake8 --ignore=E241,W503 penman
+
+
 .. _PyPI: https://pypi.org/project/Penman/
 .. _GitHub: https://github.com/goodmami/penman/
 .. _Python 3.6: https://www.python.org/
@@ -91,3 +105,4 @@ using `Mypy`_::
 .. _pytest: http://pytest.org/
 .. _tox: https://tox.readthedocs.io/en/latest/
 .. _Mypy: http://mypy-lang.org/
+.. _Flake8: http://flake8.pycqa.org/

@@ -14,6 +14,7 @@ Welcome to Penman's documentation!
    basic
    advanced
    basic-api
+   serialization
 
 .. toctree::
    :maxdepth: 2
