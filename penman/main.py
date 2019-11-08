@@ -8,19 +8,21 @@ from penman.__about__ import __version__
 from penman.codec import PENMANCodec
 from penman.model import Model
 
+
 def process(f, model, out, format_options):
+    """Read graphs from *f* and write to *out*."""
     codec = PENMANCodec(model=model)
     graphs = codec.iterdecode(f)
     substrings = (codec.encode(g, **format_options)
                   for g in graphs)
     # the try... block is to do an incremental '\n\n'.join(graphs)
     try:
-        print(next(substrings))
+        print(next(substrings), file=out)
     except StopIteration:
         return
     for substring in substrings:
-        print()
-        print(substring)
+        print(file=out)
+        print(substring, file=out)
 
 
 def main():
