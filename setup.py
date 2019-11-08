@@ -15,13 +15,13 @@ with open(os.path.join(base_dir, "penman", "__about__.py")) as f:
     exec(f.read(), about)
 
 # thanks: https://snarky.ca/clarifying-pep-518/
-docs_require = [
-    'sphinx',
-    'sphinx-rtd-theme',
-]
+with open(os.path.join(base_dir, 'docs', 'requirements.txt')) as f:
+    docs_require = f.readlines()
+
 tests_require = [
     'pytest',
-    'mypy'
+    'mypy',
+    'flake8',
 ]
 
 

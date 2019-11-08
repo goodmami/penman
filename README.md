@@ -2,6 +2,7 @@
 [![PyPI Version](https://img.shields.io/pypi/v/penman.svg)](https://pypi.org/project/Penman/)
 ![Python Support](https://img.shields.io/pypi/pyversions/penman.svg)
 [![Build Status](https://travis-ci.org/goodmami/penman.svg?branch=develop)](https://travis-ci.org/goodmami/penman)
+[![Documentation Status](https://readthedocs.org/projects/penman/badge/?version=latest)](https://penman.readthedocs.io/en/latest/?badge=latest)
 
 This module models graphs encoded in the [PENMAN notation](#penman-notation)
 (e.g., [AMR][]). It may be used as a Python library or as a script.
