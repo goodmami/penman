@@ -157,9 +157,8 @@ class Model(object):
         return role
 
     def _canonicalize_inversion(self, role: Role) -> Role:
-        in_model = self.roles.__contains__
         invert = self.invert_role
-        if not in_model(role):
+        if not self._has_role(role):
             while True:
                 prev = role
                 inverse = invert(role)
