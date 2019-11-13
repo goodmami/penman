@@ -1,17 +1,33 @@
 
 """
-Graph transformations.
+Tree and graph transformations.
 """
 
+from penman.tree import (Tree, Node, is_atomic)
 from penman.graph import Graph
 from penman.model import Model
 
 
-def canonicalize_roles(g: Graph, model: Model) -> None:
+def canonicalize_roles(t: Tree, model: Model) -> None:
     """
-    Normalize roles in *g* so they are canonical according to *model*.
+    Normalize roles in *t* so they are canonical according to *model*.
+
+    This is a tree transformation instead of a graph transformation
+    because the orientation of the pure graph's triples is not decided
+    until the graph is configured into a tree.
     """
-    pass
+    if model is None:
+        model = Model()
+    _canonicalize_node(t.node, model)
+
+
+def _canonicalize_node(node: Node, model: Model) -> None:
+    _, edges = node
+    for i, edge in enumerate(edges):
+        role, tgt, epidata = edge
+        if not is_atomic(tgt):
+            _canonicalize_node(tgt, model)
+        edges[i] = (model.canonicalize_role(role), tgt, epidata)
 
 
 def reify_edges(g: Graph, model: Model) -> None:

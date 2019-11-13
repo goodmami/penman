@@ -5,34 +5,54 @@ import argparse
 import json
 
 from penman.__about__ import __version__
-from penman.codec import PENMANCodec
 from penman.model import Model
+from penman import layout
+from penman.codec import PENMANCodec
+from penman import transform
 
 
-def process(f, model, out, format_options):
+def process(f, model, out, transform_options, format_options):
     """Read graphs from *f* and write to *out*."""
+
+    def _process(g):
+        """Encode graph *g* and return the string."""
+        if format_options['triples']:
+            triples = g.triples()
+            if transform_options['canonicalize_roles']:
+                triples = list(map(model.canonicalize, triples))
+            return codec.format_triples(
+                triples,
+                format_options['indent'] is not None)
+        else:
+            del format_options['triples']
+            tree = layout.configure(g, model=model)
+            if transform_options['canonicalize_roles']:
+                transform.canonicalize_roles(tree, model)
+            return codec.format(tree, **format_options)
+
     codec = PENMANCodec(model=model)
     graphs = codec.iterdecode(f)
-    substrings = (codec.encode(g, **format_options)
-                  for g in graphs)
+
     # the try... block is to do an incremental '\n\n'.join(graphs)
     try:
-        print(next(substrings), file=out)
+        g = next(graphs)
+        print(_process(g), file=out)
     except StopIteration:
         return
-    for substring in substrings:
+    for g in graphs:
         print(file=out)
-        print(substring, file=out)
+        print(_process(g), file=out)
 
 
 def main():
     parser = argparse.ArgumentParser(
         description='Read and write graphs in the PENMAN notation.'
     )
-    add = parser.add_argument
-    add('-V', '--version', action='version',
+    parser.add_argument(
+        '-V', '--version', action='version',
         version='Penman v{}'.format(__version__))
-    add('FILE', nargs='*',
+    parser.add_argument(
+        'FILE', nargs='*',
         help='read graphs from FILEs instead of stdin')
     model_group = parser.add_mutually_exclusive_group()
     model_group.add_argument(
@@ -42,12 +62,20 @@ def main():
     model_group.add_argument(
         '--amr', action='store_true',
         help='use the AMR model')
-    add('--indent', metavar='N',
+    form = parser.add_argument_group('formatting options')
+    form.add_argument(
+        '--indent', metavar='N',
         help='indent N spaces per level ("no" for no newlines)')
-    add('--compact', action='store_true',
+    form.add_argument(
+        '--compact', action='store_true',
         help='compactly print node attributes on one line')
-    add('--triples', action='store_true',
+    form.add_argument(
+        '--triples', action='store_true',
         help='print graphs as triple conjunctions')
+    norm = parser.add_argument_group('normalization options')
+    norm.add_argument(
+        '--canonicalize-roles', action='store_true',
+        help='canonicalize role forms')
 
     args = parser.parse_args()
 
@@ -71,6 +99,9 @@ def main():
                 sys.exit('error: --indent value must be "no" or an '
                          'integer >= -1')
 
+    transform_options = {
+        'canonicalize_roles': args.canonicalize_roles,
+    }
     format_options = {
         'indent': indent,
         'compact': args.compact,
@@ -80,9 +111,11 @@ def main():
     if args.FILE:
         for file in args.FILE:
             with open(file) as f:
-                process(f, model, sys.stdout, format_options)
+                process(f, model, sys.stdout,
+                        transform_options, format_options)
     else:
-        process(sys.stdin, model, sys.stdout, format_options)
+        process(sys.stdin, model, sys.stdout,
+                transform_options, format_options)
 
 
 if __name__ == '__main__':
