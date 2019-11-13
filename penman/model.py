@@ -150,7 +150,7 @@ class Model(object):
         * Replace the resulting role with a normalized form if one is
           defined in the model
         """
-        if not role.startswith(':'):
+        if role != '/' and not role.startswith(':'):
             role = ':' + role
         role = self._canonicalize_inversion(role)
         role = self.normalizations.get(role, role)
