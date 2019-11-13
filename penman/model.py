@@ -111,7 +111,9 @@ class Model(object):
 
         This will invert or deinvert a triple regardless of its
         current state. :meth:`deinvert` will deinvert a triple only if
-        it is already inverted.
+        it is already inverted. Unlike :meth:`canonicalize`, this will
+        not perform multiple inversions or replace the role with a
+        normalized form.
         """
         source, role, target = triple
         inverse = self.invert_role(role)
@@ -126,7 +128,9 @@ class Model(object):
 
         Unlike :meth:`invert`, this only inverts a triple if the model
         considers it to be already inverted, otherwise it is left
-        alone.
+        alone. Unlike :meth:`canonicalize`, this will not normalize
+        multiple inversions or replace the role with a normalized
+        form.
         """
         if self.is_role_inverted(triple[1]):
             triple = self.invert(triple)
@@ -140,11 +144,11 @@ class Model(object):
 
         * Ensure the role starts with `':'`
 
-        * Normalize the inversion (e.g., `ARG0-of-of` becomes `ARG0`),
-          but it does *not* change the direction of the role
+        * Normalize multiple inversions (e.g., `ARG0-of-of` becomes
+          `ARG0`), but it does *not* change the direction of the role
 
         * Replace the resulting role with a normalized form if one is
-          defined
+          defined in the model
         """
         if not role.startswith(':'):
             role = ':' + role
