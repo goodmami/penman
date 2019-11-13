@@ -270,7 +270,9 @@ class PENMANCodec(object):
 
         """
         if triples:
-            return self.format_triples(g, indent=(indent is not None))
+            return self.format_triples(
+                g.triples(),
+                indent=(indent is not None))
         else:
             tree = layout.configure(g, top=top, model=self.model)
             return self.format(tree, indent=indent, compact=compact)
@@ -359,10 +361,10 @@ class PENMANCodec(object):
             target_epi)
 
     def format_triples(self,
-                       g: Graph,
+                       triples: Iterable[BasicTriple],
                        indent: bool = True):
         delim = ' ^\n' if indent else ' ^ '
         # need to remove initial : on roles for triples
-        triples = ['{}({}, {})'.format(role.lstrip(':'), source, target)
-                   for source, role, target in g.triples()]
-        return delim.join(triples)
+        conjunction = ['{}({}, {})'.format(role.lstrip(':'), source, target)
+                       for source, role, target in triples]
+        return delim.join(conjunction)
