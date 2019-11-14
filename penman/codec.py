@@ -80,7 +80,7 @@ class PENMANCodec(object):
             lines: a string or open file with PENMAN-serialized graphs
             triples: if `True`, parse *s* as a triple conjunction
         Returns:
-            The :class:`Graph` object described by *s*.
+            The :class:`Graph` objects described in *lines*.
         """
         if triples:
             tokens = lex(lines, pattern=TRIPLE_RE)
@@ -88,12 +88,23 @@ class PENMANCodec(object):
                 _triples = self._parse_triples(tokens)
                 yield Graph(_triples)
         else:
-            tokens = lex(lines, pattern=PENMAN_RE)
-            while tokens and tokens.peek().type in ('COMMENT', 'LPAREN'):
-                metadata = self._parse_comments(tokens)
-                node = self._parse_node(tokens)
-                tree = Tree(node, metadata=metadata)
+            for tree in self.iterparse(lines):
                 yield layout.interpret(tree, self.model)
+
+    def iterparse(self, lines: Union[Iterable[str], str]) -> Iterator[Tree]:
+        """
+        Yield trees parsed from *lines*.
+
+        Args:
+            lines: a string or open file with PENMAN-serialized graphs
+        Returns:
+            The :class:`Tree` object described in *lines*.
+        """
+        tokens = lex(lines, pattern=PENMAN_RE)
+        while tokens and tokens.peek().type in ('COMMENT', 'LPAREN'):
+            metadata = self._parse_comments(tokens)
+            node = self._parse_node(tokens)
+            yield Tree(node, metadata=metadata)
 
     def parse(self, s: str) -> Tree:
         """

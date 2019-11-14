@@ -14,34 +14,29 @@ from penman import transform
 def process(f, model, out, transform_options, format_options):
     """Read graphs from *f* and write to *out*."""
 
-    def _process(g):
-        """Encode graph *g* and return the string."""
-        if format_options['triples']:
-            triples = g.triples()
-            if transform_options['canonicalize_roles']:
-                triples = list(map(model.canonicalize, triples))
-            return codec.format_triples(
-                triples,
-                format_options['indent'] is not None)
-        else:
-            del format_options['triples']
-            tree = layout.configure(g, model=model)
-            if transform_options['canonicalize_roles']:
-                transform.canonicalize_roles(tree, model)
-            return codec.format(tree, **format_options)
+    def _process(t):
+        """Encode tree *t* and return the string."""
+        # tree transformations
+        if transform_options['canonicalize_roles']:
+            transform.canonicalize_roles(t, model)
+
+        g = layout.interpret(t, model)
+
+
+        return codec.encode(g, **format_options)
 
     codec = PENMANCodec(model=model)
-    graphs = codec.iterdecode(f)
+    trees = codec.iterparse(f)
 
     # the try... block is to do an incremental '\n\n'.join(graphs)
     try:
-        g = next(graphs)
-        print(_process(g), file=out)
+        t = next(trees)
+        print(_process(t), file=out)
     except StopIteration:
         return
-    for g in graphs:
+    for t in trees:
         print(file=out)
-        print(_process(g), file=out)
+        print(_process(t), file=out)
 
 
 def main():
