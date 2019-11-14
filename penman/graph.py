@@ -144,7 +144,8 @@ class Graph(object):
             for t in removed:
                 if t in self.epidata:
                     del self.epidata[t]
-            if self._top not in self.variables():
+            possible_variables = set(v for t in self.triples for v in t[::2])
+            if self._top not in possible_variables:
                 self._top = None
             return self
         else:
@@ -170,7 +171,10 @@ class Graph(object):
         """
         Return the set of variables (nonterminal node identifiers).
         """
-        return set(src for src, _, _ in self.triples)
+        vs = set(src for src, _, _ in self.triples)
+        if self._top is not None:
+            vs.add(self._top)
+        return vs
 
     def edges(self,
               source: Optional[Identifier] = None,

@@ -112,8 +112,9 @@ class TestGraph(object):
         assert Graph(x1[1]).top == 'e2'
 
     def test_variables(self, x1):
-        assert Graph([('a', 'ARG', 'b')]).variables() == set(['a'])
+        assert Graph([('a', 'ARG', 'b')]).variables() == set('a')
         assert Graph(x1[1]).variables() == set(['e2', 'x1', '_1', 'e3'])
+        assert Graph([('a', 'ARG', 'b')], top='b').variables() == set('ab')
 
     def test_edges(self, x1):
         g = Graph(x1[1])
