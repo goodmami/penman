@@ -18,40 +18,61 @@ amr_codec = PENMANCodec(model=amr_model)
 
 def test_canonicalize_roles_default_codec():
     parse = def_codec.parse
+    norm = lambda t: canonicalize_roles(t, def_model)
     format = lambda t: def_codec.format(t, indent=None)
 
-    t = parse('(a / alpha :ARG1 (b / beta))')
-    canonicalize_roles(t, def_model)
+    t = norm(parse('(a / alpha :ARG1 (b / beta))'))
     assert format(t) == '(a / alpha :ARG1 (b / beta))'
 
-    t = parse('(a / alpha :ARG1-of-of (b / beta))')
-    canonicalize_roles(t, def_model)
+    t = norm(parse('(a / alpha :ARG1-of-of (b / beta))'))
     assert format(t) == '(a / alpha :ARG1 (b / beta))'
 
-    t = parse('(a / alpha :mod-of (b / beta))')
-    canonicalize_roles(t, def_model)
+    t = norm(parse('(a / alpha :mod-of (b / beta))'))
     assert format(t) == '(a / alpha :mod-of (b / beta))'
 
 
 def test_canonicalize_roles_amr_codec():
     parse = amr_codec.parse
+    norm = lambda t: canonicalize_roles(t, amr_model)
     format = lambda t: amr_codec.format(t, indent=None)
 
-    t = parse('(a / alpha :ARG1 (b / beta))')
-    canonicalize_roles(t, amr_model)
+    t = norm(parse('(a / alpha :ARG1 (b / beta))'))
     assert format(t) == '(a / alpha :ARG1 (b / beta))'
 
-    t = parse('(a / alpha :ARG1-of-of (b / beta))')
-    canonicalize_roles(t, amr_model)
+    t = norm(parse('(a / alpha :ARG1-of-of (b / beta))'))
     assert format(t) == '(a / alpha :ARG1 (b / beta))'
 
-    t = parse('(a / alpha :mod-of (b / beta))')
-    canonicalize_roles(t, amr_model)
+    t = norm(parse('(a / alpha :mod-of (b / beta))'))
     assert format(t) == '(a / alpha :domain (b / beta))'
 
 
-def reify_edges():
-    pass
+def reify_edges_default_codec():
+    decode = def_codec.parse
+    norm = lambda g: reify_edges(g, def_model)
+    encode = lambda g: def_codec.encode(g, indent=None)
+
+    g = norm(decode('(a / alpha :mod 5)'))
+    assert encode(g) == '(a / alpha :mod 5)'
+
+    g = norm(decode('(a / alpha :mod-of (b / beta))'))
+    assert encode(g) == '(a / alpha :mod-of (b / beta))'
+
+
+def reify_edges_amr_codec():
+    decode = amr_codec.parse
+    norm = lambda g: reify_edges(g, amr_model)
+    encode = lambda g: amr_codec.encode(g, indent=None)
+
+    g = norm(decode('(a / alpha :mod 5)'))
+    assert encode(g) == '(a / alpha :ARG0-of (_ / have-mod-91 :ARG1 5))'
+
+    g = norm(decode('(a / alpha :mod-of (b / beta))'))
+    assert encode(g) == '(a / alpha :ARG1-of (_ / have-mod-91 :ARG0 (b / beta))'
+
+    g = norm(decode('(a / alpha :mod-of (b / beta :polarity -))'))
+    assert encode(g) == (
+        '(a / alpha :ARG1-of (_ / have-mod-91 '
+        ':ARG0 (b / beta :ARG0-of (_2 / have-polarity-91 :ARG1 -))))')
 
 
 def contract_edges():

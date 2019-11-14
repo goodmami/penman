@@ -18,10 +18,13 @@ def process(f, model, out, transform_options, format_options):
         """Encode tree *t* and return the string."""
         # tree transformations
         if transform_options['canonicalize_roles']:
-            transform.canonicalize_roles(t, model)
+            t = transform.canonicalize_roles(t, model)
 
         g = layout.interpret(t, model)
 
+        # graph transformations
+        if transform_options['reify_edges']:
+            g = transform.reify_edges(g, model)
 
         return codec.encode(g, **format_options)
 
@@ -71,6 +74,9 @@ def main():
     norm.add_argument(
         '--canonicalize-roles', action='store_true',
         help='canonicalize role forms')
+    norm.add_argument(
+        '--reify-edges', action='store_true',
+        help='reify all eligible edges')
 
     args = parser.parse_args()
 
@@ -96,6 +102,7 @@ def main():
 
     transform_options = {
         'canonicalize_roles': args.canonicalize_roles,
+        'reify_edges': args.reify_edges,
     }
     format_options = {
         'indent': indent,
