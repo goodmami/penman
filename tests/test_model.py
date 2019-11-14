@@ -4,41 +4,22 @@ import pytest
 from penman.exceptions import ModelError
 from penman.model import Model
 
-mini_amr = {
-    'roles': {
-        ':ARG0': {'type': 'frame'},
-        ':ARG1': {'type': 'frame'},
-        ":accompanier": {"type": "general"},
-        ":domain": {"type": "general"},
-        ":consist-of": {"type": "general"},
-        ":mod": {"type": "general"},
-        ":op[0-9]+": {"type": "op"},
-    },
-    'normalizations': {
-        ':mod-of': ':domain',
-        ':domain-of': ':mod',
-    },
-    'reifications': [
-        (':accompanier', 'accompany-01', ':ARG0', ':ARG1'),
-	(':mod', 'have-mod-91', ':ARG1', ':ARG2')
-    ]
-}
 
 
 class TestModel:
-    def test__init__(self):
+    def test__init__(self, mini_amr):
         m = Model()
         assert len(m.roles) == 0
         m = Model(roles=mini_amr['roles'])
         assert len(m.roles) == 7
 
-    def test_from_dict(self):
+    def test_from_dict(self, mini_amr):
         assert Model.from_dict(mini_amr) == Model(
             roles=mini_amr['roles'],
             normalizations=mini_amr['normalizations'],
             reifications=mini_amr['reifications'])
 
-    def test_has_role(self):
+    def test_has_role(self, mini_amr):
         m = Model()
         assert not m.has_role('')
         assert m.has_role(m.nodetype_role)
@@ -60,7 +41,7 @@ class TestModel:
         assert m.has_role(':op9999')
         assert not m.has_role(':op[0-9]+')
 
-    def test_is_role_inverted(self):
+    def test_is_role_inverted(self, mini_amr):
         m = Model()
         assert m.is_role_inverted(':ARG0-of')
         assert m.is_role_inverted(':-of')
@@ -83,7 +64,7 @@ class TestModel:
         # assert not m.is_role_inverted('mod')
         # assert not m.is_role_inverted('consist-of')
 
-    def test_invert_role(self):
+    def test_invert_role(self, mini_amr):
         m = Model()
         assert m.invert_role(':ARG0')       == ':ARG0-of'
         assert m.invert_role(':ARG0-of')    == ':ARG0'
@@ -104,7 +85,7 @@ class TestModel:
         # assert m.invert_role('mod')        == 'domain'
         # assert m.invert_role('domain')     == 'mod'
 
-    def test_invert(self):
+    def test_invert(self, mini_amr):
         m = Model()
         assert m.invert(('a', ':ARG0', 'b'))       == ('b', ':ARG0-of', 'a')
         assert m.invert(('a', ':ARG0-of', 'b'))    == ('b', ':ARG0', 'a')
@@ -126,7 +107,7 @@ class TestModel:
         # assert m.invert(('a', 'domain', 'b'))      == ('b', 'mod', 'a')
 
 
-    def test_deinvert(self):
+    def test_deinvert(self, mini_amr):
         m = Model()
         assert m.deinvert(('a', ':ARG0', 'b'))       == ('a', ':ARG0', 'b')
         assert m.deinvert(('a', ':ARG0-of', 'b'))    == ('b', ':ARG0', 'a')
@@ -147,7 +128,7 @@ class TestModel:
         # assert m.deinvert(('a', 'ARG0-of', 'b'))     == ('b', 'ARG0', 'a')
         # assert m.deinvert(('a', 'consist-of', 'b'))  == ('a', 'consist-of', 'b')
 
-    def test_canonicalize_role(self):
+    def test_canonicalize_role(self, mini_amr):
         m = Model()
         assert m.canonicalize_role(':ARG0')          == ':ARG0'
         assert m.canonicalize_role(':ARG0-of')       == ':ARG0-of'
@@ -180,7 +161,7 @@ class TestModel:
         assert m.canonicalize_role('consist-of')     == ':consist-of'
         assert m.canonicalize_role('consist-of-of')  == ':consist-of-of'
 
-    def test_canonicalize(self):
+    def test_canonicalize(self, mini_amr):
         m = Model()
         assert m.canonicalize(('a', ':ARG0', 'b'))          == ('a', ':ARG0', 'b')
         assert m.canonicalize(('a', ':ARG0-of', 'b'))       == ('a', ':ARG0-of', 'b')
@@ -213,7 +194,7 @@ class TestModel:
         assert m.canonicalize(('a', 'consist-of', 'b'))     == ('a', ':consist-of', 'b')
         assert m.canonicalize(('a', 'consist-of-of', 'b'))  == ('a', ':consist-of-of', 'b')
 
-    def test_is_reifiable(self):
+    def test_is_reifiable(self, mini_amr):
         m = Model()
         assert not m.is_reifiable(('a', ':ARG0', 'b'))
         assert not m.is_reifiable(('a', ':accompanier', 'b'))
@@ -225,7 +206,7 @@ class TestModel:
         assert not m.is_reifiable(('a', ':domain', 'b'))
         assert m.is_reifiable(('a', ':mod', 'b'))
 
-    def test_reify(self):
+    def test_reify(self, mini_amr):
         m = Model()
         with pytest.raises(ModelError):
             m.reify(('a', ':ARG0', 'b'))
@@ -238,13 +219,18 @@ class TestModel:
         m = Model.from_dict(mini_amr)
         with pytest.raises(ModelError):
             m.reify(('a', ':ARG0', 'b'))
-        assert m.reify(('a', ':accompanier', 'b')) == [
+        assert m.reify(('a', ':accompanier', 'b')) == (
             ('a', ':ARG0-of', '_'),
             ('_', ':instance', 'accompany-01'),
-            ('_', ':ARG1', 'b')]
+            ('_', ':ARG1', 'b'))
         with pytest.raises(ModelError):
             assert m.reify(('a', ':domain', 'b'))
-        assert m.reify(('a', ':mod', 'b')) == [
+        assert m.reify(('a', ':mod', 'b')) == (
             ('a', ':ARG1-of', '_'),
             ('_', ':instance', 'have-mod-91'),
-            ('_', ':ARG2', 'b')]
+            ('_', ':ARG2', 'b'))
+        # ensure unique ids if variables is specified
+        assert m.reify(('a', ':mod', 'b'), variables={'a', 'b', '_'}) == (
+            ('a', ':ARG1-of', '_2'),
+            ('_2', ':instance', 'have-mod-91'),
+            ('_2', ':ARG2', 'b'))

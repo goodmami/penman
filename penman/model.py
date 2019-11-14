@@ -11,14 +11,16 @@ from collections import defaultdict
 from penman.exceptions import ModelError
 from penman.types import (
     Identifier,
+    IdSet,
     Role,
     Constant,
     BasicTriple
 )
 
 
-_Reification = Tuple[Role, Constant, Role, Role]
+_ReificationSpec = Tuple[Role, Constant, Role, Role]
 _Reified = Tuple[Constant, Role, Role]
+_Reification = Tuple[BasicTriple, BasicTriple, BasicTriple]
 
 
 class Model(object):
@@ -41,7 +43,7 @@ class Model(object):
                  nodetype_role: Role = ':instance',
                  roles: Mapping[Role, Any] = None,
                  normalizations: Mapping[Role, Role] = None,
-                 reifications: Iterable[_Reification] = None):
+                 reifications: Iterable[_ReificationSpec] = None):
         self.top_identifier = top_identifier
         self.top_role = top_role
         self.nodetype_role = nodetype_role
@@ -183,22 +185,39 @@ class Model(object):
         """Return `True` if the role of *triple* can be reified."""
         return triple[1] in self.reifications
 
-    def reify(self, triple: BasicTriple) -> List[BasicTriple]:
+    def reify(self,
+              triple: BasicTriple,
+              variables: IdSet = None) -> _Reification:
         """
-        Return the list of triples that reify *triple*.
+        Return the three triples that reify *triple*.
 
-        Note that the node identifier for the reified node is not
-        necessarily valid for the target graph. When incorporating
-        the reified triples, this identifier should be replaced.
+        Note that, unless *variables* is given, the node identifier
+        for the reified node is not necessarily valid for the target
+        graph. When incorporating the reified triples, this identifier
+        should then be replaced.
 
         If the role of *triple* does not have a defined reification, a
         :exc:`ModelError` is raised.
+
+        Args:
+            triple: the triple to reify
+            variables: a set of variables that should not be used for
+                the reified node's variable
+        Returns:
+            The 3-tuple of triples that reify *triple*.
         """
         source, role, target = triple
         if role not in self.reifications:
             raise ModelError("'{}' cannot be reified".format(role))
         label, source_role, target_role = next(iter(self.reifications[role]))
-        dummy_id = '_'
-        return [(source, self.invert_role(source_role), dummy_id),
-                (dummy_id, self.nodetype_role, label),
-                (dummy_id, target_role, target)]
+
+        var = '_'
+        if variables:
+            i = 2
+            while var in variables:
+                var = '_{}'.format(i)
+                i += 1
+
+        return ((source, self.invert_role(source_role), var),
+                (var, self.nodetype_role, label),
+                (var, target_role, target))
