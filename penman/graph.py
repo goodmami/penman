@@ -65,9 +65,11 @@ class Graph(object):
     A Graph is defined by a list of triples, which can be divided into
     two parts: a list of graph edges where both the source and target
     are node identifiers, and a list of node attributes where only the
-    source is a node identifier and the target is a constant. These
-    lists can be obtained via the :meth:`triples`, :meth:`edges`, and
-    :meth:`attributes` methods.
+    source is a node identifier and the target is a constant. The raw
+    triples are available via the :attr:`triples` attribute, while the
+    :meth:`edges` and :meth:`attributes` methods return only those
+    that are edges between nodes or between a node and a constant,
+    respectively.
 
     Args:
         triples: an iterable of triples (:class:`Triple` or 3-tuples)
@@ -95,7 +97,7 @@ class Graph(object):
 
         # the following (a) creates a new list and (b) validates that
         # they are triples
-        self._triples = [(src, role, tgt) for src, role, tgt in triples]
+        self.triples = [(src, role, tgt) for src, role, tgt in triples]
         self._top = top
         self.epidata = dict(epidata)
         self.metadata = dict(metadata)
@@ -117,8 +119,8 @@ class Graph(object):
 
     def __ior__(self, other):
         if isinstance(other, Graph):
-            new = set(other._triples) - set(self._triples)
-            self._triples.extend(t for t in other._triples if t in new)
+            new = set(other.triples) - set(self.triples)
+            self.triples.extend(t for t in other.triples if t in new)
             for t in new:
                 if t in other.epidata:
                     self.epidata[t] = list(other.epidata[t])
@@ -137,8 +139,8 @@ class Graph(object):
 
     def __isub__(self, other):
         if isinstance(other, Graph):
-            removed = set(other._triples)
-            self._triples[:] = [t for t in self._triples if t not in removed]
+            removed = set(other.triples)
+            self.triples[:] = [t for t in self.triples if t not in removed]
             for t in removed:
                 if t in self.epidata:
                     del self.epidata[t]
@@ -154,8 +156,8 @@ class Graph(object):
         The top variable.
         """
         top = self._top
-        if top is None and len(self._triples) > 0:
-            top = self._triples[0][0]  # implicit top
+        if top is None and len(self.triples) > 0:
+            top = self.triples[0][0]  # implicit top
         return top
 
     @top.setter
@@ -168,20 +170,7 @@ class Graph(object):
         """
         Return the set of variables (nonterminal node identifiers).
         """
-        return set(src for src, _, _ in self._triples)
-
-    def triples(self,
-                source: Identifier = None,
-                role: Role = None,
-                target: Target = None) -> List[Triple]:
-        """
-        Return triples filtered by their *source*, *role*, or *target*.
-        """
-        variables = self.variables()
-        triples = [Edge(*t) if t[2] in variables else Attribute(*t)
-                   for t in self._filter_triples(
-                       None, source, role, target, variables)]
-        return triples
+        return set(src for src, _, _ in self.triples)
 
     def edges(self,
               source: Optional[Identifier] = None,
@@ -192,9 +181,10 @@ class Graph(object):
 
         Edges don't include terminal triples (node types or attributes).
         """
-        triples = [Edge(*t)
-                   for t in self._filter_triples(True, source, role, target)]
-        return triples
+        variables = self.variables()
+        return [Edge(*t)
+                for t in self._filter_triples(source, role, target)
+                if t[2] in variables]
 
     def attributes(self,
                    source: Optional[Identifier] = None,
@@ -205,32 +195,27 @@ class Graph(object):
 
         Attributes don't include triples where the target is a nonterminal.
         """
-        triples = [Attribute(*t)
-                   for t in self._filter_triples(False, source, role, target)]
-        return triples
+        variables = self.variables()
+        return [Attribute(*t)
+                for t in self._filter_triples(source, role, target)
+                if t[2] not in variables]
 
     def _filter_triples(self,
-                        is_edge: Union[bool, None],
                         source: Optional[Identifier],
                         role: Optional[Role],
-                        target: Optional[Target],
-                        variables: IdSet = None) -> List[BasicTriple]:
+                        target: Optional[Target]) -> List[BasicTriple]:
         """
         Filter triples based on their source, role, and/or target.
         """
-        if is_edge is source is role is target is None:
-            triples = list(self._triples)
+        if source is role is target is None:
+            triples = list(self.triples)
         else:
-            if variables is None:
-                variables = self.variables()
             triples = [
-                t for t in self._triples
-                if ((is_edge is None or (t[2] in variables) == is_edge)
-                    and (source is None or source == t[0])
+                t for t in self.triples
+                if ((source is None or source == t[0])
                     and (role is None or role == t[1])
                     and (target is None or target == t[2]))
             ]
-
         return triples
 
     def reentrancies(self) -> Dict[Identifier, int]:
@@ -266,7 +251,7 @@ class Graph(object):
             metadata: if `True`, include any metadata
         """
         g = self.__class__(
-            list(self._triples),
+            list(self.triples),
             top=self.top,
             epidata=None if not epidata else {
                 t: list(epis) for t, epis in self.epidata.items()},
@@ -294,7 +279,7 @@ class Graph(object):
             metadata: if `True`, remove all metadata from the graph
         """
         if triples:
-            self._triples.clear()
+            self.triples.clear()
             self._top = None
 
         if epidata is True or epidata is Epidatum:

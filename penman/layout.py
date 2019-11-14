@@ -177,7 +177,7 @@ def _preconfigure(g, strict):
     data = []
     epidata = g.epidata
     pushed = set()
-    for triple in g.triples():
+    for triple in g.triples:
         push, pops, others = None, [], []
         for epi in epidata.get(triple, []):
             if isinstance(epi, Push):

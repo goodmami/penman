@@ -37,8 +37,8 @@ the example [below](#library-usage).
 ```python
 >>> import penman
 >>> g = penman.decode('(b / bark :ARG0 (d / dog))')
->>> g.triples()
-[Attribute(source='b', role=':instance', target='bark'), Edge(source='b', role=':ARG0', target='d'), Attribute(source='d', role=':instance', target='dog')]
+>>> g.triples
+[('b', ':instance', 'bark'), ('b', ':ARG0', 'd'), ('d', ':instance', 'dog')]
 >>> print(penman.encode(g))
 (b / bark
    :ARG0 (d / dog))

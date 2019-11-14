@@ -271,7 +271,7 @@ class PENMANCodec(object):
         """
         if triples:
             return self.format_triples(
-                g.triples(),
+                g.triples,
                 indent=(indent is not None))
         else:
             tree = layout.configure(g, top=top, model=self.model)
