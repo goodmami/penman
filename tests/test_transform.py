@@ -84,8 +84,16 @@ def contract_edges():
     pass
 
 
-def reify_attributes():
-    pass
+def test_reify_attributes():
+    decode = def_codec.decode
+    norm = lambda g: reify_attributes(g, def_model)
+    encode = lambda g: def_codec.encode(g, indent=None)
+
+    g = norm(decode('(a / alpha :mod 5)'))
+    assert encode(g) == '(a / alpha :mod (_ / 5))'
+
+    g = norm(decode('(a / alpha :mod~1 5~2)'))
+    assert encode(g) == '(a / alpha :mod~1 (_ / 5~2))'
 
 
 def indicate_branches():

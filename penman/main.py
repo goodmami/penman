@@ -25,6 +25,8 @@ def process(f, model, out, transform_options, format_options):
         # graph transformations
         if transform_options['reify_edges']:
             g = transform.reify_edges(g, model)
+        if transform_options['reify_attributes']:
+            g = transform.reify_attributes(g, model)
 
         return codec.encode(g, **format_options)
 
@@ -77,6 +79,9 @@ def main():
     norm.add_argument(
         '--reify-edges', action='store_true',
         help='reify all eligible edges')
+    norm.add_argument(
+        '--reify-attributes', action='store_true',
+        help='reify all attributes')
 
     args = parser.parse_args()
 
@@ -103,6 +108,7 @@ def main():
     transform_options = {
         'canonicalize_roles': args.canonicalize_roles,
         'reify_edges': args.reify_edges,
+        'reify_attributes': args.reify_attributes,
     }
     format_options = {
         'indent': indent,

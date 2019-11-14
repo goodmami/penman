@@ -77,11 +77,38 @@ def contract_edges(g: Graph, model: Model) -> None:
     pass
 
 
-def reify_attributes(g: Graph, model: Model) -> None:
+def reify_attributes(g: Graph, model: Model) -> Graph:
     """
     Reify all attributes in *g* that have reifications in *model*.
     """
-    pass
+    variables = g.variables()
+    if model is None:
+        model = Model()
+    new_epidata = dict(g.epidata)
+    new_triples: List[BasicTriple] = []
+    i = 2
+    for triple in g.triples:
+        source, role, target = triple
+        if (model.nodetype_role not in (role, ':' + role)
+                and target not in variables):
+            # get unique id for new node
+            var = '_'
+            while var in variables:
+                var = '_{}'.format(i)
+                i += 1
+            variables.add(var)
+            role_triple = (source, role, var)
+            node_triple = (var, model.nodetype_role, target)
+            new_triples.extend((role_triple, node_triple))
+            # manage epigraphical markers
+            role_epis, node_epis = _attr_markers(new_epidata.pop(triple))
+            new_epidata[role_triple] = role_epis + [Push(var)]
+            new_epidata[node_triple] = node_epis + [POP]
+        else:
+            new_triples.append(triple)
+    return Graph(new_triples,
+                 epidata=new_epidata,
+                 metadata=g.metadata)
 
 
 def indicate_branches(g: Graph, model: Model) -> None:
@@ -151,3 +178,10 @@ def _edge_markers(epidata: Epidata) -> Tuple[Epidata, Epidata]:
     out_epis.extend(pops)
 
     return node_epis, out_epis
+
+
+def _attr_markers(epidata: Epidata) -> Tuple[Epidata, Epidata]:
+    _, pops, role_epis, other_epis = _reified_markers(epidata)
+    node_epis = other_epis
+    node_epis.extend(pops)
+    return role_epis, node_epis
