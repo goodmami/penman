@@ -115,11 +115,25 @@ def indicate_branches(g: Graph, model: Model) -> None:
     Insert TOP triples in *g* indicating the tree structure.
 
     Note:
-        This depends on *g* containing the epigraphical data from
-        parsing; it will not work with programmatically constructed
-        Graph objects or those whose epigraphical data were removed.
+        This depends on *g* containing the epigraphical layout markers
+        from parsing; it will not work with programmatically
+        constructed Graph objects or those whose epigraphical data
+        were removed.
     """
-    pass
+    new_triples = []
+    for t in g.triples:
+        push = next((epi for epi in g.epidata.get(t, [])
+                     if isinstance(epi, Push)),
+                    None)
+        if push is not None:
+            if push.id == t[2]:
+                new_triples.append((t[0], model.top_role, t[2]))
+            elif push.id == t[0]:
+                new_triples.append((t[2], model.top_role, t[0]))
+        new_triples.append(t)
+    return Graph(new_triples,
+                 epidata=g.epidata,
+                 metadata=g.metadata)
 
 
 _SplitMarkers = Tuple[Union[Epidatum, None], Epidata, Epidata, Epidata]

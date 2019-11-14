@@ -27,6 +27,8 @@ def process(f, model, out, transform_options, format_options):
             g = transform.reify_edges(g, model)
         if transform_options['reify_attributes']:
             g = transform.reify_attributes(g, model)
+        if transform_options['indicate_branches']:
+            g = transform.indicate_branches(g, model)
 
         return codec.encode(g, **format_options)
 
@@ -82,6 +84,9 @@ def main():
     norm.add_argument(
         '--reify-attributes', action='store_true',
         help='reify all attributes')
+    norm.add_argument(
+        '--indicate-branches', action='store_true',
+        help='insert triples to indicate tree structure')
 
     args = parser.parse_args()
 
@@ -109,6 +114,7 @@ def main():
         'canonicalize_roles': args.canonicalize_roles,
         'reify_edges': args.reify_edges,
         'reify_attributes': args.reify_attributes,
+        'indicate_branches': args.indicate_branches,
     }
     format_options = {
         'indent': indent,
