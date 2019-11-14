@@ -161,6 +161,19 @@ class TestGraph(object):
             ('e3', ':instance', '_sleep_v_1'),
         ]
 
+    def test_attributes_issue_29(self):
+        # https://github.com/goodmami/penman/issues/29
+        g = Graph([('f', ':instance', 'follow'),
+                   ('f', ':ARG0', 'i'),
+                   ('i', ':instance', 'it'),
+                   ('f', ':ARG1', 'i2'),
+                   ('i2', ':instance', 'i')])
+        assert g.attributes() == [
+            ('f', ':instance', 'follow'),
+            ('i', ':instance', 'it'),
+            ('i2', ':instance', 'i')
+        ]
+
     def test_reentrancies(self, x1):
         g = Graph(x1[1])
         assert g.reentrancies() == {'x1': 2}

@@ -213,7 +213,7 @@ class Graph(object):
         variables = self.variables()
         return [Attribute(*t)
                 for t in self._filter_triples(source, role, target)
-                if t[2] not in variables]
+                if t[1] == NODETYPE_ROLE or t[2] not in variables]
 
     def _filter_triples(self,
                         source: Optional[Identifier],
