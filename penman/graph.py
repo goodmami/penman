@@ -109,6 +109,13 @@ class Graph(object):
             id(self)
         )
 
+    def __eq__(self, other):
+        if not isinstance(other, Graph):
+            return NotImplemented
+        return (self.top == other.top
+                and len(self.triples) == len(other.triples)
+                and set(self.triples) == set(other.triples))
+
     def __or__(self, other):
         if isinstance(other, Graph):
             g = self.copy(epidata=True, metadata=False)
