@@ -267,8 +267,8 @@ class TestPENMANCodec(object):
         # unlabeled edge to unlabeled node
         g = penman.Graph([('a', '', 'b')])
         assert encode(g) == '(a : b)'
-        g = penman.Graph([('a', '', 'b')],
-                         epidata={('a', '', 'b'): [layout.Push('b')]})
+        g = penman.Graph([('a', ':', 'b')],
+                         epidata={('a', ':', 'b'): [layout.Push('b')]})
         assert encode(g) == '(a : (b))'
 
         # inverted unlabeled edge

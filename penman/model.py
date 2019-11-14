@@ -16,6 +16,7 @@ from penman.types import (
     Constant,
     BasicTriple
 )
+from penman.graph import NODETYPE_ROLE
 
 
 _ReificationSpec = Tuple[Role, Constant, Role, Role]
@@ -40,7 +41,7 @@ class Model(object):
     def __init__(self,
                  top_identifier: Identifier = 'top',
                  top_role: Role = ':TOP',
-                 nodetype_role: Role = ':instance',
+                 nodetype_role: Role = NODETYPE_ROLE,
                  roles: Mapping[Role, Any] = None,
                  normalizations: Mapping[Role, Role] = None,
                  reifications: Iterable[_ReificationSpec] = None):
@@ -219,5 +220,5 @@ class Model(object):
                 i += 1
 
         return ((source, self.invert_role(source_role), var),
-                (var, self.nodetype_role, label),
+                (var, NODETYPE_ROLE, label),
                 (var, target_role, target))

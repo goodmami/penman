@@ -9,7 +9,7 @@ from penman.types import BasicTriple
 from penman.epigraph import (Epidatum, Epidata)
 from penman.surface import (Alignment, RoleAlignment)
 from penman.tree import (Tree, Node, is_atomic)
-from penman.graph import Graph
+from penman.graph import (Graph, NODETYPE_ROLE)
 from penman.model import Model
 from penman.layout import (Push, POP)
 
@@ -89,8 +89,7 @@ def reify_attributes(g: Graph, model: Model) -> Graph:
     i = 2
     for triple in g.triples:
         source, role, target = triple
-        if (model.nodetype_role not in (role, ':' + role)
-                and target not in variables):
+        if role != NODETYPE_ROLE and target not in variables:
             # get unique id for new node
             var = '_'
             while var in variables:
@@ -98,7 +97,7 @@ def reify_attributes(g: Graph, model: Model) -> Graph:
                 i += 1
             variables.add(var)
             role_triple = (source, role, var)
-            node_triple = (var, model.nodetype_role, target)
+            node_triple = (var, NODETYPE_ROLE, target)
             new_triples.extend((role_triple, node_triple))
             # manage epigraphical markers
             role_epis, node_epis = _attr_markers(new_epidata.pop(triple))

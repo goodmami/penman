@@ -53,7 +53,7 @@ from penman.exceptions import LayoutError
 from penman.types import Identifier
 from penman.epigraph import Epidatum
 from penman.tree import (Tree, Node, is_atomic)
-from penman.graph import Graph
+from penman.graph import (Graph, NODETYPE_ROLE)
 from penman.model import Model
 
 
@@ -109,7 +109,7 @@ def _interpret_node(t: Node, model: Model):
     id, edges = t
     for role, target, epis in edges:
         if role == '/':
-            role = model.nodetype_role
+            role = NODETYPE_ROLE
         # atomic targets
         if is_atomic(target):
             child = ()
@@ -254,8 +254,7 @@ def _configure_node(id, data, nodemap, model):
             # site of potential node context
             nodemap[target] = node
 
-        # since we don't normalize by default, check for a missing :
-        if model.nodetype_role in (role, ':' + role):
+        if role == NODETYPE_ROLE:
             role = '/'
             index = 0
         else:

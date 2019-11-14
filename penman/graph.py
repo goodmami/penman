@@ -21,6 +21,9 @@ from penman.types import (
 from penman.epigraph import (Epidatum, Epidata)
 
 
+NODETYPE_ROLE = ':instance'
+
+
 class Triple(NamedTuple):
     """
     A relation between nodes or between a node and an constant.
@@ -78,9 +81,9 @@ class Graph(object):
         epidata: a mapping of triples to epigraphical markers
         metadata: a mapping of metadata types to descriptions
     Example:
-        >>> Graph([('b', 'instance', 'bark'),
-        ...        ('d', 'instance', 'dog'),
-        ...        ('b', 'ARG1', 'd')])
+        >>> Graph([('b', ':instance', 'bark'),
+        ...        ('d', ':instance', 'dog'),
+        ...        ('b', ':ARG1', 'd')])
     """
 
     def __init__(self,
@@ -95,9 +98,10 @@ class Graph(object):
         if not metadata:
             metadata = {}
 
-        # the following (a) creates a new list and (b) validates that
-        # they are triples
-        self.triples = [(src, role, tgt) for src, role, tgt in triples]
+        # the following (a) creates a new list (b) validates that
+        # they are triples, and (c) ensures roles begin with :
+        self.triples = [(src, _ensure_colon(role), tgt)
+                        for src, role, tgt in triples]
         self._top = top
         self.epidata = dict(epidata)
         self.metadata = dict(metadata)
@@ -303,3 +307,9 @@ class Graph(object):
 
         if metadata:
             self.metadata.clear()
+
+
+def _ensure_colon(role):
+    if not role.startswith(':'):
+        return ':' + role
+    return role

@@ -16,19 +16,19 @@ class TestGraph(object):
 
         # single node
         g = Graph([('a', 'instance', None)])
-        assert g.triples == [('a', 'instance', None)]
+        assert g.triples == [('a', ':instance', None)]
         assert g.top == 'a'
 
         # single node one edge (default nodetype)
         g = Graph([('a', 'ARG1', 'b')])
-        assert g.triples == [('a', 'ARG1', 'b')]
+        assert g.triples == [('a', ':ARG1', 'b')]
         assert g.top == 'a'
 
         # first triple determines top
-        g = Graph([('b', 'instance', None), ('a', 'ARG1', 'b')])
+        g = Graph([('b', ':instance', None), ('a', ':ARG1', 'b')])
         assert g.triples == [
-            ('b', 'instance', None),
-            ('a', 'ARG1', 'b')
+            ('b', ':instance', None),
+            ('a', ':ARG1', 'b')
         ]
         assert g.top == 'b'
 
@@ -39,17 +39,17 @@ class TestGraph(object):
         assert g.top is None
         assert g is not p
 
-        q = Graph([('a', 'instance', 'alpha')])
+        q = Graph([('a', ':instance', 'alpha')])
         g = p | q
-        assert g.triples == [('a', 'instance', 'alpha')]
+        assert g.triples == [('a', ':instance', 'alpha')]
         assert g.top is 'a'
         assert g is not q is not p
 
-        r = Graph([('a', 'ARG', 'b'), ('b', 'instance', 'beta')], top='b')
+        r = Graph([('a', ':ARG', 'b'), ('b', ':instance', 'beta')], top='b')
         g = q | r
-        assert g.triples == [('a', 'instance', 'alpha'),
-                               ('a', 'ARG', 'b'),
-                               ('b', 'instance', 'beta')]
+        assert g.triples == [('a', ':instance', 'alpha'),
+                             ('a', ':ARG', 'b'),
+                             ('b', ':instance', 'beta')]
         assert g.top == 'a'
 
     def test__ior__(self):
@@ -60,9 +60,9 @@ class TestGraph(object):
         assert g.top is None
         assert g is original
 
-        p = Graph([('a', 'instance', 'alpha')])
+        p = Graph([('a', ':instance', 'alpha')])
         g |= p
-        assert g.triples == [('a', 'instance', 'alpha')]
+        assert g.triples == [('a', ':instance', 'alpha')]
         assert g.top is 'a'
         assert g is original
 
@@ -73,9 +73,9 @@ class TestGraph(object):
         assert g.top is None
         assert g is not p
 
-        q = Graph([('a', 'instance', 'alpha')])
+        q = Graph([('a', ':instance', 'alpha')])
         g = q - p
-        assert g.triples == [('a', 'instance', 'alpha')]
+        assert g.triples == [('a', ':instance', 'alpha')]
         assert g.top == 'a'
         assert g is not q is not p
 
@@ -95,26 +95,26 @@ class TestGraph(object):
         assert g.top is None
         assert g is original
 
-        g = Graph([('a', 'instance', 'alpha'),
-                   ('a', 'ARG', 'b'),
-                   ('b', 'instance', 'beta')])
+        g = Graph([('a', ':instance', 'alpha'),
+                   ('a', ':ARG', 'b'),
+                   ('b', ':instance', 'beta')])
         original = g
-        g -= Graph([('a', 'instance', 'alpha'), ('a', 'ARG', 'b')])
-        assert g.triples == [('b', 'instance', 'beta')]
+        g -= Graph([('a', ':instance', 'alpha'), ('a', ':ARG', 'b')])
+        assert g.triples == [('b', ':instance', 'beta')]
         assert g.top == 'b'
         assert g is original
 
     def test_top(self, x1):
-        assert Graph([('a', 'instance', None)]).top == 'a'
+        assert Graph([('a', ':instance', None)]).top == 'a'
         assert Graph(
-            [('b', 'instance', None), ('a', 'ARG', 'b')]
+            [('b', ':instance', None), ('a', ':ARG', 'b')]
         ).top == 'b'
         assert Graph(x1[1]).top == 'e2'
 
     def test_variables(self, x1):
-        assert Graph([('a', 'ARG', 'b')]).variables() == set('a')
+        assert Graph([('a', ':ARG', 'b')]).variables() == set('a')
         assert Graph(x1[1]).variables() == set(['e2', 'x1', '_1', 'e3'])
-        assert Graph([('a', 'ARG', 'b')], top='b').variables() == set('ab')
+        assert Graph([('a', ':ARG', 'b')], top='b').variables() == set('ab')
 
     def test_edges(self, x1):
         g = Graph(x1[1])
