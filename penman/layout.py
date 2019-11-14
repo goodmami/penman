@@ -47,7 +47,7 @@ above (repeated here) has the following data::
 
 """
 
-from typing import Mapping
+from typing import Union, Mapping
 
 from penman.exceptions import LayoutError
 from penman.types import Identifier
@@ -57,7 +57,7 @@ from penman.graph import Graph
 from penman.model import Model
 
 
-_Nodemap = Mapping[Identifier, Node]
+_Nodemap = Mapping[Identifier, Union[Node, None]]
 
 
 # Epigraphical markers
@@ -93,10 +93,12 @@ POP = _Pop()
 
 # Tree to graph interpretation ################################################
 
-def interpret(t: Tree, model: Model):
+def interpret(t: Tree, model: Model = None) -> Graph:
     """
     Interpret tree *t* as a graph using *model*.
     """
+    if model is None:
+        model = Model()
     top, triples, epidata = _interpret_node(t.node, model)
     return Graph(triples, top=top, epidata=epidata, metadata=t.metadata)
 
@@ -139,16 +141,18 @@ def configure(g: Graph,
     """
     Create a tree from a graph by making as few decisions as possible.
     """
-    node, data, nodemap, variables = _configure(g, top, model, strict)
+    if model is None:
+        model = Model()
+    node, data, nodemap = _configure(g, top, model, strict)
     # if any data remain, the graph was not properly annotated for a tree
     while data:
         skipped, id, data = _find_next(data, nodemap)
         data_count = len(data)
         if id is None or data_count == 0:
             raise LayoutError('possibly disconnected graph')
-        _configure_node(id, data, variables, nodemap, model)
+        _configure_node(id, data, nodemap, model)
         if len(data) >= data_count:
-            raise LayoutError('cycle in configuration')
+            raise LayoutError('possible cycle in configuration')
         data = skipped + data
     return Tree(node, metadata=g.metadata)
 
@@ -157,15 +161,20 @@ def _configure(g, top, model, strict):
     """
     Create the tree that can be created without any improvising.
     """
-    if model is None:
-        model = Model()
+    if len(g.triples) == 0:
+        return (g.top, []), [], {}
+
+    nodemap: _Nodemap = {var: None for var in g.variables()}
     if top is None:
         top = g.top
+    if top not in nodemap:
+        raise LayoutError('top is not a variable: {!r}'.format(top))
+    nodemap[top] = (top, [])
+
     data = list(reversed(_preconfigure(g, strict)))
-    variables = g.variables()
-    nodemap: _Nodemap = {top: (top, [])}
-    tree = _configure_node(top, data, variables, nodemap, model)
-    return tree, data, nodemap, variables
+    node = _configure_node(top, data, nodemap, model)
+
+    return node, data, nodemap
 
 
 def _preconfigure(g, strict):
@@ -211,7 +220,7 @@ def _preconfigure(g, strict):
     return data
 
 
-def _configure_node(id, data, variables, nodemap, model):
+def _configure_node(id, data, nodemap, model):
     """
     Configure a node and any descendants.
 
@@ -240,8 +249,8 @@ def _configure_node(id, data, variables, nodemap, model):
         if push and push.id == target:
             nodemap[push.id] = (push.id, [])
             target = _configure_node(
-                push.id, data, variables, nodemap, model)
-        elif target in variables and target not in nodemap:
+                push.id, data, nodemap, model)
+        elif target in nodemap and nodemap[target] is None:
             # site of potential node context
             nodemap[target] = node
 
@@ -267,13 +276,14 @@ def _find_next(data, nodemap):
         if datum is POP:
             continue
         source, _, target = datum[0]
-        if _get_or_establish_site(source, nodemap):
+        if source in nodemap and _get_or_establish_site(source, nodemap):
             id = source
             break
-        elif _get_or_establish_site(target, nodemap):
+        elif target in nodemap and _get_or_establish_site(target, nodemap):
             id = target
             break
-    return data[:i], id, data[i:]
+    pivot = i + 1
+    return data[pivot:], id, data[:pivot]
 
 
 def _get_or_establish_site(id, nodemap):
@@ -281,7 +291,7 @@ def _get_or_establish_site(id, nodemap):
     Turn a node identifier target into a node context.
     """
     # first check if the id is available at all
-    if id in nodemap:
+    if nodemap[id] is not None:
         _id, edges = nodemap[id]
         # if the mapped node's id doesn't match it can be established
         if id != _id:
@@ -323,5 +333,7 @@ def has_valid_layout(g: Graph,
     depth-first traversal that reconstructs a spanning tree used for
     serialization.
     """
+    if model is None:
+        model = Model()
     tree, data, nodemap, variables = _configure(g, top, model, strict)
     return len(data) == 0
