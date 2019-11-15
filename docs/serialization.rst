@@ -14,8 +14,8 @@ The above PENMAN string is parsed to the following tree:
 
 .. code:: python
 
-   ('b', [('instance', 'bark', []),
-          ('ARG0', ('d', [('instance', 'dog', [])]), [])])
+   ('b', [(':instance', 'bark', []),
+          (':ARG0', ('d', [(':instance', 'dog', [])]), [])])
 
 The structure of a tree node is ``(id, branches)`` while the structure
 of a branch is ``(role, target, epidata)``. The target of a branch can
@@ -26,22 +26,23 @@ but is not shown here as it is empty for this example):
 
 .. code:: python
 
-   [('b', 'instance', 'bark'),
-    ('b', 'ARG0', 'd'),
-    ('d', 'instance', 'dog')]
+   [('b', ':instance', 'bark'),
+    ('b', ':ARG0', 'd'),
+    ('d', ':instance', 'dog')]
 
 Serialization goes in the reverse order: from a pure graph to a tree
 to a string.
 
-Rules for Serialization
------------------------
+..
+  Rules for Serialization
+  -----------------------
 
-Node instatiation
-'''''''''''''''''
+  Node instatiation
+  '''''''''''''''''
 
 
-The order of triples matters
-''''''''''''''''''''''''''''
+  The order of triples matters
+  ''''''''''''''''''''''''''''
 
-Limitations
-'''''''''''
+  Limitations
+  '''''''''''

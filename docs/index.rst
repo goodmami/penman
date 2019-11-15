@@ -12,13 +12,11 @@ Welcome to Penman's documentation!
 
    setup
    basic
-   advanced
-   basic-api
    serialization
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Advanced API:
+   :maxdepth: 1
+   :caption: API Reference:
 
    api/penman.codec
    api/penman.epigraph
