@@ -97,4 +97,12 @@ def test_reify_attributes():
 
 
 def indicate_branches():
-    pass
+    decode = def_codec.decode
+    norm = lambda g: indicate_branches(g, def_model)
+    encode = lambda g: def_codec.encode(g, indent=None)
+
+    g = norm(decode('(a / alpha :mod 5)'))
+    assert encode(g) == '(a / alpha :mod 5)'
+
+    g = norm(decode('(a / alpha :mod-of (b / beta))'))
+    assert encode(g) == '(a / alpha :TOP b :mod-of (b / beta))'

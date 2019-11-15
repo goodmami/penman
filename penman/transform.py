@@ -110,7 +110,7 @@ def reify_attributes(g: Graph, model: Model) -> Graph:
                  metadata=g.metadata)
 
 
-def indicate_branches(g: Graph, model: Model) -> None:
+def indicate_branches(g: Graph, model: Model) -> Graph:
     """
     Insert TOP triples in *g* indicating the tree structure.
 
@@ -120,7 +120,7 @@ def indicate_branches(g: Graph, model: Model) -> None:
         constructed Graph objects or those whose epigraphical data
         were removed.
     """
-    new_triples = []
+    new_triples: List[BasicTriple] = []
     for t in g.triples:
         push = next((epi for epi in g.epidata.get(t, [])
                      if isinstance(epi, Push)),
@@ -129,6 +129,7 @@ def indicate_branches(g: Graph, model: Model) -> None:
             if push.id == t[2]:
                 new_triples.append((t[0], model.top_role, t[2]))
             elif push.id == t[0]:
+                assert isinstance(t[2], str)
                 new_triples.append((t[2], model.top_role, t[0]))
         new_triples.append(t)
     return Graph(new_triples,
