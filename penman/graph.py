@@ -300,7 +300,7 @@ class Graph(object):
         if epidata is True or epidata is Epidatum:
             self.epidata.clear()
         else:
-            assert isinstance(epidata, Epidatum)
+            assert issubclass(epidata, Epidatum)
             for epilist in self.epidata.values():
                 epilist[:] = [epi for epi in epilist
                               if not isinstance(epi, epidata)]
