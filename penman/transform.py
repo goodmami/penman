@@ -77,13 +77,11 @@ def contract_edges(g: Graph, model: Model) -> None:
     pass
 
 
-def reify_attributes(g: Graph, model: Model) -> Graph:
+def reify_attributes(g: Graph) -> Graph:
     """
     Reify all attributes in *g* that have reifications in *model*.
     """
     variables = g.variables()
-    if model is None:
-        model = Model()
     new_epidata = dict(g.epidata)
     new_triples: List[BasicTriple] = []
     i = 2

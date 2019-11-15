@@ -86,7 +86,7 @@ def contract_edges():
 
 def test_reify_attributes():
     decode = def_codec.decode
-    norm = lambda g: reify_attributes(g, def_model)
+    norm = lambda g: reify_attributes(g)
     encode = lambda g: def_codec.encode(g, indent=None)
 
     g = norm(decode('(a / alpha :mod 5)'))

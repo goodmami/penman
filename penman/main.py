@@ -26,7 +26,7 @@ def process(f, model, out, transform_options, format_options):
         if transform_options['reify_edges']:
             g = transform.reify_edges(g, model)
         if transform_options['reify_attributes']:
-            g = transform.reify_attributes(g, model)
+            g = transform.reify_attributes(g)
         if transform_options['indicate_branches']:
             g = transform.indicate_branches(g, model)
 
