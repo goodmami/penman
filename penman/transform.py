@@ -21,6 +21,22 @@ def canonicalize_roles(t: Tree, model: Model) -> Tree:
     This is a tree transformation instead of a graph transformation
     because the orientation of the pure graph's triples is not decided
     until the graph is configured into a tree.
+
+    Args:
+        t: a :class:`Tree` object
+        model: a model defining role normalizations
+    Returns:
+        A new :class:`Tree` object with canonicalized roles.
+    Example:
+        >>> from penman.codec import PENMANCodec
+        >>> from penman.models.amr import model
+        >>> from penman.transform import canonicalize_roles
+        >>> codec = PENMANCodec()
+        >>> t = codec.parse('(c / chapter :domain-of 7)')
+        >>> t = canonicalize_roles(t, model)
+        >>> print(codec.format(t))
+        (c / chapter
+           :mod 7)
     """
     if model is None:
         model = Model()
@@ -42,6 +58,23 @@ def _canonicalize_node(node: Node, model: Model) -> Node:
 def reify_edges(g: Graph, model: Model) -> Graph:
     """
     Reify all edges in *g* that have reifications in *model*.
+
+    Args:
+        g: a :class:`Graph` object
+        model: a model defining reifications
+    Returns:
+        A new :class:`Graph` object with reified edges.
+    Example:
+        >>> from penman.codec import PENMANCodec
+        >>> from penman.models.amr import model
+        >>> from penman.transform import reify_edges
+        >>> codec = PENMANCodec(model=model)
+        >>> g = codec.decode('(c / chapter :mod 7)')
+        >>> g = reify_edges(g, model)
+        >>> print(codec.encode(g))
+        (c / chapter
+           :ARG1-of (_ / have-mod-91
+                       :ARG2 7))
     """
     vars = g.variables()
     if model is None:
@@ -74,12 +107,27 @@ def contract_edges(g: Graph, model: Model) -> None:
     """
     if model is None:
         model = Model()
-    pass
+    raise NotImplementedError()
 
 
 def reify_attributes(g: Graph) -> Graph:
     """
-    Reify all attributes in *g* that have reifications in *model*.
+    Reify all attributes in *g*.
+
+    Args:
+        g: a :class:`Graph` object
+    Returns:
+        A new :class:`Graph` object with reified attributes.
+    Example:
+        >>> from penman.codec import PENMANCodec
+        >>> from penman.models.amr import model
+        >>> from penman.transform import reify_attributes
+        >>> codec = PENMANCodec(model=model)
+        >>> g = codec.decode('(c / chapter :mod 7)')
+        >>> g = reify_attributes(g)
+        >>> print(codec.encode(g))
+        (c / chapter
+           :mod (_ / 7))
     """
     variables = g.variables()
     new_epidata = dict(g.epidata)
@@ -117,6 +165,31 @@ def indicate_branches(g: Graph, model: Model) -> Graph:
         from parsing; it will not work with programmatically
         constructed Graph objects or those whose epigraphical data
         were removed.
+
+    Args:
+        g: a :class:`Graph` object
+        model: a model defining the TOP role
+    Returns:
+        A new :class:`Graph` object with TOP roles indicating tree
+        branches.
+    Example:
+        >>> from penman.codec import PENMANCodec
+        >>> from penman.models.amr import model
+        >>> from penman.transform import indicate_branches
+        >>> codec = PENMANCodec(model=model)
+        >>> g = codec.decode('''
+        ... (w / want-01
+        ...    :ARG0 (b / boy)
+        ...    :ARG1 (g / go-02
+        ...             :ARG0 b))''')
+        >>> g = indicate_branches(g, model)
+        >>> print(codec.encode(g))
+        (w / want-01
+           :TOP b
+           :ARG0 (b / boy)
+           :TOP g
+           :ARG1 (g / go-02
+                    :ARG0 b))
     """
     new_triples: List[BasicTriple] = []
     for t in g.triples:

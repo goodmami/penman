@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Embedding tree structure in basic graphs.
+Interpreting trees to graphs and configuring graphs to trees.
 
 In order to serialize graphs into the PENMAN format, a tree-like
 layout of the graph must be decided. Deciding a layout includes
@@ -31,20 +31,23 @@ With inverted edges, there are even more possibilities, such as::
         :ARG0-of b)                :ARG0 (d / dog
      :ARG1 (b / bark-01))             :ARG0-of t)))
 
-This module introduces two :class:`Marker <graph.Marker>` sentinel
-instances: :data:`PUSH` and :data:`POP`. :data:`PUSH` indicates that
-the current branch descends to another node context, while :data:`POP`
-returns to a previous node context. This method only works if the
-triples in the graph's data are ordered. For instance, the first graph
-above (repeated here) has the following data::
+This module introduces two epigraphical markers so that a pure graph
+parsed from PENMAN can retain information about its tree layout
+without altering its graph properties. The first marker type is
+:class:`Push`, which is put on a triple to indicate that the triple
+introduces a new node context, while the sentinel :data:`POP`
+indicates that a triple is at the end of one or more node contexts.
+These markers only work if the triples in the graph's data are
+ordered. For instance, one of the graphs above (repeated here) has the
+following data::
 
-  PENMAN graph         Graph data                      Epigraph data
-  (b / bark-01         [('b', 'instance', 'bark-01'),
-     :ARG0 (d / dog)    ('b', 'ARG0', 'd'),            : Push('d')
-     :mod (l / loud))   ('d', 'instance', 'dog'),      : Pop()
-                        ('b', 'mod', 'l'),             : Push('l')
-                        ('l', 'instance', 'loud')]     : Pop()
-
+  PENMAN                 Graph                            Epigraph
+  (t / try-01            [('t', ':instance', 'try-01'),   :
+     :ARG0 (d / dog)      ('t', ':ARG0', 'd'),            : Push('d')
+     :ARG1 (b / bark-01   ('d', ':instance', 'dog'),      : POP
+        :ARG0 d))         ('t', ':ARG1', 'b'),            : Push('b')
+                          ('b', ':instance', 'bark-01'),  :
+                          ('b', ':ARG0', 'd')]            : POP
 """
 
 from typing import Union, Mapping
