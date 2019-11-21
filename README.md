@@ -4,33 +4,34 @@
 [![Build Status](https://travis-ci.org/goodmami/penman.svg?branch=develop)](https://travis-ci.org/goodmami/penman)
 [![Documentation Status](https://readthedocs.org/projects/penman/badge/?version=latest)](https://penman.readthedocs.io/en/latest/?badge=latest)
 
-This module models graphs encoded in the [PENMAN notation](#penman-notation)
-(e.g., [AMR][]). It may be used as a Python library or as a script.
-It does not include any of the concept inventory or text-generation
-capabilities of the [PENMAN][] project.
+
+This package models graphs encoded in the [PENMAN
+notation](#penman-notation) (e.g., [AMR][]). It may be used as a
+Python library or as a script.
+
 
 ### Features
 
-Serialization between graphs and either PENMAN notation or triple
-conjunctions is provided by the [PENMANCodec][] class's `encode()`,
-`decode()`, and `iterdecode()` methods. Module-level functions
-provide a convenient interface to this class:
+- [x] Read and write PENMAN-serialized graphs
+- [x] Read and write graphs as triple conjunctions
+- [x] Read metadata in comments (e.g., `# ::id 1234`)
+- [x] Read surface alignments (e.g., `foo~e.1,2`)
+- [x] Adjust indentation and compactness for writing
+- [x] Inspect and manipulate the graph structure
+- [x] Inspect and manipulate the tree structure
+- [-] Reconfigure the graphs for writing:
+  - [x] select a new top node
+  - [-] rearrange edges (partially implemented)
+  - [x] restructure the tree shape
+- [x] Transform the graph
+  - [x] Canonicalize roles
+  - [x] Reify edges
+  - [x] Reify attributes
+  - [x] Embed the tree structure with additional `TOP` triples
+- [x] AMR role inventory and transformations
+- [-] Tested (not yet 100% coverage)
+- [x] Documented (see the [documentation][])
 
-* [encode(g)][] - serialized graph *g* and return the string
-* [decode(s)][] - deserialize *s* and return the graph
-* [load(f)][] - return all graphs in file *f*
-* [loads(s)][] - return all graphs in string *s*
-* [dump(gs, f)][] - serialize all graphs in *gs* and write to file *f*
-* [dumps(gs)][] - serialize all graphs in *gs* and return the string
-
-Passing `triples=True` to the above functions does (de)serialization
-to/from conjunctions of triples. The `indent` parameter of `encode()`,
-`dump()`, and `dumps()` changes how PENMAN-serialized graphs are
-indented (by default, they are adaptively indented to line up with
-their containing node). Deserialized [Graph][] objects may be inspected
-and queried for their variables (nonterminal node identifiers), triples,
-etc. For more information, please consult the [documentation][], and see
-the example [below](#library-usage).
 
 ### Library Usage
 
@@ -49,27 +50,37 @@ the example [below](#library-usage).
 (b / bark :ARG0 (d / dog))
 ```
 
+
 ### Script Usage
 
 ```console
 $ penman --help
 usage: penman [-h] [-V] [--model FILE | --amr] [--indent N] [--compact]
-              [--triples]
+              [--triples] [--canonicalize-roles] [--reify-edges]
+              [--reify-attributes] [--indicate-branches]
               [FILE [FILE ...]]
 
 Read and write graphs in the PENMAN notation.
 
 positional arguments:
-  FILE           read graphs from FILEs instead of stdin
+  FILE                  read graphs from FILEs instead of stdin
 
 optional arguments:
-  -h, --help     show this help message and exit
-  -V, --version  show program's version number and exit
-  --model FILE   JSON model file describing the semantic model
-  --amr          use the AMR model
-  --indent N     indent N spaces per level ("no" for no newlines)
-  --compact      compactly print node attributes on one line
-  --triples      print graphs as triple conjunctions
+  -h, --help            show this help message and exit
+  -V, --version         show program's version number and exit
+  --model FILE          JSON model file describing the semantic model
+  --amr                 use the AMR model
+
+formatting options:
+  --indent N            indent N spaces per level ("no" for no newlines)
+  --compact             compactly print node attributes on one line
+  --triples             print graphs as triple conjunctions
+
+normalization options:
+  --canonicalize-roles  canonicalize role forms
+  --reify-edges         reify all eligible edges
+  --reify-attributes    reify all attributes
+  --indicate-branches   insert triples to indicate tree structure
 
 $ penman <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 (w / want-01
@@ -78,15 +89,17 @@ $ penman <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
             :ARG0 b))
 ```
 
+
 ### Requirements
 
 - Python 3.6+
+
 
 ### PENMAN Notation
 
 The [PENMAN][] project was a large effort at natural language generation,
 and what I'm calling "PENMAN notation" is more accurately "Sentence Plan
-Language" (SPL; [Kaspar 1989]), but I'll stick with "PENMAN notation"
+Language" (SPL; [Kaspar 1989][]), but I'll stick with "PENMAN notation"
 because it may be a more familiar name to modern users and it also sounds
 less specific to sentence representations, e.g., in case someone wants to
 use the format to encode arbitrary graphs.
@@ -138,6 +151,7 @@ on `Concept`, change `Role` to require at least one character after
 like `/[a-z]+[0-9]*/`. See also [Nathan Schneider's PEG for
 AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
 
+
 ### Disclaimer
 
 This project is not affiliated with [ISI], the [PENMAN] project, or the
@@ -149,13 +163,4 @@ This project is not affiliated with [ISI], the [PENMAN] project, or the
 [PEG]: https://en.wikipedia.org/wiki/Parsing_expression_grammar
 [ISI]: http://isi.edu/
 
-[documentation]: docs/API.md
-[PENMANCodec]: docs/API.md#penmancodec
-[AMRCodec]: docs/API.md#amrcodec
-[encode(g)]: docs/API.md#encode
-[decode(s)]: docs/API.md#decode
-[load(f)]: docs/API.md#load
-[loads(s)]: docs/API.md#loads
-[dump(gs, f)]: docs/API.md#dump
-[dumps(gs)]: docs/API.md#dumps
-[Graph]: docs/API.md#graph
+[documentation]: https://penman.readthedocs.io/
