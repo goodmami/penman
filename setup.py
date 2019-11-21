@@ -54,6 +54,7 @@ setup(
     keywords='nlp semantics amr',
     packages=[
         'penman',
+        'penman.models',
     ],
     setup_requires=['wheel >= 0.31.0'],
     install_requires=[
