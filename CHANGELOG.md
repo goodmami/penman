@@ -4,6 +4,19 @@
 
 (no unreleased changes yet)
 
+## [v0.7.1][v0.7.1]
+
+The [v0.7.0][v070] release was missing a declaration for the new
+`penman.models` sub-package, so it was not available for new
+installs. This release fixes that.
+
+### Fixed
+
+* The `penman.models` package is now declared in `setup.py`
+* The documentation now looks one level up when building (this is just
+  "in case", as I think the missing package problem was the real
+  culprit for faulty documentation builds.)
+
 ## [v0.7.0][v0.7.0]
 
 This release comprises a major restructuring from previous
@@ -368,4 +381,5 @@ First release with very basic functionality.
 [v0.6.1]: ../../releases/tag/v0.6.1
 [v0.6.2]: ../../releases/tag/v0.6.2
 [v0.7.0]: ../../releases/tag/v0.7.0
+[v0.7.1]: ../../releases/tag/v0.7.1
 [README]: README.md
