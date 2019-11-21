@@ -6,8 +6,17 @@
 
 
 This package models graphs encoded in the [PENMAN
-notation](#penman-notation) (e.g., [AMR][]). It may be used as a
-Python library or as a script.
+notation](#penman-notation) (e.g., [AMR][]), such as the following for
+*the boy wants to go*:
+
+```
+(w / want-01
+   :ARG0 (b / boy)
+   :ARG1 (g / go
+            :ARG0 b))
+```
+
+The Penman package may be used as a Python library or as a script.
 
 
 ### Features
@@ -17,19 +26,19 @@ Python library or as a script.
 - [x] Read metadata in comments (e.g., `# ::id 1234`)
 - [x] Read surface alignments (e.g., `foo~e.1,2`)
 - [x] Adjust indentation and compactness for writing
-- [x] Inspect and manipulate the graph structure
-- [x] Inspect and manipulate the tree structure
-- [-] Reconfigure the graphs for writing:
+- [x] Inspect and manipulate the [graph][] structure
+- [x] Inspect and manipulate the [tree][] structure
+- [x] Reconfigure the graphs for writing:
   - [x] select a new top node
-  - [-] rearrange edges (partially implemented)
+  - [x] rearrange edges (partially implemented)
   - [x] restructure the tree shape
-- [x] Transform the graph
+- [x] [Transform][transform] the graph
   - [x] Canonicalize roles
   - [x] Reify edges
   - [x] Reify attributes
   - [x] Embed the tree structure with additional `TOP` triples
-- [x] AMR role inventory and transformations
-- [-] Tested (not yet 100% coverage)
+- [x] [AMR model][]: role inventory and transformations
+- [x] Tested (but not yet 100% coverage)
 - [x] Documented (see the [documentation][])
 
 
@@ -164,3 +173,7 @@ This project is not affiliated with [ISI], the [PENMAN] project, or the
 [ISI]: http://isi.edu/
 
 [documentation]: https://penman.readthedocs.io/
+[graph]: https://penman.readthedocs.io/en/latest/api/penman.graph.html
+[tree]: https://penman.readthedocs.io/en/latest/api/penman.tree.html
+[transform]: https://penman.readthedocs.io/en/latest/api/penman.transform.html
+[AMR model]: https://penman.readthedocs.io/en/latest/api/penman.models.amr.html
