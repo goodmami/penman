@@ -5,10 +5,34 @@ penman.graph
 .. automodule:: penman.graph
 
    .. autoclass:: Graph
-      :members:
+
+      .. attribute:: top
+
+	 The top variable.
+
+      .. attribute:: triples
+
+	 The list of triples that make up the graph.
+
+      .. attribute:: epidata
+
+	 Epigraphical data that describe how a graph is to be
+	 expressed when serialized.
+
+      .. attribute:: metadata
+
+	 Metadata for the graph.
+
+      .. automethod:: edges
+      .. automethod:: attributes
+      .. automethod:: variables
+      .. automethod:: reentrancies
 
    .. autoclass:: Triple
-      :members:
+
+      .. autoattribute:: source
+      .. autoattribute:: role
+      .. autoattribute:: target
 
    .. autoclass:: Edge
       :show-inheritance:

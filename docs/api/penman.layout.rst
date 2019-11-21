@@ -4,6 +4,9 @@ penman.layout
 
 .. automodule:: penman.layout
 
+   Epigraphical Markers
+   --------------------
+
    .. autoclass:: LayoutMarker
       :show-inheritance:
 
@@ -11,6 +14,9 @@ penman.layout
       :show-inheritance:
 
    .. autodata:: POP
+
+   Module Functions
+   ----------------
 
    .. autofunction:: interpret
    .. autofunction:: configure

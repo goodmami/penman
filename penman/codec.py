@@ -374,6 +374,23 @@ class PENMANCodec(object):
     def format_triples(self,
                        triples: Iterable[BasicTriple],
                        indent: bool = True):
+        """
+        Return the formatted triple conjunction of *triples*.
+
+        Args:
+            triples: an iterable of triples
+            indent: how to indent formatted strings
+        Returns:
+            the serialized triple conjunction of *triples*
+        Example:
+            >>> codec = PENMANCodec()
+            >>> codec.format_triples([('a', ':instance', 'alpha'),
+            ...                       ('a', ':ARG0', 'b'),
+            ...                       ('b', ':instance', 'beta')])
+            ...
+            'instance(a, alpha) ^\\nARG0(a, b) ^\\ninstance(b, beta)'
+
+        """
         delim = ' ^\n' if indent else ' ^ '
         # need to remove initial : on roles for triples
         conjunction = ['{}({}, {})'.format(role.lstrip(':'), source, target)

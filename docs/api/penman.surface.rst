@@ -4,6 +4,9 @@ penman.surface
 
 .. automodule:: penman.surface
 
+   Epigraphical Markers
+   --------------------
+
    .. autoclass:: AlignmentMarker
       :show-inheritance:
       :members:
@@ -13,6 +16,9 @@ penman.surface
 
    .. autoclass:: RoleAlignment
       :show-inheritance:
+
+   Module Functions
+   ----------------
 
    .. autofunction:: alignments
    .. autofunction:: role_alignments
