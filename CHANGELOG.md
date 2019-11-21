@@ -2,40 +2,164 @@
 
 ## [Unreleased][unreleased]
 
+## [v0.7.0][v0.7.0]
+
+This release comprises a major restructuring from previous
+versions. No longer is there a single `penman.py` module, but the
+`penman` package, which has the following modules:
+
+─ `__about__` - package meta-information
+─ `codec` - high-level parsing and formatting
+─ `epigraph` - epigraphical markers
+─ `exceptions` - exception classes
+─ `graph` - triple and graph classes
+─ `interface` - `load()`, `dump()`, etc.
+─ `layout` - interpretation and configuration of trees
+─ `lexer` - low-level parsing
+─ `main` - command-line interface
+─ `model` - semantic model class
+─ `surface` - surface alignment information
+─ `transform` - tree and graph transformations
+─ `tree` - tree class
+─ `types` - static type checking definitions
+
+In addition, there is a `models` sub-package for provided semantic
+models, although it currently only contains one: `models.amr`.
+
+While some of the original API is preserved through imports in
+`penman/__init__.py`, there are a number of backward-incompatible
+changes in this release. Changes that affect the old API are listed
+below, but otherwise the new functionality is under the added
+modules.
+
 ### Python Versions
 
 * Removed support for Python 2.7
 * Removed support for Python 3.3
 * Removed support for Python 3.4
+* Removed support for Python 3.5
 * Added support for Python 3.6
 * Added support for Python 3.7
+* Added support for Python 3.8
 
 ### Added
 
-* `Graph` now has `alignments` and `role_alignments` parameters
-* `Graph.alignments()`
-* `Graph.role_alignments()`
-* `PENMANCodec.ALIGNMENT_RE` pattern
-* `PENMANCodec.triples_to_graph()` now has `alignments` and
-  `role_alignments` parameters
-* `Model` class
+* `penman.Graph.epidata`
+* `penman.Graph.metadata`
+* `penman.PENMANCodec.parse()`
+* `penman.PENMANCodec.parse_triples()`
+* `penman.PENMANCodec.iterparse()`
+* `penman.PENMANCodec.format()`
+* `penman.PENMANCodec.format_triples()`
+* `penman.codec`
+* `penman.epigraph`
+* `penman.epigraph.Epidatum`
+* `penman.exceptions`
+* `penman.exceptions.GraphError`
+* `penman.exceptions.LayoutError`
+* `penman.exceptions.SurfaceError`
+* `penman.exceptions.ModelError`
+* `penman.graph`
+* `penman.graph.CONCEPT_ROLE`
+* `penman.graph.Edge`
+* `penman.graph.Attribute`
+* `penman.layout`
+* `penman.layout.LayoutMarker`
+* `penman.layout.Push`
+* `penman.layout.POP`
+* `penman.layout.interpret()`
+* `penman.layout.configure()`
+* `penman.layout.reconfigure()`
+* `penman.layout.has_valid_layout()`
+* `penman.lexer`
+* `penman.lexer.PATTERNS`
+* `penman.lexer.PENMAN_RE`
+* `penman.lexer.TRIPLE_RE`
+* `penman.lexer.Token`
+* `penman.lexer.TokenIterator`
+* `penman.lexer.lex()`
+* `penman.model`
+* `penman.model.Model`
+* `penman.models`
+* `penman.models.amr`
+* `penman.models.amr.roles`
+* `penman.models.amr.normalizations`
+* `penman.models.amr.reifications`
+* `penman.models.amr.model`
+* `penman.surface` (#19)
+* `penman.surface.AlignmentMarker`
+* `penman.surface.Alignment`
+* `penman.surface.RoleAlignment`
+* `penman.surface.alignments()`
+* `penman.surface.role_alignments()`
+* `penman.transform`
+* `penman.transform.canonicalize_roles()`
+* `penman.transform.reify_edges()` (#27)
+* `penman.transform.reify_attributes()`
+* `penman.transform.indicate_branches()`
+* `penman.tree` (#16)
+* `penman.tree.Tree`
+* `penman.tree.is_atomic()`
 
 ### Removed
 
 * [docopt](https://github.com/docopt/docopt) dependency (#20)
+* `penman.EncodeError`
+* `penman.AMRCodec`
+* `penman.Triple.inverted`
+* `penman.PENMANCodec.is_relation_inverted()`
+* `penman.PENMANCodec.invert_relation()`
+* `penman.PENMANCodec.handle_triple()`
+* `penman.PENMANCodec.triples_to_graph()`
+* `penman.original_order()`
+* `penman.out_first_order()`
+* `penman.alphanum_order()`
 
 ### Fixed
+
+* Graphs can no longer be encoded with attributes as the top (#15)
+* For AMR, both `:mod` and `:domain` are for non-inverted relations,
+  although their inverses can be canonicalized to the other (#26)
+* Epigraphical layout markers allow the tree structure to be preserved
+  without modifying the pure graph's triples (#25)
+
 ### Changed
 
 * Restructured project as a package
 * Use Sphinx-generated documentation
-* `AMRCodec.RELATION_RE`, `PENMANCodec.RELATION_RE`, and
-  `PENMANCodec.ATOM_RE` no longer accept `~` characters
-* `dump()` now writes iteratively to a stream (#22)
-* Replaced "relation" with "role" when "role" is intended. Note that
-  this breaks backward compatibility in some places!
+* Replaced "relation" with "role" when "role" is intended.
+* Replaced "node type" and "node label" with "concept"
+* Replaced "node identifier" with "variable"
+* Roles now include the colon (`:ARG0`, not `ARG0`), following
+  convention
+* `penman.PENMANCodec` no longer takes the `indent` or `relation_sort`
+  parameters
+* `penman.PENMANCodec.encode()` now takes `indent` and `compact`
+  parameters
+* `penman.PENMANCodec.iterdecode()` works on streams (#21)
+* `penman.PENMANCodec` now reads comments with metadata (#23)
+* `penman.PENMANCodec` no longer accepts non-symbol variables (#13)
+* `penman.dump()` now writes iteratively to a stream (#22)
+* The following no longer take the `cls` parameter for a codec class,
+  nor `**kwargs` to configure that class, but instead a `model`
+  parameter for the semantic model:
+  - `penman.decode()`
+  - `penman.encode()`
+  - `penman.loads()`
+  - `penman.dumps()`
+  - `penman.load()`
+  - `penman.dump()`
+* The following now take the formatting parameters `indent` and
+  `compact`:
+  - `penman.encode()`
+  - `penman.dumps()`
+  - `penman.dump()`
+* `penman.Graph.triples` is now a member variable instead of a method
+* `penman.Graph` class is mutable (#32)
+* Concepts (node labels) in `penman.Graph` now have a special role
+  known to the `penman.graph` module, which can help avoid some
+  reentrancy issues (#29)
 
-### Deprecated
 
 ## [v0.6.2][v0.6.2]
 
@@ -241,4 +365,5 @@ First release with very basic functionality.
 [v0.6.0]: ../../releases/tag/v0.6.0
 [v0.6.1]: ../../releases/tag/v0.6.1
 [v0.6.2]: ../../releases/tag/v0.6.2
+[v0.7.0]: ../../releases/tag/v0.7.0
 [README]: README.md

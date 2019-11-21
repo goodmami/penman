@@ -24,9 +24,9 @@ copyright = '2019, Michael Wayne Goodman'
 author = 'Michael Wayne Goodman'
 
 # The short X.Y version
-version = 'v0.7.0'
+version = 'v0.7'
 # The full version, including alpha/beta/rc tags
-release = 'v0.7.0-beta'
+release = 'v0.7.0'
 
 
 # -- General configuration ---------------------------------------------------

@@ -5,7 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/penman/badge/?version=latest)](https://penman.readthedocs.io/en/latest/?badge=latest)
 
 
-This package models graphs encoded in the [PENMAN
+This package models graphs encoded in [PENMAN
 notation](#penman-notation) (e.g., [AMR][]), such as the following for
 *the boy wants to go*:
 
@@ -16,19 +16,18 @@ notation](#penman-notation) (e.g., [AMR][]), such as the following for
             :ARG0 b))
 ```
 
-The Penman package may be used as a Python library or as a script.
+The Penman package may be used as a Python [library](#library-usage)
+or as a [script](#script-usage).
 
 
 ### Features
 
-- [x] Read and write PENMAN-serialized graphs
-- [x] Read and write graphs as triple conjunctions
+- [x] Read and write PENMAN-serialized graphs or triple conjunctions
 - [x] Read metadata in comments (e.g., `# ::id 1234`)
 - [x] Read surface alignments (e.g., `foo~e.1,2`)
-- [x] Adjust indentation and compactness for writing
-- [x] Inspect and manipulate the [graph][] structure
-- [x] Inspect and manipulate the [tree][] structure
-- [x] Reconfigure the graphs for writing:
+- [x] Inspect and manipulate the [graph][] or [tree][] structures
+- [x] Customize graphs for writing:
+  - [x] adjust indentation and compactness
   - [x] select a new top node
   - [x] rearrange edges (partially implemented)
   - [x] restructure the tree shape
