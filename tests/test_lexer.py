@@ -1,10 +1,9 @@
 
-import penman
 from penman import lexer
 
 def test_lex_penman():
     def _lex(s):
-        return [tok.type for tok in penman.lex(s)]
+        return [tok.type for tok in lexer.lex(s)]
 
     assert _lex('') == []
     assert _lex('(a / alpha)') == [
@@ -28,7 +27,7 @@ def test_lex_penman():
 
 def test_lex_triples():
     def _lex(s):
-        return [tok.type for tok in penman.lex(s, pattern=lexer.TRIPLE_RE)]
+        return [tok.type for tok in lexer.lex(s, pattern=lexer.TRIPLE_RE)]
 
     assert _lex('') == []
     assert _lex('instance(a, alpha)') == [
