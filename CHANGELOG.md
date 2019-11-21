@@ -2,26 +2,28 @@
 
 ## [Unreleased][unreleased]
 
+(no unreleased changes yet)
+
 ## [v0.7.0][v0.7.0]
 
 This release comprises a major restructuring from previous
 versions. No longer is there a single `penman.py` module, but the
 `penman` package, which has the following modules:
 
-─ `__about__` - package meta-information
-─ `codec` - high-level parsing and formatting
-─ `epigraph` - epigraphical markers
-─ `exceptions` - exception classes
-─ `graph` - triple and graph classes
-─ `interface` - `load()`, `dump()`, etc.
-─ `layout` - interpretation and configuration of trees
-─ `lexer` - low-level parsing
-─ `main` - command-line interface
-─ `model` - semantic model class
-─ `surface` - surface alignment information
-─ `transform` - tree and graph transformations
-─ `tree` - tree class
-─ `types` - static type checking definitions
+- `__about__` - package meta-information
+- `codec` - high-level parsing and formatting
+- `epigraph` - epigraphical markers
+- `exceptions` - exception classes
+- `graph` - triple and graph classes
+- `interface` - `load()`, `dump()`, etc.
+- `layout` - interpretation and configuration of trees
+- `lexer` - low-level parsing
+- `main` - command-line interface
+- `model` - semantic model class
+- `surface` - surface alignment information
+- `transform` - tree and graph transformations
+- `tree` - tree class
+- `types` - static type checking definitions
 
 In addition, there is a `models` sub-package for provided semantic
 models, although it currently only contains one: `models.amr`.
