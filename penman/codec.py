@@ -8,7 +8,7 @@ from typing import Optional, Union, Type, Iterable, Iterator, List
 import re
 
 from penman.types import (
-    Identifier,
+    Variable,
     Target,
     BasicTriple,
 )
@@ -33,7 +33,7 @@ class PENMANCodec(object):
     """
     An encoder/decoder for PENMAN-serialized graphs.
     """
-    # The valid tokens for node identifers.
+    # The valid tokens for node identifiers (variables).
     IDENTIFIERS = 'SYMBOL',
     #: The valid non-node targets of edges.
     ATOMS = set(['SYMBOL', 'STRING', 'INTEGER', 'FLOAT'])
@@ -144,15 +144,15 @@ class PENMANCodec(object):
 
         Nodes have the following pattern::
 
-            Node := '(' ID ('/' Label)? Edge* ')'
+            Node := '(' ID ('/' Concept)? Edge* ')'
         """
         tokens.expect('LPAREN')
 
-        id = None
+        var = None
         edges = []
 
         if tokens.peek().type != 'RPAREN':
-            id = tokens.expect(*self.IDENTIFIERS).value
+            var = tokens.expect(*self.IDENTIFIERS).value
             if tokens.peek().type == 'SLASH':
                 edges.append(self._parse_node_label(tokens))
             while tokens.peek().type != 'RPAREN':
@@ -160,19 +160,19 @@ class PENMANCodec(object):
 
         tokens.expect('RPAREN')
 
-        return (id, edges)
+        return (var, edges)
 
     def _parse_node_label(self, tokens: TokenIterator):
         tokens.expect('SLASH')
-        label = None
+        concept = None
         epis = []
-        # for robustness, don't assume next token is the label
+        # for robustness, don't assume next token is the concept
         if tokens.peek().type in self.ATOMS:
-            label = tokens.next().value
+            concept = tokens.next().value
             if tokens.peek().type == 'ALIGNMENT':
                 epis.append(
                     self._parse_alignment(tokens, Alignment))
-        return ('/', label, epis)
+        return ('/', concept, epis)
 
     def _parse_edge(self, tokens: TokenIterator):
         """
@@ -255,7 +255,7 @@ class PENMANCodec(object):
 
     def encode(self,
                g: Graph,
-               top: Identifier = None,
+               top: Variable = None,
                triples: bool = False,
                indent: Union[int, None] = -1,
                compact: bool = False) -> str:
@@ -297,55 +297,55 @@ class PENMANCodec(object):
         """
         if not isinstance(tree, Tree):
             tree = Tree(tree)
-        ids = [id for id, _ in tree.nodes()] if compact else []
+        vars = [var for var, _ in tree.nodes()] if compact else []
         parts = ['# ::{} {}'.format(key, value)
                  for key, value in tree.metadata.items()]
-        parts.append(self._format_node(tree.node, indent, 0, set(ids)))
+        parts.append(self._format_node(tree.node, indent, 0, set(vars)))
         return '\n'.join(parts)
 
     def _format_node(self,
                      node,
                      indent: Optional[int],
                      column: int,
-                     ids: set) -> str:
+                     vars: set) -> str:
         """
         Format tree *node* into a PENMAN string.
         """
-        id, edges = node
-        if not id:
+        var, edges = node
+        if not var:
             return '()'  # empty node
         if not edges:
-            return '({!s})'.format(id)  # id-only node
+            return '({!s})'.format(var)  # var-only node
 
         # determine appropriate joiner based on value of indent
         if indent is None:
             joiner = ' '
         else:
             if indent == -1:
-                column += len(str(id)) + 2  # +2 for ( and a space
+                column += len(str(var)) + 2  # +2 for ( and a space
             else:
                 column += indent
             joiner = '\n' + ' ' * column
 
         # format the edges and join them
-        # if ids is non-empty, all initial attributes are compactly
+        # if vars is non-empty, all initial attributes are compactly
         # joined on the same line, otherwise they use joiner
         parts: List[str] = []
-        compact = bool(ids)
+        compact = bool(vars)
         for edge in edges:
             target = edge[1]
-            if compact and (not is_atomic(target) or target in ids):
+            if compact and (not is_atomic(target) or target in vars):
                 compact = False
                 if parts:
                     parts = [' '.join(parts)]
-            parts.append(self._format_edge(edge, indent, column, ids))
+            parts.append(self._format_edge(edge, indent, column, vars))
         # check if all edges can be compactly written
         if compact:
             parts = [' '.join(parts)]
 
-        return '({!s} {})'.format(id, joiner.join(parts))
+        return '({!s} {})'.format(var, joiner.join(parts))
 
-    def _format_edge(self, edge, indent, column, ids):
+    def _format_edge(self, edge, indent, column, vars):
         """
         Format tree *edge* into a PENMAN string.
         """
@@ -363,7 +363,7 @@ class PENMANCodec(object):
         if target is None:
             target = ''
         elif not is_atomic(target):
-            target = self._format_node(target, indent, column, ids)
+            target = self._format_node(target, indent, column, vars)
 
         return '{}{} {!s}{}'.format(
             role,

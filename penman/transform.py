@@ -9,7 +9,7 @@ from penman.types import BasicTriple
 from penman.epigraph import (Epidatum, Epidata)
 from penman.surface import (Alignment, RoleAlignment)
 from penman.tree import (Tree, Node, is_atomic)
-from penman.graph import (Graph, NODETYPE_ROLE)
+from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
 from penman.layout import (Push, POP)
 
@@ -44,7 +44,7 @@ def canonicalize_roles(t: Tree, model: Model) -> Tree:
 
 
 def _canonicalize_node(node: Node, model: Model) -> Node:
-    id, edges = node
+    var, edges = node
     canonical_edges = []
     for i, edge in enumerate(edges):
         role, tgt, epidata = edge
@@ -52,7 +52,7 @@ def _canonicalize_node(node: Node, model: Model) -> Node:
             tgt = _canonicalize_node(tgt, model)
         canonical_edges.append(
             (model.canonicalize_role(role), tgt, list(epidata)))
-    return (id, canonical_edges)
+    return (var, canonical_edges)
 
 
 def reify_edges(g: Graph, model: Model) -> Graph:
@@ -135,15 +135,15 @@ def reify_attributes(g: Graph) -> Graph:
     i = 2
     for triple in g.triples:
         source, role, target = triple
-        if role != NODETYPE_ROLE and target not in variables:
-            # get unique id for new node
+        if role != CONCEPT_ROLE and target not in variables:
+            # get unique var for new node
             var = '_'
             while var in variables:
                 var = '_{}'.format(i)
                 i += 1
             variables.add(var)
             role_triple = (source, role, var)
-            node_triple = (var, NODETYPE_ROLE, target)
+            node_triple = (var, CONCEPT_ROLE, target)
             new_triples.extend((role_triple, node_triple))
             # manage epigraphical markers
             role_epis, node_epis = _attr_markers(new_epidata.pop(triple))
@@ -197,9 +197,9 @@ def indicate_branches(g: Graph, model: Model) -> Graph:
                      if isinstance(epi, Push)),
                     None)
         if push is not None:
-            if push.id == t[2]:
+            if push.variable == t[2]:
                 new_triples.append((t[0], model.top_role, t[2]))
-            elif push.id == t[0]:
+            elif push.variable == t[0]:
                 assert isinstance(t[2], str)
                 new_triples.append((t[2], model.top_role, t[0]))
         new_triples.append(t)

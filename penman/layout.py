@@ -6,18 +6,18 @@ Interpreting trees to graphs and configuring graphs to trees.
 In order to serialize graphs into the PENMAN format, a tree-like
 layout of the graph must be decided. Deciding a layout includes
 choosing the order of the edges from a node and the paths to get to a
-node definition (the node reference that includes its label and
-edges). For instance, the following graphs for "The dog barked loudly"
-have different edge orders on the ``b`` node::
+node definition (the position in the tree where a node's concept and
+edges are specified). For instance, the following graphs for "The dog
+barked loudly" have different edge orders on the ``b`` node::
 
   (b / bark-01           (b / bark-01
      :ARG0 (d / dog)        :mod (l / loud)
      :mod (l / loud))       :ARG0 (d / dog))
 
 With re-entrancies, there are choices about which location of a
-re-entrant node gets the full definition with its node label, etc.
-For instance, the following graphs for "The dog tried to bark" have
-different locations for the definition of the ``d`` node::
+re-entrant node gets the full definition with its concept (node
+label), etc. For instance, the following graphs for "The dog tried to
+bark" have different locations for the definition of the ``d`` node::
 
   (t / try-01              (t / try-01
      :ARG0 (d / dog)          :ARG0 d
@@ -54,14 +54,14 @@ from typing import Union, Mapping
 import copy
 
 from penman.exceptions import LayoutError
-from penman.types import Identifier
+from penman.types import Variable
 from penman.epigraph import Epidatum
 from penman.tree import (Tree, Node, is_atomic)
-from penman.graph import (Graph, NODETYPE_ROLE)
+from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
 
 
-_Nodemap = Mapping[Identifier, Union[Node, None]]
+_Nodemap = Mapping[Variable, Union[Node, None]]
 
 
 # Epigraphical markers
@@ -73,13 +73,13 @@ class LayoutMarker(Epidatum):
 class Push(LayoutMarker):
     """Epigraph marker to indicate a new node context."""
 
-    __slots__ = 'id',
+    __slots__ = 'variable',
 
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, variable):
+        self.variable = variable
 
     def __repr__(self):
-        return 'Push({})'.format(self.id)
+        return 'Push({})'.format(self.variable)
 
 
 class _Pop(LayoutMarker):
@@ -110,36 +110,36 @@ def interpret(t: Tree, model: Model = None) -> Graph:
 def _interpret_node(t: Node, model: Model):
     triples = []
     epidata = {}
-    id, edges = t
+    var, edges = t
     for role, target, epis in edges:
         if role == '/':
-            role = NODETYPE_ROLE
+            role = CONCEPT_ROLE
         # atomic targets
         if is_atomic(target):
             child = ()
-            target_id = target
+            target_var = target
         # nested nodes
         else:
             child = target
-            target_id = target[0]
-        triple = model.deinvert((id, role, target_id))
+            target_var = target[0]
+        triple = model.deinvert((var, role, target_var))
         triples.append(triple)
         epidata[triple] = epis
         # recurse to nested nodes
         if child:
-            epidata[triple].append(Push(target_id))
+            epidata[triple].append(Push(target_var))
             _, _triples, _epis = _interpret_node(child, model)
             triples.extend(_triples)
             epidata.update(_epis)
             epidata[triples[-1]].append(POP)
 
-    return id, triples, epidata
+    return var, triples, epidata
 
 
 # Graph to tree configuration #################################################
 
 def configure(g: Graph,
-              top: Identifier = None,
+              top: Variable = None,
               model: Model = None,
               strict: bool = False) -> Tree:
     """
@@ -150,11 +150,11 @@ def configure(g: Graph,
     node, data, nodemap = _configure(g, top, model, strict)
     # if any data remain, the graph was not properly annotated for a tree
     while data:
-        skipped, id, data = _find_next(data, nodemap)
+        skipped, var, data = _find_next(data, nodemap)
         data_count = len(data)
-        if id is None or data_count == 0:
+        if var is None or data_count == 0:
             raise LayoutError('possibly disconnected graph')
-        _configure_node(id, data, nodemap, model)
+        _configure_node(var, data, nodemap, model)
         if len(data) >= data_count:
             raise LayoutError('possible cycle in configuration')
         data = skipped + data
@@ -194,19 +194,19 @@ def _preconfigure(g, strict):
         push, pops, others = None, [], []
         for epi in epidata.get(triple, []):
             if isinstance(epi, Push):
-                if push is not None or epi.id in pushed:
+                if push is not None or epi.variable in pushed:
                     if strict:
                         raise LayoutError(
                             "multiple node contexts for '{}'"
-                            .format(epi.id))
+                            .format(epi.variable))
                     pass  # change to 'continue' to disallow multiple contexts
-                if epi.id not in (triple[0], triple[2]):
+                if epi.variable not in (triple[0], triple[2]):
                     if strict:
                         raise LayoutError(
                             "node context '{}' invalid for triple: {}"
-                            .format(epi.id, triple))
+                            .format(epi.variable, triple))
                     continue
-                pushed.add(epi.id)
+                pushed.add(epi.variable)
                 push = epi
             elif epi is POP:
                 pops.append(epi)
@@ -224,7 +224,7 @@ def _preconfigure(g, strict):
     return data
 
 
-def _configure_node(id, data, nodemap, model):
+def _configure_node(var, data, nodemap, model):
     """
     Configure a node and any descendants.
 
@@ -232,7 +232,7 @@ def _configure_node(id, data, nodemap, model):
       * *data* is modified
       * *nodemap* is modified
     """
-    node = nodemap[id]
+    node = nodemap[var]
     edges = node[1]
 
     while data:
@@ -241,24 +241,24 @@ def _configure_node(id, data, nodemap, model):
             break
 
         triple, epidata, push = datum
-        if triple[0] == id:
+        if triple[0] == var:
             source, role, target = triple
-        elif triple[2] == id:
+        elif triple[2] == var:
             source, role, target = model.invert(triple)
         else:
             # misplaced triple
             data.append(datum)
             break
 
-        if push and push.id == target:
-            nodemap[push.id] = (push.id, [])
+        if push and push.variable == target:
+            nodemap[push.variable] = (push.variable, [])
             target = _configure_node(
-                push.id, data, nodemap, model)
+                push.variable, data, nodemap, model)
         elif target in nodemap and nodemap[target] is None:
             # site of potential node context
             nodemap[target] = node
 
-        if role == NODETYPE_ROLE:
+        if role == CONCEPT_ROLE:
             role = '/'
             index = 0
         else:
@@ -273,48 +273,48 @@ def _find_next(data, nodemap):
     """
     Find the next node context; establish if necessary.
     """
-    id = None
+    var = None
     for i in range(len(data) - 1, -1, -1):
         datum = data[i]
         if datum is POP:
             continue
         source, _, target = datum[0]
         if source in nodemap and _get_or_establish_site(source, nodemap):
-            id = source
+            var = source
             break
         elif target in nodemap and _get_or_establish_site(target, nodemap):
-            id = target
+            var = target
             break
     pivot = i + 1
-    return data[pivot:], id, data[:pivot]
+    return data[pivot:], var, data[:pivot]
 
 
-def _get_or_establish_site(id, nodemap):
+def _get_or_establish_site(var, nodemap):
     """
-    Turn a node identifier target into a node context.
+    Turn a variable target into a node context.
     """
-    # first check if the id is available at all
-    if nodemap[id] is not None:
-        _id, edges = nodemap[id]
-        # if the mapped node's id doesn't match it can be established
-        if id != _id:
-            node = (id, [])
-            nodemap[id] = node
+    # first check if the var is available at all
+    if nodemap[var] is not None:
+        _var, edges = nodemap[var]
+        # if the mapped node's var doesn't match it can be established
+        if var != _var:
+            node = (var, [])
+            nodemap[var] = node
             for i in range(len(edges)):
-                # replace the identifier in the tree with the new node
-                if edges[i][1] == id:
+                # replace the variable in the tree with the new node
+                if edges[i][1] == var:
                     edge = list(edges[i])
                     edge[1] = node
                     edges[i] = tuple(edge)
         else:
             pass  # otherwise the node already exists so we're good
         return True
-    # id is not yet available
+    # var is not yet available
     return False
 
 
 def reconfigure(g: Graph,
-                top: Identifier = None,
+                top: Variable = None,
                 model: Model = None,
                 strict: bool = False) -> Tree:
     """
@@ -328,7 +328,7 @@ def reconfigure(g: Graph,
 
 
 def has_valid_layout(g: Graph,
-                     top: Identifier = None,
+                     top: Variable = None,
                      model: Model = None,
                      strict: bool = False) -> bool:
     """

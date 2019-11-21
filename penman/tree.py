@@ -5,12 +5,12 @@ Definitions of tree structures.
 
 from typing import Tuple, List, Mapping, Any
 
-from penman.types import (Identifier, Role)
+from penman.types import (Variable, Role)
 from penman.epigraph import Epidata
 
 # Tree types
 Branch = Tuple[Role, Any, Epidata]
-Node = Tuple[Identifier, List[Branch]]
+Node = Tuple[Variable, List[Branch]]
 
 
 class Tree:
@@ -46,8 +46,8 @@ class Tree:
 
 
 def _nodes(node):
-    id, edges = node
-    ns = [] if id is None else [node]
+    var, edges = node
+    ns = [] if var is None else [node]
     for _, target, _ in edges:
         # if target is not atomic, assume it's a valid tree node
         if not is_atomic(target):

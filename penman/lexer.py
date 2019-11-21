@@ -32,7 +32,7 @@ PATTERNS = {
     'ALIGNMENT':  r'~(?:[a-zA-Z]\.?)?\d+(?:,\d+)*',
     'LPAREN':     r'\(',
     'RPAREN':     r'\)',
-    'SLASH':      r'\/',  # node label role
+    'SLASH':      r'\/',  # concept (node label) role
     'COMMA':      r',',   # used in triple conjunctions
     'CARET':      r'\^',  # used in triple conjunctions
     'UNEXPECTED': r'[^\s]'

@@ -4,19 +4,18 @@
 Semantic models for interpreting graphs.
 """
 
-from typing import cast, Tuple, List, Dict, Iterable, Mapping, Any
+from typing import (cast, Tuple, List, Dict, Set, Iterable, Mapping, Any)
 import re
 from collections import defaultdict
 
 from penman.exceptions import ModelError
 from penman.types import (
-    Identifier,
-    IdSet,
+    Variable,
     Role,
     Constant,
     BasicTriple
 )
-from penman.graph import NODETYPE_ROLE
+from penman.graph import CONCEPT_ROLE
 
 
 _ReificationSpec = Tuple[Role, Constant, Role, Role]
@@ -31,30 +30,30 @@ class Model(object):
     The model defines things like valid roles and transformations.
 
     Args:
-        top_identifier: the identifier of the graph's top
+        top_variable: the variable of the graph's top
         top_role: the role linking the graph's top to the top node
-        nodetype_role: the role associated with node labels
+        concept_role: the role associated with node concepts
         roles: a mapping of roles to associated data
         normalizations: a mapping of roles to normalized roles
         reifications: a list of 4-tuples used to define reifications
     """
     def __init__(self,
-                 top_identifier: Identifier = 'top',
+                 top_variable: Variable = 'top',
                  top_role: Role = ':TOP',
-                 nodetype_role: Role = NODETYPE_ROLE,
+                 concept_role: Role = CONCEPT_ROLE,
                  roles: Mapping[Role, Any] = None,
                  normalizations: Mapping[Role, Role] = None,
                  reifications: Iterable[_ReificationSpec] = None):
-        self.top_identifier = top_identifier
+        self.top_variable = top_variable
         self.top_role = top_role
-        self.nodetype_role = nodetype_role
+        self.concept_role = concept_role
 
         if roles:
             roles = dict(roles)
         self.roles = roles or {}
         self._role_re = re.compile(
             '^({})$'.format(
-                '|'.join(list(self.roles) + [top_role, nodetype_role])))
+                '|'.join(list(self.roles) + [top_role, concept_role])))
 
         if normalizations:
             normalizations = dict(normalizations)
@@ -62,16 +61,16 @@ class Model(object):
 
         reifs: Dict[Role, List[_Reified]] = defaultdict(list)
         if reifications:
-            for role, label, source, target in reifications:
-                reifs[role].append((label, source, target))
+            for role, concept, source, target in reifications:
+                reifs[role].append((concept, source, target))
         self.reifications = dict(reifs)
 
     def __eq__(self, other):
         if not isinstance(other, Model):
             return NotImplemented
-        return (self.top_identifier == other.top_identifier
+        return (self.top_variable == other.top_variable
                 and self.top_role == other.top_role
-                and self.nodetype_role == other.nodetype_role
+                and self.concept_role == other.concept_role
                 and self.roles == other.roles
                 and self.normalizations == other.normalizations
                 and self.reifications == other.reifications)
@@ -121,8 +120,8 @@ class Model(object):
         source, role, target = triple
         inverse = self.invert_role(role)
         # casting is just for the benefit of the type checker; it does
-        # not actually check that target is a valid identifier type
-        target = cast(Identifier, target)
+        # not actually check that target is a valid variable type
+        target = cast(Variable, target)
         return (target, inverse, source)
 
     def deinvert(self, triple: BasicTriple) -> BasicTriple:
@@ -188,13 +187,13 @@ class Model(object):
 
     def reify(self,
               triple: BasicTriple,
-              variables: IdSet = None) -> _Reification:
+              variables: Set[Variable] = None) -> _Reification:
         """
         Return the three triples that reify *triple*.
 
-        Note that, unless *variables* is given, the node identifier
+        Note that, unless *variables* is given, the node variable
         for the reified node is not necessarily valid for the target
-        graph. When incorporating the reified triples, this identifier
+        graph. When incorporating the reified triples, this variable
         should then be replaced.
 
         If the role of *triple* does not have a defined reification, a
@@ -210,7 +209,7 @@ class Model(object):
         source, role, target = triple
         if role not in self.reifications:
             raise ModelError("'{}' cannot be reified".format(role))
-        label, source_role, target_role = next(iter(self.reifications[role]))
+        concept, source_role, target_role = next(iter(self.reifications[role]))
 
         var = '_'
         if variables:
@@ -220,5 +219,5 @@ class Model(object):
                 i += 1
 
         return ((source, self.invert_role(source_role), var),
-                (var, NODETYPE_ROLE, label),
+                (var, CONCEPT_ROLE, concept),
                 (var, target_role, target))

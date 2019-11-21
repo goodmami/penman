@@ -9,7 +9,7 @@ from pathlib import Path
 from penman.codec import PENMANCodec
 from penman.model import Model
 from penman.graph import Graph
-from penman.types import (Identifier, file_or_filename)
+from penman.types import (Variable, file_or_filename)
 
 
 def decode(s: str,
@@ -35,7 +35,7 @@ def decode(s: str,
 
 
 def encode(g: Graph,
-           top: Identifier = None,
+           top: Variable = None,
            model: Model = None,
            triples: bool = False,
            indent: Union[int, bool] = -1,

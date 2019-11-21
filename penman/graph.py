@@ -4,14 +4,13 @@
 Data structures for Penman graphs and triples.
 """
 
-from typing import (Union, Optional, Mapping, List, Dict, NamedTuple)
+from typing import (Union, Optional, Mapping, List, Dict, Set, NamedTuple)
 from collections import defaultdict
 import copy
 
 from penman.exceptions import GraphError
 from penman.types import (
-    Identifier,
-    IdSet,
+    Variable,
     Constant,
     Role,
     Target,
@@ -21,7 +20,7 @@ from penman.types import (
 from penman.epigraph import Epidata
 
 
-NODETYPE_ROLE = ':instance'
+CONCEPT_ROLE = ':instance'
 
 
 class Triple(NamedTuple):
@@ -29,26 +28,26 @@ class Triple(NamedTuple):
     A relation between nodes or between a node and an constant.
 
     Args:
-        source: the source node identifier of the triple
-        role: the relation between the source and target
-        target: the target node identifier or constant
+        source: the source variable of the triple
+        role: the edge label between the source and target
+        target: the target variable or constant
     """
 
-    source: Identifier
-    """The source node identifier of the triple."""
+    source: Variable
+    """The source variable of the triple."""
 
     role: Role
-    """The relation (edge label) between the source and target."""
+    """The edge label between the source and target."""
 
     target: Target
-    """The target node identifier or constant."""
+    """The target variable or constant."""
 
 
 class Edge(Triple):
     """A relation between nodes."""
 
-    target: Identifier
-    """The target node identifier."""
+    target: Variable
+    """The target variable."""
 
 
 class Attribute(Triple):
@@ -64,17 +63,17 @@ class Graph(object):
 
     A Graph is defined by a list of triples, which can be divided into
     two parts: a list of graph edges where both the source and target
-    are node identifiers, and a list of node attributes where only the
-    source is a node identifier and the target is a constant. The raw
-    triples are available via the :attr:`triples` attribute, while the
-    :meth:`edges` and :meth:`attributes` methods return only those
-    that are edges between nodes or between a node and a constant,
-    respectively.
+    are variables (node identifiers), and a list of node attributes
+    where only the source is a variable and the target is a
+    constant. The raw triples are available via the :attr:`triples`
+    attribute, while the :meth:`edges` and :meth:`attributes` methods
+    return only those that are edges between nodes or between a node
+    and a constant, respectively.
 
     Args:
         triples: an iterable of triples (:class:`Triple` or 3-tuples)
-        top: the node identifier of the top node; if unspecified,
-            the source of the first triple is used
+        top: the variable of the top node; if unspecified, the source
+            of the first triple is used
         epidata: a mapping of triples to epigraphical markers
         metadata: a mapping of metadata types to descriptions
     Example:
@@ -85,7 +84,7 @@ class Graph(object):
 
     def __init__(self,
                  triples: Triples = None,
-                 top: Identifier = None,
+                 top: Variable = None,
                  epidata: Mapping[BasicTriple, Epidata] = None,
                  metadata: Mapping[str, str] = None):
         if not triples:
@@ -162,7 +161,7 @@ class Graph(object):
             return NotImplemented
 
     @property
-    def top(self) -> Union[Identifier, None]:
+    def top(self) -> Union[Variable, None]:
         """
         The top variable.
         """
@@ -172,12 +171,12 @@ class Graph(object):
         return top
 
     @top.setter
-    def top(self, top: Union[Identifier, None]):
+    def top(self, top: Union[Variable, None]):
         if top is not None and top not in self.variables():
             raise GraphError('top must be a valid node')
         self._top = top  # check if top is valid variable?
 
-    def variables(self) -> IdSet:
+    def variables(self) -> Set[Variable]:
         """
         Return the set of variables (nonterminal node identifiers).
         """
@@ -187,13 +186,13 @@ class Graph(object):
         return vs
 
     def edges(self,
-              source: Optional[Identifier] = None,
+              source: Optional[Variable] = None,
               role: Role = None,
-              target: Identifier = None) -> List[Edge]:
+              target: Variable = None) -> List[Edge]:
         """
         Return edges filtered by their *source*, *role*, or *target*.
 
-        Edges don't include terminal triples (node types or attributes).
+        Edges don't include terminal triples (concepts or attributes).
         """
         variables = self.variables()
         return [Edge(*t)
@@ -201,7 +200,7 @@ class Graph(object):
                 if t[2] in variables]
 
     def attributes(self,
-                   source: Optional[Identifier] = None,
+                   source: Optional[Variable] = None,
                    role: Role = None,
                    target: Constant = None) -> List[Attribute]:
         """
@@ -212,10 +211,10 @@ class Graph(object):
         variables = self.variables()
         return [Attribute(*t)
                 for t in self._filter_triples(source, role, target)
-                if t[1] == NODETYPE_ROLE or t[2] not in variables]
+                if t[1] == CONCEPT_ROLE or t[2] not in variables]
 
     def _filter_triples(self,
-                        source: Optional[Identifier],
+                        source: Optional[Variable],
                         role: Optional[Role],
                         target: Optional[Target]) -> List[BasicTriple]:
         """
@@ -232,7 +231,7 @@ class Graph(object):
             ]
         return triples
 
-    def reentrancies(self) -> Dict[Identifier, int]:
+    def reentrancies(self) -> Dict[Variable, int]:
         """
         Return a mapping of variables to their re-entrancy count.
 
@@ -244,7 +243,7 @@ class Graph(object):
         for the linearized form, so inverted edges are always
         re-entrant.
         """
-        entrancies: Dict[Identifier, int] = defaultdict(int)
+        entrancies: Dict[Variable, int] = defaultdict(int)
         if self.top is not None:
             entrancies[self.top] += 1  # implicit entrancy to top
         for t in self.edges():

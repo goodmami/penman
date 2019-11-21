@@ -117,7 +117,7 @@ normalizations = {
 #: one inverted. They are used when the edge needs to behave as a node,
 #: e.g., to be modified or focused.
 reifications = [
-    # role           node label             source   target
+    # role           concept                source   target
     (":accompanier", "accompany-01",        ":ARG0", ":ARG1"),
     (":age",         "age-01",              ":ARG1", ":ARG2"),
     (":beneficiary", "benefit-01",          ":ARG0", ":ARG1"),
@@ -161,9 +161,9 @@ reifications = [
 #: The AMR model is an instance of :class:`Model` using the roles,
 #: normalizations, and reifications defined in this module.
 model = Model(
-    top_identifier='top',
+    top_variable='top',
     top_role=':TOP',
-    nodetype_role=':instance',
+    concept_role=':instance',
     roles=roles,
     normalizations=normalizations,
     reifications=reifications,

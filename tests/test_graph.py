@@ -19,7 +19,7 @@ class TestGraph(object):
         assert g.triples == [('a', ':instance', None)]
         assert g.top == 'a'
 
-        # single node one edge (default nodetype)
+        # single node one edge (default concept)
         g = Graph([('a', 'ARG1', 'b')])
         assert g.triples == [('a', ':ARG1', 'b')]
         assert g.top == 'a'

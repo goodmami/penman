@@ -100,11 +100,13 @@ by `/\s+/`):
 ```ruby
 # Syntactic productions
 Start     <- Node
-Node      <- '(' Variable NodeLabel? Edge* ')'
-NodeLabel <- '/' Atom Alignment?
-Edge      <- Role Alignment? Target
-Target    <- (Variable | Atom) Alignment?
+Node      <- '(' Variable NodeLabel? Relation* ')'
+NodeLabel <- '/' Concept Alignment?
+Concept   <- Atom
+Relation  <- Role Alignment? (Edge | Attribute)
+Edge      <- Variable Alignment?
            | Node
+Attribute <- Atom Alignment?
 Atom      <- String | Float | Integer | Symbol
 Variable  <- Symbol
 # Lexical productions
@@ -119,10 +121,11 @@ Alignment <- /~([a-zA-Z]\.?)?\d+(,\d+)*/
 \* *Note: I use `|` above for ordered-choice instead of `/` so that `/`
 can be used to surround regular expressions.*
 
-Both `Variable` and `Atom` above can resolve to `Symbol`, making their
-use in the `Target` production redundant, but they are shown like this
-for their semantic contribution. A `Variable` is distinguished from
-other `Symbol` tokens simply by its use as the identifier of a node.
+There is ambiguity in that both `Edge` and `Attribute` can resolve
+their first token to `Symbol` (via the `Variable` and `Atom`
+productions, respectively), but they are shown like this for their
+semantic contribution. A `Variable` is distinguished from other
+`Symbol` tokens simply by its use as the identifier of a node.
 Examples of non-variable `Symbol` tokens in AMR are concepts (e.g.,
 `want-01`), `-` in `:polarity -`, `expressive` in `:mode expressive`,
 etc.
@@ -130,7 +133,7 @@ etc.
 The above grammar is for the PENMAN graphs that this library supports,
 but AMR is more restrictive.  A variant for AMR might make the
 `NodeLabel` nonterminal required on `Node`, change `Atom` to `Symbol`
-on `NodeLabel`, change `Role` to require at least one character after
+on `Concept`, change `Role` to require at least one character after
 `:` or even spell out all valid roles, and change `Variable` to a form
 like `/[a-z]+[0-9]*/`. See also [Nathan Schneider's PEG for
 AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
