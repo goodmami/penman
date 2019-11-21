@@ -51,6 +51,7 @@ following data::
 """
 
 from typing import Union, Mapping
+import copy
 
 from penman.exceptions import LayoutError
 from penman.types import Identifier
@@ -319,8 +320,10 @@ def reconfigure(g: Graph,
     """
     Create a tree from a graph after any discarding layout markers.
     """
-    p = g.copy()
-    p.clear(triples=False, epidata=LayoutMarker, metadata=False)
+    p = copy.deepcopy(g)
+    for epilist in p.epidata.values():
+        epilist[:] = [epi for epi in epilist
+                      if not isinstance(epi, LayoutMarker)]
     return configure(p, top=top, model=model, strict=strict)
 
 
