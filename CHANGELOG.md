@@ -16,9 +16,9 @@
 ### Fixed
 
 * Remove superfluous `POP` layout markers when graphs have duplicated
-  triples (#34)
+  triples ([#34][])
 * Avoid `KeyError` on edge and attribute reification when graphs have
-  duplicated triples (#35)
+  duplicated triples ([#35][])
 
 ### Changed
 
@@ -27,7 +27,7 @@
 
 ## [v0.7.1][v0.7.1]
 
-The [v0.7.0][v070] release was missing a declaration for the new
+The [v0.7.0](#v070) release was missing a declaration for the new
 `penman.models` sub-package, so it was not available for new
 installs. This release fixes that.
 
@@ -123,7 +123,7 @@ modules.
 * `penman.models.amr.normalizations`
 * `penman.models.amr.reifications`
 * `penman.models.amr.model`
-* `penman.surface` (#19)
+* `penman.surface` ([#19][])
 * `penman.surface.AlignmentMarker`
 * `penman.surface.Alignment`
 * `penman.surface.RoleAlignment`
@@ -131,16 +131,16 @@ modules.
 * `penman.surface.role_alignments()`
 * `penman.transform`
 * `penman.transform.canonicalize_roles()`
-* `penman.transform.reify_edges()` (#27)
+* `penman.transform.reify_edges()` ([#27][])
 * `penman.transform.reify_attributes()`
 * `penman.transform.indicate_branches()`
-* `penman.tree` (#16)
+* `penman.tree` ([#16][])
 * `penman.tree.Tree`
 * `penman.tree.is_atomic()`
 
 ### Removed
 
-* [docopt](https://github.com/docopt/docopt) dependency (#20)
+* [docopt](https://github.com/docopt/docopt) dependency ([#20][])
 * `penman.EncodeError`
 * `penman.AMRCodec`
 * `penman.Triple.inverted`
@@ -154,11 +154,11 @@ modules.
 
 ### Fixed
 
-* Graphs can no longer be encoded with attributes as the top (#15)
+* Graphs can no longer be encoded with attributes as the top ([#15][])
 * For AMR, both `:mod` and `:domain` are for non-inverted relations,
-  although their inverses can be canonicalized to the other (#26)
+  although their inverses can be canonicalized to the other ([#26][])
 * Epigraphical layout markers allow the tree structure to be preserved
-  without modifying the pure graph's triples (#25)
+  without modifying the pure graph's triples ([#25][])
 
 ### Changed
 
@@ -173,10 +173,10 @@ modules.
   parameters
 * `penman.PENMANCodec.encode()` now takes `indent` and `compact`
   parameters
-* `penman.PENMANCodec.iterdecode()` works on streams (#21)
-* `penman.PENMANCodec` now reads comments with metadata (#23)
-* `penman.PENMANCodec` no longer accepts non-symbol variables (#13)
-* `penman.dump()` now writes iteratively to a stream (#22)
+* `penman.PENMANCodec.iterdecode()` works on streams ([#21][])
+* `penman.PENMANCodec` now reads comments with metadata ([#23][])
+* `penman.PENMANCodec` no longer accepts non-symbol variables ([#13][])
+* `penman.dump()` now writes iteratively to a stream ([#22][])
 * The following no longer take the `cls` parameter for a codec class,
   nor `**kwargs` to configure that class, but instead a `model`
   parameter for the semantic model:
@@ -192,21 +192,21 @@ modules.
   - `penman.dumps()`
   - `penman.dump()`
 * `penman.Graph.triples` is now a member variable instead of a method
-* `penman.Graph` class is mutable (#32)
+* `penman.Graph` class is mutable ([#32][])
 * Concepts (node labels) in `penman.Graph` now have a special role
   known to the `penman.graph` module, which can help avoid some
-  reentrancy issues (#29)
+  reentrancy issues ([#29][])
 
 
 ## [v0.6.2][v0.6.2]
 
 ### Fixed
 
-* Value-cast patterns terminated with `$` to invalid casts (#9)
-* Raise EncodeError when attempting to encode empty graphs (#14)
-* Redefine NODETYPE_RE for AMRCodec (#17)
+* Value-cast patterns terminated with `$` to invalid casts ([#9][])
+* Raise EncodeError when attempting to encode empty graphs ([#14][])
+* Redefine NODETYPE_RE for AMRCodec ([#17][])
 * Remove specific float and int parsing in variables/nodetypes for the
-  default parser (the numeric values are still parses as atoms) (#17)
+  default parser (the numeric values are still parses as atoms) ([#17][])
 
 
 ## [v0.6.1][v0.6.1]
@@ -412,3 +412,24 @@ First release with very basic functionality.
 [v0.7.1]: ../../releases/tag/v0.7.1
 [v0.7.2]: ../../releases/tag/v0.7.2
 [README]: README.md
+
+[#4]: https://github.com/goodmami/penman/issues/4
+[#6]: https://github.com/goodmami/penman/issues/6
+[#9]: https://github.com/goodmami/penman/issues/9
+[#13]: https://github.com/goodmami/penman/issues/13
+[#14]: https://github.com/goodmami/penman/issues/14
+[#15]: https://github.com/goodmami/penman/issues/15
+[#16]: https://github.com/goodmami/penman/issues/16
+[#17]: https://github.com/goodmami/penman/issues/17
+[#19]: https://github.com/goodmami/penman/issues/19
+[#20]: https://github.com/goodmami/penman/issues/20
+[#21]: https://github.com/goodmami/penman/issues/21
+[#22]: https://github.com/goodmami/penman/issues/22
+[#23]: https://github.com/goodmami/penman/issues/23
+[#25]: https://github.com/goodmami/penman/issues/25
+[#26]: https://github.com/goodmami/penman/issues/26
+[#27]: https://github.com/goodmami/penman/issues/27
+[#29]: https://github.com/goodmami/penman/issues/29
+[#32]: https://github.com/goodmami/penman/issues/32
+[#34]: https://github.com/goodmami/penman/issues/34
+[#35]: https://github.com/goodmami/penman/issues/35
