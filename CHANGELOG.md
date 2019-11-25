@@ -9,6 +9,11 @@
 * Loggers that print some diagnostic information at the DEBUG and INFO
   levels
 
+### Fixed
+
+* Remove superfluous `POP` layout markers when graphs have duplicated
+  triples (#34)
+
 ## [v0.7.1][v0.7.1]
 
 The [v0.7.0][v070] release was missing a declaration for the new

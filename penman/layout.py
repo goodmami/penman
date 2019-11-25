@@ -164,6 +164,9 @@ def configure(g: Graph,
         if len(data) >= data_count:
             raise LayoutError('possible cycle in configuration')
         data = skipped + data
+        # remove any superfluous POPs
+        while data and data[-1] is POP:
+            data.pop()
     tree = Tree(node, metadata=g.metadata)
     logger.debug('Configured: %s', tree)
     return tree

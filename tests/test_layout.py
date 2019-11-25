@@ -74,3 +74,29 @@ def test_configure(amr_model):
         ])
     )
 
+
+def test_issue_34():
+    # https://github.com/goodmami/penman/issues/34
+    g = codec.decode('''
+        # ::snt I think you failed to not not act.
+        (t / think
+           :ARG0 (i / i)
+           :ARG1 (f / fail
+              :ARG0 (y / you)
+              :ARG1 (a / act
+                 :polarity -
+                 :polarity -)))''')
+    print(configure(g))
+    assert configure(g) == Tree(
+        ('t', [
+            ('/', 'think', []),
+            (':ARG0', ('i', [('/', 'i', [])]), []),
+            (':ARG1', ('f', [
+                ('/', 'fail', []),
+                (':ARG0', ('y', [('/', 'you', [])]), []),
+                (':ARG1', ('a', [
+                    ('/', 'act', []),
+                    (':polarity', '-', []),
+                    (':polarity', '-', [])]),
+                 [])]),
+             [])]))
