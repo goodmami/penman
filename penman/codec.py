@@ -6,6 +6,7 @@ Serialization of PENMAN graphs.
 
 from typing import Optional, Union, Type, Iterable, Iterator, List
 import re
+import logging
 
 from penman.types import (
     Variable,
@@ -27,6 +28,9 @@ from penman.lexer import (
     TokenIterator,
 )
 from penman import layout
+
+
+logger = logging.getLogger(__name__)
 
 
 class PENMANCodec(object):
@@ -102,9 +106,7 @@ class PENMANCodec(object):
         """
         tokens = lex(lines, pattern=PENMAN_RE)
         while tokens and tokens.peek().type in ('COMMENT', 'LPAREN'):
-            metadata = self._parse_comments(tokens)
-            node = self._parse_node(tokens)
-            yield Tree(node, metadata=metadata)
+            yield self._parse(tokens)
 
     def parse(self, s: str) -> Tree:
         """
@@ -120,9 +122,14 @@ class PENMANCodec(object):
             Tree(('b', [('/', 'bark', []), ('ARG1', ('d', [('/', 'dog', [])]), [])]))
         """
         tokens = lex(s, pattern=PENMAN_RE)
+        return self._parse(tokens)
+
+    def _parse(self, tokens: TokenIterator) -> Tree:
         metadata = self._parse_comments(tokens)
         node = self._parse_node(tokens)
-        return Tree(node, metadata=metadata)
+        tree = Tree(node, metadata=metadata)
+        logger.debug('Parsed: %s', tree)
+        return tree
 
     def _parse_comments(self, tokens: TokenIterator):
         """

@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import argparse
 import json
+import logging
 
 from penman.__about__ import __version__
 from penman.model import Model
 from penman import layout
 from penman.codec import PENMANCodec
 from penman import transform
+
+
+logging.basicConfig()  # just default arguments; level will be set later
 
 
 def process(f, model, out, transform_options, format_options):
@@ -54,6 +59,12 @@ def main():
         '-V', '--version', action='version',
         version='Penman v{}'.format(__version__))
     parser.add_argument(
+        '-v', '--verbose', action='count', dest='verbosity', default=0,
+        help='increase verbosity')
+    parser.add_argument(
+        '-q', '--quiet', action='store_true',
+        help='suppress output on <stdout> and <stderr>')
+    parser.add_argument(
         'FILE', nargs='*',
         help='read graphs from FILEs instead of stdin')
     model_group = parser.add_mutually_exclusive_group()
@@ -89,6 +100,16 @@ def main():
         help='insert triples to indicate tree structure')
 
     args = parser.parse_args()
+
+    if args.quiet:
+        args.verbosity = 0
+        sys.stdout.close()
+        sys.stdout = open(os.devnull, 'w')
+    else:
+        args.verbosity = min(args.verbosity, 3)
+
+    logger = logging.getLogger('penman')
+    logger.setLevel(logging.ERROR - (args.verbosity * 10))
 
     if args.amr:
         from penman.models.amr import model

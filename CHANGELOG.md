@@ -2,7 +2,12 @@
 
 ## [Unreleased][unreleased]
 
-(no unreleased changes yet)
+### Added
+
+* `-q` / `--quiet` command line option
+* `-v` / `--verbose` command line option
+* Loggers that print some diagnostic information at the DEBUG and INFO
+  levels
 
 ## [v0.7.1][v0.7.1]
 

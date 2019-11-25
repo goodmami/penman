@@ -52,6 +52,7 @@ following data::
 
 from typing import Union, Mapping
 import copy
+import logging
 
 from penman.exceptions import LayoutError
 from penman.types import Variable
@@ -59,6 +60,9 @@ from penman.epigraph import Epidatum
 from penman.tree import (Tree, Node, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
+
+
+logger = logging.getLogger(__name__)
 
 
 _Nodemap = Mapping[Variable, Union[Node, None]]
@@ -104,7 +108,9 @@ def interpret(t: Tree, model: Model = None) -> Graph:
     if model is None:
         model = Model()
     top, triples, epidata = _interpret_node(t.node, model)
-    return Graph(triples, top=top, epidata=epidata, metadata=t.metadata)
+    g = Graph(triples, top=top, epidata=epidata, metadata=t.metadata)
+    logger.info('Interpreted: %s', g)
+    return g
 
 
 def _interpret_node(t: Node, model: Model):
@@ -158,7 +164,9 @@ def configure(g: Graph,
         if len(data) >= data_count:
             raise LayoutError('possible cycle in configuration')
         data = skipped + data
-    return Tree(node, metadata=g.metadata)
+    tree = Tree(node, metadata=g.metadata)
+    logger.debug('Configured: %s', tree)
+    return tree
 
 
 def _configure(g, top, model, strict):
