@@ -13,6 +13,8 @@
 
 * Remove superfluous `POP` layout markers when graphs have duplicated
   triples (#34)
+* Avoid `KeyError` on edge and attribute reification when graphs have
+  duplicated triples (#35)
 
 ### Changed
 

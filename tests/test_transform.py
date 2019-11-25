@@ -106,3 +106,32 @@ def indicate_branches():
 
     g = norm(decode('(a / alpha :mod-of (b / beta))'))
     assert encode(g) == '(a / alpha :TOP b :mod-of (b / beta))'
+
+
+def test_issue_35():
+    # https://github.com/goodmami/penman/issues/35
+
+    # don't re-encode; these (presumably) bad graphs probably won't
+    # round-trip without changes. Changes may be predictable, but I
+    # don't want to test and guarantee some particular output
+
+    g = amr_codec.decode('(a / alpha :mod b :mod (b / beta))')
+    g = reify_edges(g, amr_model)
+    assert g.triples == [
+        ('a', ':instance', 'alpha'),
+        ('_', ':ARG1', 'a'),
+        ('_', ':instance', 'have-mod-91'),
+        ('_', ':ARG2', 'b'),
+        ('_2', ':ARG1', 'a'),
+        ('_2', ':instance', 'have-mod-91'),
+        ('_2', ':ARG2', 'b'),
+        ('b', ':instance', 'beta')]
+
+    g = amr_codec.decode('(a / alpha :mod 7 :mod 7))')
+    g = reify_attributes(g)
+    assert g.triples == [
+        ('a', ':instance', 'alpha'),
+        ('a', ':mod', '_'),
+        ('_', ':instance', 7),
+        ('a', ':mod', '_2'),
+        ('_2', ':instance', 7)]

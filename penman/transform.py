@@ -95,7 +95,8 @@ def reify_edges(g: Graph, model: Model) -> Graph:
             vars.add(var)
             # manage epigraphical markers
             new_epidata[in_triple] = [Push(var)]
-            node_epis, out_epis = _edge_markers(new_epidata.pop(triple))
+            old_epis = new_epidata.pop(triple) if triple in new_epidata else []
+            node_epis, out_epis = _edge_markers(old_epis)
             new_epidata[node_triple] = node_epis
             new_epidata[out_triple] = out_epis
             # we don't know where to put the final POP without configuring
@@ -154,7 +155,8 @@ def reify_attributes(g: Graph) -> Graph:
             node_triple = (var, CONCEPT_ROLE, target)
             new_triples.extend((role_triple, node_triple))
             # manage epigraphical markers
-            role_epis, node_epis = _attr_markers(new_epidata.pop(triple))
+            old_epis = new_epidata.pop(triple) if triple in new_epidata else []
+            role_epis, node_epis = _attr_markers(old_epis)
             new_epidata[role_triple] = role_epis + [Push(var)]
             new_epidata[node_triple] = node_epis + [POP]
         else:
