@@ -14,6 +14,11 @@
 * Remove superfluous `POP` layout markers when graphs have duplicated
   triples (#34)
 
+### Changed
+
+* `Model.reify()` no longer inverts the incoming triple
+
+
 ## [v0.7.1][v0.7.1]
 
 The [v0.7.0][v070] release was missing a declaration for the new
@@ -26,6 +31,7 @@ installs. This release fixes that.
 * The documentation now looks one level up when building (this is just
   "in case", as I think the missing package problem was the real
   culprit for faulty documentation builds.)
+
 
 ## [v0.7.0][v0.7.0]
 
@@ -196,6 +202,7 @@ modules.
 * Remove specific float and int parsing in variables/nodetypes for the
   default parser (the numeric values are still parses as atoms) (#17)
 
+
 ## [v0.6.1][v0.6.1]
 
 ### Added
@@ -212,6 +219,7 @@ modules.
 
 * Grammar in README now more accurately reflect parsing behavior (and
   vice versa)
+
 
 ## [v0.6.0][]
 
@@ -333,6 +341,7 @@ subclassed to customize behavior.
   parameter for a serialization codec, and any additional `**kwargs`
   are passed to its constructor.
 
+
 ## [v0.3.0][]
 
 ### Added
@@ -357,6 +366,7 @@ subclassed to customize behavior.
 * `load()`, `loads()`, `dump()`, and `dumps()` can now take a `triples=...`
   parameter (default: False); if True, read/write as triples
 
+
 ## [v0.2.0][]
 
 ### Changed
@@ -369,6 +379,7 @@ subclassed to customize behavior.
   of triples (e.g. `instance-of(b, bark-01) ^ ARG0(b, d) ^
   instance-of(d, dog)`).
 
+
 ## [v0.1.0][]
 
 First release with very basic functionality.
@@ -379,6 +390,7 @@ First release with very basic functionality.
 * `Graph` stores graph data and provides methods for access
 * `load()`/`loads()` reads Penman files/strings
 * `dump()`/`dumps()` writes Penman files/strings
+
 
 [unreleased]: ../../tree/develop
 [v0.1.0]: ../../releases/tag/v0.1.0
