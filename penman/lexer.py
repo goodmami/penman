@@ -11,6 +11,9 @@ import logging
 from penman.exceptions import DecodeError
 
 
+logger = logging.getLogger(__name__)
+
+
 # These are the regex patterns for parsing. They must not have any
 # capturing groups. They are used during lexing and will be
 # checked by name during parsing.
@@ -200,17 +203,24 @@ def lex(lines: Union[Iterable[str], str],
     else:
         regex = PENMAN_RE
 
-    logging.debug('Lexing with pattern:\n{}'.format(regex.pattern))
-
     tokens = _lex(lines, regex)
     return TokenIterator(tokens)
 
 
 def _lex(lines: Iterable[str], regex: Pattern[str]) -> Iterator[Token]:
     for i, line in enumerate(lines, 1):
-        for m in regex.finditer(line):
+        logger.debug('Line %d: %r', i, line)
+        matches = list(regex.finditer(line))
+        tokens = []
+        for m in matches:
             if m.lastgroup is None:
                 raise ValueError(
                     'Lexer pattern generated a match without a named '
                     'capturing group:\n{}'.format(regex.pattern))
-            yield Token(m.lastgroup, m.group(), i, m.start(), line)
+            tokens.append(Token(m.lastgroup, m.group(), i, m.start(), line))
+
+        if logger.isEnabledFor(logging.DEBUG):
+            for token in tokens:
+                logger.debug(token)
+
+        yield from tokens

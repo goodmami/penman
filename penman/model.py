@@ -218,6 +218,6 @@ class Model(object):
                 var = '_{}'.format(i)
                 i += 1
 
-        return ((source, self.invert_role(source_role), var),
+        return ((var, source_role, source),
                 (var, CONCEPT_ROLE, concept),
                 (var, target_role, target))

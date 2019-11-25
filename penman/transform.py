@@ -4,6 +4,7 @@ Tree and graph transformations.
 """
 
 from typing import Union, List, Tuple
+import logging
 
 from penman.types import BasicTriple
 from penman.epigraph import (Epidatum, Epidata)
@@ -12,6 +13,9 @@ from penman.tree import (Tree, Node, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
 from penman.layout import (Push, POP)
+
+
+logger = logging.getLogger(__name__)
 
 
 def canonicalize_roles(t: Tree, model: Model) -> Tree:
@@ -40,7 +44,9 @@ def canonicalize_roles(t: Tree, model: Model) -> Tree:
     """
     if model is None:
         model = Model()
-    return Tree(_canonicalize_node(t.node, model), metadata=t.metadata)
+    tree = Tree(_canonicalize_node(t.node, model), metadata=t.metadata)
+    logger.info('Canonicalized roles: %s', tree)
+    return tree
 
 
 def _canonicalize_node(node: Node, model: Model) -> Node:
@@ -89,16 +95,19 @@ def reify_edges(g: Graph, model: Model) -> Graph:
             vars.add(var)
             # manage epigraphical markers
             new_epidata[in_triple] = [Push(var)]
-            node_epis, out_epis = _edge_markers(new_epidata.pop(triple))
+            old_epis = new_epidata.pop(triple) if triple in new_epidata else []
+            node_epis, out_epis = _edge_markers(old_epis)
             new_epidata[node_triple] = node_epis
             new_epidata[out_triple] = out_epis
             # we don't know where to put the final POP without configuring
             # the tree; maybe this should be a tree operation?
         else:
             new_triples.append(triple)
-    return Graph(new_triples,
-                 epidata=new_epidata,
-                 metadata=g.metadata)
+    g = Graph(new_triples,
+              epidata=new_epidata,
+              metadata=g.metadata)
+    logger.info('Reified edges: %s', g)
+    return g
 
 
 def contract_edges(g: Graph, model: Model) -> None:
@@ -146,14 +155,17 @@ def reify_attributes(g: Graph) -> Graph:
             node_triple = (var, CONCEPT_ROLE, target)
             new_triples.extend((role_triple, node_triple))
             # manage epigraphical markers
-            role_epis, node_epis = _attr_markers(new_epidata.pop(triple))
+            old_epis = new_epidata.pop(triple) if triple in new_epidata else []
+            role_epis, node_epis = _attr_markers(old_epis)
             new_epidata[role_triple] = role_epis + [Push(var)]
             new_epidata[node_triple] = node_epis + [POP]
         else:
             new_triples.append(triple)
-    return Graph(new_triples,
-                 epidata=new_epidata,
-                 metadata=g.metadata)
+    g = Graph(new_triples,
+              epidata=new_epidata,
+              metadata=g.metadata)
+    logger.info('Reified attributes: %s', g)
+    return g
 
 
 def indicate_branches(g: Graph, model: Model) -> Graph:
@@ -203,9 +215,11 @@ def indicate_branches(g: Graph, model: Model) -> Graph:
                 assert isinstance(t[2], str)
                 new_triples.append((t[2], model.top_role, t[0]))
         new_triples.append(t)
-    return Graph(new_triples,
-                 epidata=g.epidata,
-                 metadata=g.metadata)
+    g = Graph(new_triples,
+              epidata=g.epidata,
+              metadata=g.metadata)
+    logger.info('Indicated branches: %s', g)
+    return g
 
 
 _SplitMarkers = Tuple[Union[Epidatum, None], Epidata, Epidata, Epidata]

@@ -220,17 +220,17 @@ class TestModel:
         with pytest.raises(ModelError):
             m.reify(('a', ':ARG0', 'b'))
         assert m.reify(('a', ':accompanier', 'b')) == (
-            ('a', ':ARG0-of', '_'),
+            ('_', ':ARG0', 'a'),
             ('_', ':instance', 'accompany-01'),
             ('_', ':ARG1', 'b'))
         with pytest.raises(ModelError):
             assert m.reify(('a', ':domain', 'b'))
         assert m.reify(('a', ':mod', 'b')) == (
-            ('a', ':ARG1-of', '_'),
+            ('_', ':ARG1', 'a'),
             ('_', ':instance', 'have-mod-91'),
             ('_', ':ARG2', 'b'))
         # ensure unique ids if variables is specified
         assert m.reify(('a', ':mod', 'b'), variables={'a', 'b', '_'}) == (
-            ('a', ':ARG1-of', '_2'),
+            ('_2', ':ARG1', 'a'),
             ('_2', ':instance', 'have-mod-91'),
             ('_2', ':ARG2', 'b'))

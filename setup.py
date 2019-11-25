@@ -15,8 +15,13 @@ with open(os.path.join(base_dir, "penman", "__about__.py")) as f:
     exec(f.read(), about)
 
 # thanks: https://snarky.ca/clarifying-pep-518/
-with open(os.path.join(base_dir, 'docs', 'requirements.txt')) as f:
-    docs_require = f.readlines()
+docs_requirements = os.path.join(base_dir, 'docs', 'requirements.txt')
+if os.path.isfile(docs_requirements):
+    with open(docs_requirements) as f:
+        docs_require = f.readlines()
+else:
+    docs_require = []
+
 
 tests_require = [
     'pytest',
