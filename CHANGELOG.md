@@ -2,6 +2,10 @@
 
 ## [Unreleased][unreleased]
 
+(No unreleased changes)
+
+## [v0.7.2][v0.7.2]
+
 ### Added
 
 * `-q` / `--quiet` command line option
@@ -406,4 +410,5 @@ First release with very basic functionality.
 [v0.6.2]: ../../releases/tag/v0.6.2
 [v0.7.0]: ../../releases/tag/v0.7.0
 [v0.7.1]: ../../releases/tag/v0.7.1
+[v0.7.2]: ../../releases/tag/v0.7.2
 [README]: README.md
