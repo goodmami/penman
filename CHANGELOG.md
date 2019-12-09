@@ -2,7 +2,9 @@
 
 ## [Unreleased][unreleased]
 
-(No unreleased changes)
+### Added
+
+* `penman.layout.appears_inverted()` ([#37][])
 
 ## [v0.7.2][v0.7.2]
 
@@ -433,3 +435,4 @@ First release with very basic functionality.
 [#32]: https://github.com/goodmami/penman/issues/32
 [#34]: https://github.com/goodmami/penman/issues/34
 [#35]: https://github.com/goodmami/penman/issues/35
+[#37]: https://github.com/goodmami/penman/issues/37

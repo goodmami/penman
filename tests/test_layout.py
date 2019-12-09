@@ -11,6 +11,7 @@ from penman.layout import (
     configure,
     reconfigure,
     has_valid_layout,
+    appears_inverted,
 )
 
 
@@ -100,3 +101,13 @@ def test_issue_34():
                     (':polarity', '-', [])]),
                  [])]),
              [])]))
+
+
+def test_appears_inverted():
+    g = codec.decode('''
+        (a / alpha
+           :ARG0 (b / beta)
+           :ARG1-of (g / gamma))''')
+    assert not appears_inverted(g, ('a', ':instance', 'alpha'))
+    assert not appears_inverted(g, ('a', ':ARG0', 'b'))
+    assert appears_inverted(g, ('g', ':ARG1', 'a'))

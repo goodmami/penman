@@ -55,7 +55,7 @@ import copy
 import logging
 
 from penman.exceptions import LayoutError
-from penman.types import Variable
+from penman.types import Variable, BasicTriple
 from penman.epigraph import Epidatum
 from penman.tree import (Tree, Node, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
@@ -353,3 +353,26 @@ def has_valid_layout(g: Graph,
         model = Model()
     tree, data, nodemap, variables = _configure(g, top, model, strict)
     return len(data) == 0
+
+
+def appears_inverted(g: Graph, triple: BasicTriple) -> bool:
+    """
+    Return ``True`` if *triple* appears inverted in serialization.
+
+    More specifically, this function returns ``True`` if *triple* has
+    a :class:`Push` epigraphical marker in graph *g* whose associated
+    variable is the source variable of *triple*. This should be
+    accurate when testing a triple in a graph interpreted using
+    :func:`interpret` (including :meth:`PENMANCodec.decode`, etc.),
+    but it does not guarantee that a new serialization of *g* will
+    express *triple* as inverted as it can change if the graph or its
+    epigraphical markers are modified, if a new top is chosen, etc.
+
+    Args:
+        g: a :class:`Graph` object containing *triple*
+        triple: the triple that does or does not appear inverted
+    Returns:
+        ``True`` if *triple* appears inverted in graph *g*.
+    """
+    return any(isinstance(epi, Push) and epi.variable == triple[0]
+               for epi in g.epidata[triple])

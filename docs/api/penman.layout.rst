@@ -22,3 +22,4 @@ penman.layout
    .. autofunction:: configure
    .. autofunction:: reconfigure
    .. autofunction:: has_valid_layout
+   .. autofunction:: appears_inverted
