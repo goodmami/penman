@@ -77,6 +77,6 @@ def _nodes(node):
 
 def is_atomic(x) -> bool:
     """
-    Return `True` if *x* is a valid atomic value.
+    Return ``True`` if *x* is a valid atomic value.
     """
     return x is None or isinstance(x, (str, int, float))

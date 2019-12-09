@@ -21,7 +21,7 @@ def decode(s: str,
     Args:
         s: a string containing a single PENMAN-serialized graph
         model: the model used for interpreting the graph
-        triples: if `True`, read as a conjunction of triples
+        triples: if ``True``, read as a conjunction of triples
     Returns:
         the Graph object described by *s*
     Example:
@@ -47,9 +47,9 @@ def encode(g: Graph,
         g: the Graph object
         top: if given, the node to use as the top in serialization
         model: the model used for interpreting the graph
-        triples: if `True`, serialize as a conjunction of triples
+        triples: if ``True``, serialize as a conjunction of triples
         indent: how to indent formatted strings
-        compact: if `True`, put initial attributes on the first line
+        compact: if ``True``, put initial attributes on the first line
     Returns:
         the PENMAN-serialized string of the Graph *g*
     Example:
@@ -75,7 +75,7 @@ def load(source: file_or_filename,
     Args:
         source: a filename or file-like object to read from
         model: the model used for interpreting the graph
-        triples: if `True`, read as a conjunction of triples
+        triples: if ``True``, read as a conjunction of triples
     Returns:
         a list of Graph objects
     """
@@ -97,7 +97,7 @@ def loads(string: str,
     Args:
         string: a string containing graph data
         model: the model used for interpreting the graph
-        triples: if `True`, read as a conjunction of triples
+        triples: if ``True``, read as a conjunction of triples
     Returns:
         a list of Graph objects
     """
@@ -118,9 +118,9 @@ def dump(graphs: Iterable[Graph],
         graphs: an iterable of Graph objects
         file: a filename or file-like object to write to
         model: the model used for interpreting the graph
-        triples: if `True`, serialize as a conjunction of triples
+        triples: if ``True``, serialize as a conjunction of triples
         indent: how to indent formatted strings
-        compact: if `True`, put initial attributes on the first line
+        compact: if ``True``, put initial attributes on the first line
     """
     codec = PENMANCodec(model=model)
     if isinstance(file, (str, Path)):
@@ -155,9 +155,9 @@ def dumps(graphs: Iterable[Graph],
     Args:
         graphs: an iterable of Graph objects
         model: the model used for interpreting the graph
-        triples: if `True`, serialize as a conjunction of triples
+        triples: if ``True``, serialize as a conjunction of triples
         indent: how to indent formatted strings
-        compact: if `True`, put initial attributes on the first line
+        compact: if ``True``, put initial attributes on the first line
     Returns:
         the string of serialized graphs
     """

@@ -157,7 +157,7 @@ class TokenIterator(Iterator[Token]):
         Return the next token if its type is in *choices*.
 
         The iterator is advanced if successful. If unsuccessful,
-        `None` is returned.
+        ``None`` is returned.
         """
         if self._next is not None and self._next.type in choices:
             return self.next()

@@ -343,7 +343,7 @@ def has_valid_layout(g: Graph,
                      model: Model = None,
                      strict: bool = False) -> bool:
     """
-    Return True if *g* contains the information for a valid layout.
+    Return ``True`` if *g* contains the information for a valid layout.
 
     Having a valid layout means that the graph data allows a
     depth-first traversal that reconstructs a spanning tree used for
