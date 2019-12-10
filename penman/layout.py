@@ -50,20 +50,21 @@ following data::
                           ('b', ':ARG0', 'd')]            : POP
 """
 
-from typing import Union, Mapping
+from typing import Union, Mapping, Callable, Any
 import copy
 import logging
 
 from penman.exceptions import LayoutError
 from penman.types import Variable, BasicTriple
 from penman.epigraph import Epidatum
-from penman.tree import (Tree, Node, is_atomic)
+from penman.tree import (Tree, Node, Branch, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
 
 
 logger = logging.getLogger(__name__)
 
+_default_model = Model()
 
 _Nodemap = Mapping[Variable, Union[Node, None]]
 
@@ -106,7 +107,7 @@ def interpret(t: Tree, model: Model = None) -> Graph:
     Interpret tree *t* as a graph using *model*.
     """
     if model is None:
-        model = Model()
+        model = _default_model
     top, triples, epidata = _interpret_node(t.node, model)
     g = Graph(triples, top=top, epidata=epidata, metadata=t.metadata)
     logger.info('Interpreted: %s', g)
@@ -152,7 +153,7 @@ def configure(g: Graph,
     Create a tree from a graph by making as few decisions as possible.
     """
     if model is None:
-        model = Model()
+        model = _default_model
     node, data, nodemap = _configure(g, top, model, strict)
     # if any data remain, the graph was not properly annotated for a tree
     while data:
@@ -338,6 +339,49 @@ def reconfigure(g: Graph,
     return configure(p, top=top, model=model, strict=strict)
 
 
+def rearrange(t: Tree,
+              key: Callable[[Branch], Any] = None) -> None:
+    """
+    Sort the branches at each node in tree *t* according to *key*.
+
+    Each node in a tree contains a list of branches. This function
+    sorts those lists in-place using the *key* function, which accepts
+    a branch and returns some sortable criterion. If the first branch
+    is the node label it will stay in place after the sort.
+
+    Example:
+
+        >>> from penman import layout
+        >>> from penman.model import Model
+        >>> from penman.codec import PENMANCodec
+        >>> c = PENMANCodec()
+        >>> t = c.parse('(s / see :ARG0 (d / dog) :ARG1 (c / cat))')
+        >>> layout.rearrange(t, key=Model().random_order)
+        >>> print(c.format(t))
+        (s / see
+           :ARG1 (c / cat)
+           :ARG0 (d / dog))
+
+    """
+    if key is None:
+        key = _default_model.original_order
+    _rearrange(t.node, key=key)
+
+
+def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
+    _, branches = node
+    if branches and branches[0][0] == '/':
+        first = branches[0:1]
+        rest = branches[1:]
+    else:
+        first = []
+        rest = branches[:]
+    for _, target, _ in rest:
+        if not is_atomic(target):
+            _rearrange(target, key=key)
+    branches[:] = first + sorted(rest, key=key)
+
+
 def has_valid_layout(g: Graph,
                      top: Variable = None,
                      model: Model = None,
@@ -350,7 +394,7 @@ def has_valid_layout(g: Graph,
     serialization.
     """
     if model is None:
-        model = Model()
+        model = _default_model
     tree, data, nodemap, variables = _configure(g, top, model, strict)
     return len(data) == 0
 

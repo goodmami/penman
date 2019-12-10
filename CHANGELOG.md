@@ -5,6 +5,13 @@
 ### Added
 
 * `penman.layout.appears_inverted()` ([#37][])
+* Tree branch sorting functions ([#31][])
+  - `penman.model.Model.original_order()`
+  - `penman.model.Model.canonical_order()`
+  - `penman.model.Model.random_order()`
+* `penman.layout.rearrange()` ([#31][])
+* `--rearrange=(canonical|random)` command-line option
+
 
 ## [v0.7.2][v0.7.2]
 
@@ -432,6 +439,7 @@ First release with very basic functionality.
 [#26]: https://github.com/goodmami/penman/issues/26
 [#27]: https://github.com/goodmami/penman/issues/27
 [#29]: https://github.com/goodmami/penman/issues/29
+[#31]: https://github.com/goodmami/penman/issues/31
 [#32]: https://github.com/goodmami/penman/issues/32
 [#34]: https://github.com/goodmami/penman/issues/34
 [#35]: https://github.com/goodmami/penman/issues/35

@@ -7,6 +7,7 @@ Semantic models for interpreting graphs.
 from typing import (cast, Tuple, List, Dict, Set, Iterable, Mapping, Any)
 import re
 from collections import defaultdict
+import random
 
 from penman.exceptions import ModelError
 from penman.types import (
@@ -15,6 +16,7 @@ from penman.types import (
     Constant,
     BasicTriple
 )
+from penman.tree import Branch
 from penman.graph import CONCEPT_ROLE
 
 
@@ -221,3 +223,22 @@ class Model(object):
         return ((var, source_role, source),
                 (var, CONCEPT_ROLE, concept),
                 (var, target_role, target))
+
+    def original_order(self, branch: Branch):
+        """Branch sorting key that does not change the order."""
+        return True
+
+    def canonical_order(self, branch: Branch):
+        """Branch sorting key that finds a canonical order."""
+        role, _, _ = branch
+        m = re.match(r'(.*\D)(\d+)$', role)
+        if m:
+            rolename = m.group(1)
+            roleno = int(m.group(2))
+        else:
+            rolename, roleno = role, 0
+        return (self.is_role_inverted(role), rolename, roleno)
+
+    def random_order(self, branch: Branch):
+        """Branch sorting key that randomizes the order."""
+        return random.random()

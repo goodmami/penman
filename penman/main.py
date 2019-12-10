@@ -16,23 +16,27 @@ from penman import transform
 logging.basicConfig()  # just default arguments; level will be set later
 
 
-def process(f, model, out, transform_options, format_options):
+def process(f, model, out, normalize_options, format_options):
     """Read graphs from *f* and write to *out*."""
 
     def _process(t):
         """Encode tree *t* and return the string."""
         # tree transformations
-        if transform_options['canonicalize_roles']:
+        if normalize_options['canonicalize_roles']:
             t = transform.canonicalize_roles(t, model)
+        if normalize_options['rearrange'] == 'canonical':
+            layout.rearrange(t, key=model.canonical_order)
+        elif normalize_options['rearrange'] == 'random':
+            layout.rearrange(t, key=model.random_order)
 
         g = layout.interpret(t, model)
 
         # graph transformations
-        if transform_options['reify_edges']:
+        if normalize_options['reify_edges']:
             g = transform.reify_edges(g, model)
-        if transform_options['reify_attributes']:
+        if normalize_options['reify_attributes']:
             g = transform.reify_attributes(g)
-        if transform_options['indicate_branches']:
+        if normalize_options['indicate_branches']:
             g = transform.indicate_branches(g, model)
 
         return codec.encode(g, **format_options)
@@ -87,6 +91,9 @@ def main():
         help='print graphs as triple conjunctions')
     norm = parser.add_argument_group('normalization options')
     norm.add_argument(
+        '--rearrange', metavar='KEY', choices=('random', 'canonical'),
+        help='sort or randomize the order of relations on each node')
+    norm.add_argument(
         '--canonicalize-roles', action='store_true',
         help='canonicalize role forms')
     norm.add_argument(
@@ -116,7 +123,7 @@ def main():
     elif args.model:
         model = Model(**json.load(args.model))
     else:
-        model = None
+        model = Model()
 
     indent = -1
     if args.indent:
@@ -131,7 +138,8 @@ def main():
                 sys.exit('error: --indent value must be "no" or an '
                          'integer >= -1')
 
-    transform_options = {
+    normalize_options = {
+        'rearrange': args.rearrange,
         'canonicalize_roles': args.canonicalize_roles,
         'reify_edges': args.reify_edges,
         'reify_attributes': args.reify_attributes,
@@ -147,10 +155,10 @@ def main():
         for file in args.FILE:
             with open(file) as f:
                 process(f, model, sys.stdout,
-                        transform_options, format_options)
+                        normalize_options, format_options)
     else:
         process(sys.stdin, model, sys.stdout,
-                transform_options, format_options)
+                normalize_options, format_options)
 
 
 if __name__ == '__main__':

@@ -4,22 +4,32 @@ penman.layout
 
 .. automodule:: penman.layout
 
-   Epigraphical Markers
-   --------------------
+Epigraphical Markers
+--------------------
 
-   .. autoclass:: LayoutMarker
-      :show-inheritance:
+.. autoclass:: LayoutMarker
+   :show-inheritance:
 
-   .. autoclass:: Push
-      :show-inheritance:
+.. autoclass:: Push
+   :show-inheritance:
 
-   .. autodata:: POP
+.. autodata:: POP
 
-   Module Functions
-   ----------------
 
-   .. autofunction:: interpret
-   .. autofunction:: configure
-   .. autofunction:: reconfigure
-   .. autofunction:: has_valid_layout
-   .. autofunction:: appears_inverted
+Tree Functions
+--------------
+
+.. autofunction:: interpret
+.. autofunction:: rearrange
+
+Graph Functions
+---------------
+
+.. autofunction:: configure
+.. autofunction:: reconfigure
+
+Diagnostic Functions
+--------------------
+
+.. autofunction:: has_valid_layout
+.. autofunction:: appears_inverted
