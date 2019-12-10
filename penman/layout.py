@@ -105,6 +105,34 @@ POP = _Pop()
 def interpret(t: Tree, model: Model = None) -> Graph:
     """
     Interpret tree *t* as a graph using *model*.
+
+    Tree interpretation is the process of transforming the nodes and
+    edges of a tree into a directed graph. A semantic model determines
+    which edges are inverted and how to deinvert them. If *model* is
+    not provided, the default model will be used.
+
+    Args:
+        t: the :class:`Tree` to interpret
+        model: the :class:`~penman.model.Model` used to interpret *t*
+    Returns:
+        The interpreted :class:`~penman.graph.Graph`.
+    Example:
+
+        >>> from penman.tree import Tree
+        >>> from penman import layout
+        >>> t = Tree(
+        ...   ('b', [
+        ...     ('/', 'bark', []),
+        ...     ('ARG0', ('d', [
+        ...       ('/', 'dog', [])]), [])]))
+        >>> g = layout.interpret(t)
+        >>> for triple in g.triples:
+        ...     print(triple)
+        ...
+        ('b', ':instance', 'bark')
+        ('b', ':ARG0', 'd')
+        ('d', ':instance', 'dog')
+
     """
     if model is None:
         model = _default_model
@@ -151,6 +179,41 @@ def configure(g: Graph,
               strict: bool = False) -> Tree:
     """
     Create a tree from a graph by making as few decisions as possible.
+
+    A graph interpreted from a valid tree using :func:`interpret` will
+    contain epigraphical markers that describe how the triples of a
+    graph are to be expressed in a tree, and thus configuring this
+    tree requires only a single pass through the list of triples. If
+    the markers are missing or out of order, or if the graph has been
+    modified, then the configuration process will have to make
+    decisions about where to insert tree branches. These decisions are
+    deterministic, but may result in a tree different than the one
+    expected.
+
+    Args:
+        g: the :class:`~penman.graph.Graph` to configure
+        top: the variable to use as the top of the graph; if ``None``,
+            the top of *g* will be used
+        model: the :class:`~penman.model.Model` used to configure the
+            tree
+        strict: if ``True``, raise :exc:`~penman.exceptions.LayoutError`
+            if decisions must be made about the configuration
+    Returns:
+        The configured :class:`Tree`.
+    Example:
+
+        >>> from penman.graph import Graph
+        >>> from penman import layout
+        >>> g = Graph([('b', ':instance', 'bark'),
+        ...            ('b', ':ARG0', 'd'),
+        ...            ('d', ':instance', 'dog')])
+        >>> t = layout.configure(g)
+        >>> print(t)
+        Tree(
+          ('b', [
+            ('/', 'bark', []),
+            (':ARG0', ('d', [
+              ('/', 'dog', [])]), [])]))
     """
     if model is None:
         model = _default_model
@@ -407,13 +470,14 @@ def appears_inverted(g: Graph, triple: BasicTriple) -> bool:
     a :class:`Push` epigraphical marker in graph *g* whose associated
     variable is the source variable of *triple*. This should be
     accurate when testing a triple in a graph interpreted using
-    :func:`interpret` (including :meth:`PENMANCodec.decode`, etc.),
-    but it does not guarantee that a new serialization of *g* will
-    express *triple* as inverted as it can change if the graph or its
-    epigraphical markers are modified, if a new top is chosen, etc.
+    :func:`interpret` (including :meth:`PENMANCodec.decode
+    <penman.codec.PENMANCodec.decode>`, etc.), but it does not
+    guarantee that a new serialization of *g* will express *triple* as
+    inverted as it can change if the graph or its epigraphical markers
+    are modified, if a new top is chosen, etc.
 
     Args:
-        g: a :class:`Graph` object containing *triple*
+        g: a :class:`~penman.graph.Graph` containing *triple*
         triple: the triple that does or does not appear inverted
     Returns:
         ``True`` if *triple* appears inverted in graph *g*.
