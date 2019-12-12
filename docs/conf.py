@@ -19,14 +19,18 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Penman'
 copyright = '2019, Michael Wayne Goodman'
-author = 'Michael Wayne Goodman'
+
+from penman.__about__ import (
+    __version_info__ as ver,
+    __author__ as author,
+    __title__ as project,
+)
 
 # The short X.Y version
-version = 'v0.7'
+version = f'{ver[0]}.{ver[1]}'
 # The full version, including alpha/beta/rc tags
-release = 'v0.7.2'
+release = '.'.join(ver)
 
 
 # -- General configuration ---------------------------------------------------

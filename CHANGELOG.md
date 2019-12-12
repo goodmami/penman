@@ -2,6 +2,13 @@
 
 ## [Unreleased][unreleased]
 
+(no unreleased changes yet)
+
+## [v0.8.0][]
+
+This release adds a handful of minor functions and expands the
+documentation.
+
 ### Added
 
 * `penman.layout.appears_inverted()` ([#37][])
@@ -13,7 +20,7 @@
 * `--rearrange=(canonical|random)` command-line option
 
 
-## [v0.7.2][v0.7.2]
+## [v0.7.2][]
 
 ### Added
 
@@ -34,7 +41,7 @@
 * `Model.reify()` no longer inverts the incoming triple
 
 
-## [v0.7.1][v0.7.1]
+## [v0.7.1][]
 
 The [v0.7.0](#v070) release was missing a declaration for the new
 `penman.models` sub-package, so it was not available for new
@@ -48,7 +55,7 @@ installs. This release fixes that.
   culprit for faulty documentation builds.)
 
 
-## [v0.7.0][v0.7.0]
+## [v0.7.0][]
 
 This release comprises a major restructuring from previous
 versions. No longer is there a single `penman.py` module, but the
@@ -207,7 +214,7 @@ modules.
   reentrancy issues ([#29][])
 
 
-## [v0.6.2][v0.6.2]
+## [v0.6.2][]
 
 ### Fixed
 
@@ -218,7 +225,7 @@ modules.
   default parser (the numeric values are still parses as atoms) ([#17][])
 
 
-## [v0.6.1][v0.6.1]
+## [v0.6.1][]
 
 ### Added
 
@@ -420,6 +427,7 @@ First release with very basic functionality.
 [v0.7.0]: ../../releases/tag/v0.7.0
 [v0.7.1]: ../../releases/tag/v0.7.1
 [v0.7.2]: ../../releases/tag/v0.7.2
+[v0.8.0]: ../../releases/tag/v0.8.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4

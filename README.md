@@ -29,7 +29,7 @@ or as a [script](#script-usage).
 - [x] Customize graphs for writing:
   - [x] adjust indentation and compactness
   - [x] select a new top node
-  - [x] rearrange edges (partially implemented)
+  - [x] rearrange edges
   - [x] restructure the tree shape
 - [x] [Transform][transform] the graph
   - [x] Canonicalize roles
@@ -105,60 +105,14 @@ $ penman <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 
 ### PENMAN Notation
 
-The [PENMAN][] project was a large effort at natural language generation,
-and what I'm calling "PENMAN notation" is more accurately "Sentence Plan
-Language" (SPL; [Kaspar 1989][]), but I'll stick with "PENMAN notation"
-because it may be a more familiar name to modern users and it also sounds
-less specific to sentence representations, e.g., in case someone wants to
-use the format to encode arbitrary graphs.
-
-This module expands the notation slightly to allow for untyped nodes
-(e.g., `(x)`) and anonymous relations (e.g., `(x : (y))`). A [PEG][]\*
-definition for the notation is given below (for simplicity, whitespace
-is not explicitly included; assume all nonterminals can be surrounded
-by `/\s+/`):
-
-```ruby
-# Syntactic productions
-Start     <- Node
-Node      <- '(' Variable NodeLabel? Relation* ')'
-NodeLabel <- '/' Concept Alignment?
-Concept   <- Atom
-Relation  <- Role Alignment? (Edge | Attribute)
-Edge      <- Variable Alignment?
-           | Node
-Attribute <- Atom Alignment?
-Atom      <- String | Float | Integer | Symbol
-Variable  <- Symbol
-# Lexical productions
-Role      <- /:[^\s()\/,:~]*/
-String    <- /"[^"\\]*(?:\\.[^"\\]*)*"/
-Float     <- /[-+]?(((\d+\.\d*|\.\d+)([eE][-+]?\d+)?)|\d+[eE][-+]?\d+)/
-Integer   <- /[-+]?\d+(?=[ )\/:])/
-Symbol    <- /[^\s()\/,:~]+/
-Alignment <- /~([a-zA-Z]\.?)?\d+(,\d+)*/
-```
-
-\* *Note: I use `|` above for ordered-choice instead of `/` so that `/`
-can be used to surround regular expressions.*
-
-There is ambiguity in that both `Edge` and `Attribute` can resolve
-their first token to `Symbol` (via the `Variable` and `Atom`
-productions, respectively), but they are shown like this for their
-semantic contribution. A `Variable` is distinguished from other
-`Symbol` tokens simply by its use as the identifier of a node.
-Examples of non-variable `Symbol` tokens in AMR are concepts (e.g.,
-`want-01`), `-` in `:polarity -`, `expressive` in `:mode expressive`,
-etc.
-
-The above grammar is for the PENMAN graphs that this library supports,
-but AMR is more restrictive.  A variant for AMR might make the
-`NodeLabel` nonterminal required on `Node`, change `Atom` to `Symbol`
-on `Concept`, change `Role` to require at least one character after
-`:` or even spell out all valid roles, and change `Variable` to a form
-like `/[a-z]+[0-9]*/`. See also [Nathan Schneider's PEG for
+A description of the PENMAN notation can be found in the
+[documentation](https://penman.readthedocs.io/en/latest/notation.html).
+See also [Nathan Schneider's PEG for
 AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
 
+This module expands the notation slightly to allow for untyped nodes
+(e.g., `(x)`) and anonymous relations (e.g., `(x : (y))`). It also
+accommodates slightly malformed graphs as well as surface alignments.
 
 ### Disclaimer
 
