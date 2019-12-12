@@ -108,8 +108,8 @@ class TokenIterator(Iterator[Token]):
         """
         Return the next token but do not advance the iterator.
 
-        If the iterator is exhausted then a :exc:`DecodeError` is
-        raised.
+        If the iterator is exhausted then a
+        :exc:`~penman.exceptions.DecodeError` is raised.
         """
         if self._next is None:
             raise self.error('Unexpected end of input')
@@ -140,7 +140,7 @@ class TokenIterator(Iterator[Token]):
         The iterator is advanced if successful.
 
         Raises:
-            :exc:`DecodeError`: if the
+            :exc:`~penman.exceptions.DecodeError`: if the
                 next token type is not in *choices*
         """
         try:

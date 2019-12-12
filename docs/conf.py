@@ -30,7 +30,7 @@ from penman.__about__ import (
 # The short X.Y version
 version = f'{ver[0]}.{ver[1]}'
 # The full version, including alpha/beta/rc tags
-release = '.'.join(ver)
+release = '.'.join(map(str, ver))
 
 
 # -- General configuration ---------------------------------------------------
