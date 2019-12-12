@@ -22,6 +22,7 @@ Welcome to Penman's documentation!
    api/penman.epigraph
    api/penman.exceptions
    api/penman.graph
+   api/penman.interface
    api/penman.layout
    api/penman.lexer
    api/penman.model
