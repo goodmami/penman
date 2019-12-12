@@ -43,6 +43,7 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.coverage',
+    'sphinxcontrib.tikz',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
 ]
@@ -176,3 +177,8 @@ intersphinx_mapping = {
 # disable type hints
 
 autodoc_typehints = 'none'
+
+
+# -- Options for SphinxContrib-Tikz ------------------------------------------
+
+tikz_proc_suite = 'GhostScript'
