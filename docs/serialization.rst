@@ -5,33 +5,92 @@ A PENMAN-serialized graph takes the form of a tree with labeled
 reentrancies, so in deserialization it is first parsed directly into a
 tree and then the pure graph is interpreted from it.
 
-.. code:: lisp
+.. code-block:: lisp
 
    (b / bark
       :ARG0 (d / dog))
 
 The above PENMAN string is parsed to the following tree:
 
-.. code:: python
+.. code-block:: python
 
-   ('b', [(':instance', 'bark', []),
-          (':ARG0', ('d', [(':instance', 'dog', [])]), [])])
+   Tree(('b', [(':instance', 'bark', []),
+               (':ARG0', ('d', [(':instance', 'dog', [])]), [])]))
 
 The structure of a tree node is ``(var, branches)`` while the
 structure of a branch is ``(role, target, epidata)``. The target of a
 branch can be an atomic value or a tree node. The epidata field is a
 list of epigraphical markers. This tree is then interpreted to the
-following triples (which define a pure graph; the epidata is stored
-separately but is not shown here as it is empty for this example):
+following triples:
 
-.. code:: python
+.. code-block:: python
 
-   [('b', ':instance', 'bark'),
-    ('b', ':ARG0', 'd'),
-    ('d', ':instance', 'dog')]
+   Graph(triples=[
+          ('b', ':instance', 'bark'),
+          ('b', ':ARG0', 'd'),
+          ('d', ':instance', 'dog')
+	 ],
+	 epidata={
+	  ('b', ':ARG0', 'd'): [Push('d')],
+	  ('d', ':instance', 'dog'): [POP]
+	 })
 
 Serialization goes in the reverse order: from a pure graph to a tree
 to a string.
+
+Allowed Graphs
+--------------
+
+The Penman library robustly allows some kinds of invalid and
+unconventional graphs.
+
+**Unproblematic:**
+
+.. code-block:: bash
+
+   # Normal
+   (a / a-label :ROLE (b / b-label))
+
+   # Unlabeled nodes, edges
+   (a :ROLE (b))
+   (a / a-label : (b / b-label))
+   (a : (b))
+
+   # Cycles
+   (a :ROLE (b :ROLE a))
+
+   # Distributed nodes
+   (a :ROLE (b :ROLE (c / c-label)) :ROLE2 (c :ATTR val))
+
+**Allowed but Unconventional**
+
+.. code-block:: bash
+
+   # Empty
+   ()
+
+   # Missing edge target
+   (a / a-label :ROLE )
+
+   # Missing node label
+   (a / :ROLE (b / b-label))
+
+**Disallowed**
+
+.. code-block:: bash
+
+   # Disconnected (parseable as two separate graphs)
+   (a / a-label)(b / b-label)
+
+   # Missing identifiers
+   (a :ROLE ( / b-label))
+
+   # Misplaced label
+   (a :ROLE (b) / a-label)
+
+   # Multiple labels
+   (a / a-label / another-label)
+
 
 ..
   Rules for Serialization
