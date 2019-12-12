@@ -18,6 +18,7 @@ Welcome to Penman's documentation!
    :maxdepth: 1
    :caption: API Reference:
 
+   api/penman
    api/penman.codec
    api/penman.epigraph
    api/penman.exceptions

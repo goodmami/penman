@@ -1,16 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-PENMAN graph library for AMR, DMRS, etc.
-
-Penman is a project to assist in working with graphs encoded in PENMAN
-notation, such as those for Abstract Meaning Representation (AMR) or
-Dependency Minimal Recursion Semantics (DMRS). It allows for
-conversion between PENMAN and triples, inspection of the graphs, and
-reserialization (e.g. for selecting a new top node). Some features,
-such as conversion or reserialization, can be done by calling the
-script interface (e.g., `python3 -m penman.main`, or just `penman` if
-Penman is installed via `pip`).
+Penman graph library.
 """
 
 # the following is to retain parts of the original API
