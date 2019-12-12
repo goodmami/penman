@@ -53,7 +53,7 @@ class PENMANCodec(object):
 
         Args:
             s: a string containing a single PENMAN-serialized graph
-            triples: if `True`, parse *s* as a triple conjunction
+            triples: if ``True``, parse *s* as a triple conjunction
         Returns:
             The :class:`Graph` object described by *s*.
         Example:
@@ -82,7 +82,7 @@ class PENMANCodec(object):
 
         Args:
             lines: a string or open file with PENMAN-serialized graphs
-            triples: if `True`, parse *s* as a triple conjunction
+            triples: if ``True``, parse *s* as a triple conjunction
         Returns:
             The :class:`Graph` objects described in *lines*.
         """
@@ -272,9 +272,9 @@ class PENMANCodec(object):
         Args:
             g: the Graph object
             top: if given, the node to use as the top in serialization
-            triples: if `True`, serialize as a conjunction of triples
+            triples: if ``True``, serialize as a conjunction of triples
             indent: how to indent formatted strings
-            compact: if `True`, put initial attributes on the first line
+            compact: if ``True``, put initial attributes on the first line
         Returns:
             the PENMAN-serialized string of the Graph *g*
         Example:

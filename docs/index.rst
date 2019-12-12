@@ -6,22 +6,40 @@
 Welcome to Penman's documentation!
 ==================================
 
+The Penman package is a library for working with graphs in the PENMAN
+format. Its primary job is thus parsing the serialized form into an
+internal :class:`graph <penman.graph.Graph>` representation and format
+graphs into the serialized form again. Once parsed, the graphs can be
+inspected and manipulated, depending on one's needs.
+
+The interpretation of PENMAN into the internal graph depends on a
+semantic model. The default :class:`model <penman.model.Model>` works
+in most cases, but for people working with `Abstract Meaning
+Representation <https://amr.isi.edu/>`_ (AMR) data, the :mod:`AMR
+model <penman.models.amr>` will allow them to perform operations in a
+way that follows the principles of AMR. Users may also define custom
+models if they need more control.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    setup
    basic
+   notation
+   structures
    serialization
 
 .. toctree::
    :maxdepth: 1
    :caption: API Reference:
 
+   api/penman
    api/penman.codec
    api/penman.epigraph
    api/penman.exceptions
    api/penman.graph
+   api/penman.interface
    api/penman.layout
    api/penman.lexer
    api/penman.model

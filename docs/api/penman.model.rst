@@ -20,3 +20,7 @@ penman.model
 
       .. automethod:: is_reifiable
       .. automethod:: reify
+
+      .. automethod:: original_order
+      .. automethod:: canonical_order
+      .. automethod:: random_order

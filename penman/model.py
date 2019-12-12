@@ -7,6 +7,7 @@ Semantic models for interpreting graphs.
 from typing import (cast, Tuple, List, Dict, Set, Iterable, Mapping, Any)
 import re
 from collections import defaultdict
+import random
 
 from penman.exceptions import ModelError
 from penman.types import (
@@ -15,6 +16,7 @@ from penman.types import (
     Constant,
     BasicTriple
 )
+from penman.tree import Branch
 from penman.graph import CONCEPT_ROLE
 
 
@@ -82,11 +84,11 @@ class Model(object):
 
     def has_role(self, role: Role) -> bool:
         """
-        Return `True` if *role* is defined by the model.
+        Return ``True`` if *role* is defined by the model.
 
         If *role* is not in the model but a single deinversion of
-        *role* is in the model, then `True` is returned. Otherwise
-        `False` is returned, even if something like
+        *role* is in the model, then ``True`` is returned. Otherwise
+        ``False`` is returned, even if something like
         :meth:`canonicalize_role` could return a valid role.
         """
         return (self._has_role(role)
@@ -96,7 +98,7 @@ class Model(object):
         return self._role_re.match(role) is not None
 
     def is_role_inverted(self, role: Role) -> bool:
-        """Return `True` if *role* is inverted."""
+        """Return ``True`` if *role* is inverted."""
         return not self._has_role(role) and role.endswith('-of')
 
     def invert_role(self, role: Role) -> Role:
@@ -146,8 +148,8 @@ class Model(object):
 
         * Ensure the role starts with `':'`
 
-        * Normalize multiple inversions (e.g., `ARG0-of-of` becomes
-          `ARG0`), but it does *not* change the direction of the role
+        * Normalize multiple inversions (e.g., ``ARG0-of-of`` becomes
+          ``ARG0``), but it does *not* change the direction of the role
 
         * Replace the resulting role with a normalized form if one is
           defined in the model
@@ -182,7 +184,7 @@ class Model(object):
         return (source, canonical, target)
 
     def is_reifiable(self, triple: BasicTriple) -> bool:
-        """Return `True` if the role of *triple* can be reified."""
+        """Return ``True`` if the role of *triple* can be reified."""
         return triple[1] in self.reifications
 
     def reify(self,
@@ -221,3 +223,22 @@ class Model(object):
         return ((var, source_role, source),
                 (var, CONCEPT_ROLE, concept),
                 (var, target_role, target))
+
+    def original_order(self, branch: Branch):
+        """Branch sorting key that does not change the order."""
+        return True
+
+    def canonical_order(self, branch: Branch):
+        """Branch sorting key that finds a canonical order."""
+        role, _, _ = branch
+        m = re.match(r'(.*\D)(\d+)$', role)
+        if m:
+            rolename = m.group(1)
+            roleno = int(m.group(2))
+        else:
+            rolename, roleno = role, 0
+        return (self.is_role_inverted(role), rolename, roleno)
+
+    def random_order(self, branch: Branch):
+        """Branch sorting key that randomizes the order."""
+        return random.random()

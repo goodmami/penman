@@ -8,13 +8,16 @@ from penman.graph import Graph
 from penman.codec import PENMANCodec
 from penman.layout import (
     interpret,
+    rearrange,
     configure,
     reconfigure,
     has_valid_layout,
+    appears_inverted,
 )
 
 
 codec = PENMANCodec()
+model = Model()
 
 
 @pytest.fixture(scope='module')
@@ -37,6 +40,44 @@ def test_interpret(amr_model):
          ('a', ':consist-of', 'b'),
          ('b', ':instance', 'B')],
         top='a')
+
+
+def test_rearrange():
+    t = codec.parse('''
+        (a / alpha
+           :ARG0 (b / beta
+                    :ARG0 (g / gamma)
+                    :ARG1 (d / delta))
+           :ARG0-of d
+           :ARG1 (e / epsilon))''')
+
+    rearrange(t, model.original_order)
+    assert codec.format(t) == (
+        '(a / alpha\n'
+        '   :ARG0 (b / beta\n'
+        '            :ARG0 (g / gamma)\n'
+        '            :ARG1 (d / delta))\n'
+        '   :ARG0-of d\n'
+        '   :ARG1 (e / epsilon))')
+
+    import random; random.seed(1)
+    rearrange(t, model.random_order)
+    assert codec.format(t) == (
+        '(a / alpha\n'
+        '   :ARG0-of d\n'
+        '   :ARG1 (e / epsilon)\n'
+        '   :ARG0 (b / beta\n'
+        '            :ARG0 (g / gamma)\n'
+        '            :ARG1 (d / delta)))')
+
+    rearrange(t, model.canonical_order)
+    assert codec.format(t) == (
+        '(a / alpha\n'
+        '   :ARG0 (b / beta\n'
+        '            :ARG0 (g / gamma)\n'
+        '            :ARG1 (d / delta))\n'
+        '   :ARG1 (e / epsilon)\n'
+        '   :ARG0-of d)')
 
 
 def test_configure(amr_model):
@@ -100,3 +141,13 @@ def test_issue_34():
                     (':polarity', '-', [])]),
                  [])]),
              [])]))
+
+
+def test_appears_inverted():
+    g = codec.decode('''
+        (a / alpha
+           :ARG0 (b / beta)
+           :ARG1-of (g / gamma))''')
+    assert not appears_inverted(g, ('a', ':instance', 'alpha'))
+    assert not appears_inverted(g, ('a', ':ARG0', 'b'))
+    assert appears_inverted(g, ('g', ':ARG1', 'a'))

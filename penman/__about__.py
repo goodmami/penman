@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.7.2'
-__version_info__ = [
+__version__ = '0.8.0'
+__version_info__ = tuple(
     int(x) if x.isdigit() else x
     for x in __version__.replace('.', ' ').replace('-', ' ').split()
-]
+)
 
 __title__ = 'Penman'
 __summary__ = 'PENMAN notation for graphs (e.g., AMR)'

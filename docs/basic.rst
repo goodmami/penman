@@ -3,25 +3,25 @@ Basic Usage
 ===========
 
 This document will give an overview of how to use Penman as a tool and
-as a library.
+as a library. For motivation, here's an example of its tool usage:
 
+.. code-block:: console
 
-Penman Fundamentals
--------------------
+   $ penman --indent 3 --compact <<< '(s / sleep :polarity - :ARG0 (i / i))'
+   (s / sleep :polarity -
+      :ARG0 (i / i))
 
-The Penman package is a library for working with graphs in the PENMAN
-format. Its primary job is thus parsing the serialized form into an
-internal graph representation and format graphs into the serialized
-form again. Once parsed, the graphs can be inspected and manipulated,
-depending on one's needs.
+And here's an example of its library usage:
 
-The interpretation of PENMAN into the internal graph depends on a
-semantic model. The default model works in most cases, but for people
-working with Abstract Meaning Representation (AMR) data, the AMR model
-will allow them to perform operations in a way that follows the
-principles of AMR. Users may also define custom models if they need
-more control.
+.. code-block:: python
 
+   >>> from penman import PENMANCodec
+   >>> codec = PENMANCodec()
+   >>> g = codec.decode('(s / sleep-01 :polarity - :ARG0 (i / i))')
+   >>> g.triples.remove(('s', ':polarity', '-'))
+   >>> print(PENMANCodec().encode(g))
+   (s / sleep-01
+      :ARG0 (i / i))
 
 Using Penman as a Tool
 ----------------------
@@ -34,9 +34,9 @@ PENMAN graphs without having to write any Python code. Run
 .. code-block:: console
 
    $ penman --help
-   usage: penman [-h] [-V] [--model FILE | --amr] [--indent N] [--compact]
-                 [--triples] [--canonicalize-roles] [--reify-edges]
-                 [--reify-attributes] [--indicate-branches]
+   usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr] [--indent N]
+                 [--compact] [--triples] [--rearrange KEY] [--canonicalize-roles]
+                 [--reify-edges] [--reify-attributes] [--indicate-branches]
                  [FILE [FILE ...]]
 
    Read and write graphs in the PENMAN notation.
@@ -47,6 +47,8 @@ PENMAN graphs without having to write any Python code. Run
    optional arguments:
      -h, --help            show this help message and exit
      -V, --version         show program's version number and exit
+     -v, --verbose         increase verbosity
+     -q, --quiet           suppress output on <stdout> and <stderr>
      --model FILE          JSON model file describing the semantic model
      --amr                 use the AMR model
 
@@ -56,6 +58,7 @@ PENMAN graphs without having to write any Python code. Run
      --triples             print graphs as triple conjunctions
 
    normalization options:
+     --rearrange KEY       sort or randomize the order of relations on each node
      --canonicalize-roles  canonicalize role forms
      --reify-edges         reify all eligible edges
      --reify-attributes    reify all attributes
@@ -88,7 +91,7 @@ For example:
 
 .. code-block:: python
 
-   >>> from penman.codec import PENMANCodec
+   >>> from penman import PENMANCodec
    >>> codec = PENMANCodec()
    >>> g = codec.decode('(b / bark-01 :ARG0 (d / dog))')
    >>> g.attributes()
@@ -106,4 +109,7 @@ For example:
       :ARG0 (d / dog)
       :polarity -)
 
-See the API documentation for more information.
+Importing directly from the :mod:`penman` module allows for basic
+usage of the library, but anything more advanced can take advantage of
+the full API. See the :ref:`API documentation <submodules>` for more
+information.
