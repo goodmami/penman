@@ -97,12 +97,6 @@ $ penman <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
             :ARG0 b))
 ```
 
-
-### Requirements
-
-- Python 3.6+
-
-
 ### PENMAN Notation
 
 A description of the PENMAN notation can be found in the
@@ -114,10 +108,29 @@ This module expands the notation slightly to allow for untyped nodes
 (e.g., `(x)`) and anonymous relations (e.g., `(x : (y))`). It also
 accommodates slightly malformed graphs as well as surface alignments.
 
+### Citation
+
+There is not (yet) a canonical citation for the Penman library, so
+putting https://github.com/goodmami/penman in a footnote is
+sufficient. If you are referring to the graph
+transformation/normalization work or prefer an academic citation,
+please use the following:
+
+``` bibtex
+@inproceedings{Goodman:2019,
+  title     = "{AMR} Normalization for Fairer Evaluation",
+  author    = "Goodman, Michael Wayne",
+  booktitle = "Proceedings of the 33rd Pacific Asia Conference on Language, Information, and Computation",
+  year      = "2019",
+  pages     = "47--56",
+  address   = "Hakodate"
+}
+```
+
 ### Disclaimer
 
-This project is not affiliated with [ISI], the [PENMAN] project, or the
-[AMR] project.
+This project is not affiliated with [ISI][], the [PENMAN][] project,
+or the [AMR][] project.
 
 [PENMAN]: http://www.isi.edu/natural-language/penman/penman.html
 [AMR]: http://amr.isi.edu/
