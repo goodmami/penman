@@ -208,9 +208,11 @@ def lex(lines: Union[Iterable[str], str],
 
 
 def _lex(lines: Iterable[str], regex: Pattern[str]) -> Iterator[Token]:
+    debug = logger.isEnabledFor(logging.DEBUG)
     for i, line in enumerate(lines, 1):
-        logger.debug('Line %d: %r', i, line)
-        matches = list(regex.finditer(line))
+        if debug:
+            logger.debug('Line %d: %r', i, line)
+        matches = regex.finditer(line)
         tokens = []
         for m in matches:
             if m.lastgroup is None:
@@ -219,7 +221,7 @@ def _lex(lines: Iterable[str], regex: Pattern[str]) -> Iterator[Token]:
                     'capturing group:\n{}'.format(regex.pattern))
             tokens.append(Token(m.lastgroup, m.group(), i, m.start(), line))
 
-        if logger.isEnabledFor(logging.DEBUG):
+        if debug:
             for token in tokens:
                 logger.debug(token)
 
