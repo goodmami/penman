@@ -22,6 +22,8 @@ def process(f, model, out, normalize_options, format_options):
     def _process(t):
         """Encode tree *t* and return the string."""
         # tree transformations
+        if normalize_options['make_variables']:
+            t.reset_variables(normalize_options['make_variables'])
         if normalize_options['canonicalize_roles']:
             t = transform.canonicalize_roles(t, model)
         if normalize_options['rearrange'] == 'canonical':
@@ -57,7 +59,7 @@ def process(f, model, out, normalize_options, format_options):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Read and write graphs in the PENMAN notation.'
+        description='Read and write graphs in the PENMAN notation.',
     )
     parser.add_argument(
         '-V', '--version', action='version',
@@ -90,6 +92,9 @@ def main():
         '--triples', action='store_true',
         help='print graphs as triple conjunctions')
     norm = parser.add_argument_group('normalization options')
+    norm.add_argument(
+        '--make-variables', metavar='FMT',
+        help="recreate node variables with FMT (e.g.: '{prefix}{j}')")
     norm.add_argument(
         '--rearrange', metavar='KEY', choices=('random', 'canonical'),
         help='sort or randomize the order of relations on each node')
@@ -139,6 +144,7 @@ def main():
                          'integer >= -1')
 
     normalize_options = {
+        'make_variables': args.make_variables,
         'rearrange': args.rearrange,
         'canonicalize_roles': args.canonicalize_roles,
         'reify_edges': args.reify_edges,

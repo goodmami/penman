@@ -27,6 +27,11 @@ def reentrant():
                   (':ARG1', ('g', [('/', 'gamma', []),
                                    (':ARG0', 'b', [])]), [])])
 
+@pytest.fixture
+def var_instance():
+    return ('a', [('/', 'alpha', []),
+                  (':ARG0', ('b', [('/', 'b', [])]), [])])
+
 
 class TestTree:
     def test__init__(self, empty_node, simple_node):
@@ -50,9 +55,62 @@ class TestTree:
                              ('b', [('/', 'beta', [])]),
                              ('g', [('/', 'gamma', []), (':ARG0', 'b', [])])]
 
+    def test_reset_variables(self, one_arg_node, reentrant, var_instance):
+
+        def _vars(t):
+            return [v for v, _ in t.nodes()]
+
+        t = tree.Tree(one_arg_node)
+        assert _vars(t) == ['a', 'b']
+
+        t.reset_variables(fmt='a{i}')
+        assert _vars(t) == ['a0', 'a1']
+
+        t.reset_variables(fmt='a{j}')
+        assert _vars(t) == ['a', 'a2']
+
+        t.reset_variables()
+        assert _vars(t) == ['a', 'b']
+
+        t = tree.Tree(reentrant)
+        assert _vars(t) == ['a', 'b', 'g']
+
+        t.reset_variables(fmt='a{i}')
+        assert _vars(t) == ['a0', 'a1', 'a2']
+        assert t == (
+            'a0', [('/', 'alpha', []),
+                   (':ARG0', ('a1', [('/', 'beta', [])]), []),
+                   (':ARG1', ('a2', [('/', 'gamma', []),
+                                   (':ARG0', 'a1', [])]), [])])
+
+        t.reset_variables()
+        assert _vars(t) == ['a', 'b', 'g']
+
+        t = tree.Tree(var_instance)
+        assert _vars(t) == ['a', 'b']
+
+        t.reset_variables(fmt='a{i}')
+        assert _vars(t) == ['a0', 'a1']
+        assert t == (
+            'a0', [('/', 'alpha', []),
+                   (':ARG0', ('a1', [('/', 'b', [])]), [])])
+
+        t.reset_variables()
+        assert _vars(t) == ['a', 'b']
+
 
 def test_is_atomic():
     assert tree.is_atomic('a')
     assert tree.is_atomic(None)
     assert tree.is_atomic(3.14)
     assert not tree.is_atomic(('a', [('/', 'alpha', [])]))
+
+
+def test_default_variable_prefix():
+    assert tree._default_variable_prefix('Alphabet') == 'a'
+    assert tree._default_variable_prefix('chase-01') == 'c'
+    assert tree._default_variable_prefix('"string"') == 's'
+    assert tree._default_variable_prefix('_predicate_n_1"') == 'p'
+    assert tree._default_variable_prefix(1) == '_'
+    assert tree._default_variable_prefix(None) == '_'
+    assert tree._default_variable_prefix('') == '_'

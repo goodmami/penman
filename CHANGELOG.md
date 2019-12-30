@@ -2,7 +2,11 @@
 
 ## [Unreleased][unreleased]
 
-(no unreleased changes yet)
+### Added
+
+* `penman.tree.Tree.reset_variables()` ([#41][])
+* `--make-variables=FMT` command-line option ([#41][])
+
 
 ## [v0.8.0][]
 
@@ -452,3 +456,4 @@ First release with very basic functionality.
 [#34]: https://github.com/goodmami/penman/issues/34
 [#35]: https://github.com/goodmami/penman/issues/35
 [#37]: https://github.com/goodmami/penman/issues/37
+[#41]: https://github.com/goodmami/penman/issues/41

@@ -23,6 +23,7 @@ And here's an example of its library usage:
    (s / sleep-01
       :ARG0 (i / i))
 
+
 Using Penman as a Tool
 ----------------------
 
@@ -33,10 +34,10 @@ PENMAN graphs without having to write any Python code. Run
 
 .. code-block:: console
 
-   $ penman --help
    usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr] [--indent N]
-                 [--compact] [--triples] [--rearrange KEY] [--canonicalize-roles]
-                 [--reify-edges] [--reify-attributes] [--indicate-branches]
+                 [--compact] [--triples] [--make-variables FMT] [--rearrange KEY]
+                 [--canonicalize-roles] [--reify-edges] [--reify-attributes]
+                 [--indicate-branches]
                  [FILE [FILE ...]]
 
    Read and write graphs in the PENMAN notation.
@@ -58,6 +59,7 @@ PENMAN graphs without having to write any Python code. Run
      --triples             print graphs as triple conjunctions
 
    normalization options:
+     --make-variables FMT  recreate node variables with FMT (e.g.: '{prefix}{j}')
      --rearrange KEY       sort or randomize the order of relations on each node
      --canonicalize-roles  canonicalize role forms
      --reify-edges         reify all eligible edges
