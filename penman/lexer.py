@@ -195,16 +195,14 @@ def _lex(lines: Iterable[str], regex: Pattern[str]) -> Iterator[Token]:
         if debug:
             logger.debug('Line %d: %r', i, line)
         matches = regex.finditer(line)
-        tokens = []
         for m in matches:
-            if m.lastgroup is None:
+            typ = m.lastgroup
+            val = m.group()
+            if typ is None:
                 raise ValueError(
                     'Lexer pattern generated a match without a named '
                     'capturing group:\n{}'.format(regex.pattern))
-            tokens.append(Token(m.lastgroup, m.group(), i, m.start(), line))
-
-        if debug:
-            for token in tokens:
+            token = Token(typ, val, i, m.start(), line)
+            if debug:
                 logger.debug(token)
-
-        yield from tokens
+            yield token
