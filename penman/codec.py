@@ -43,53 +43,34 @@ class PENMANCodec(object):
             model = Model()
         self.model = model
 
-    def decode(self, s: str, triples: bool = False) -> Graph:
+    def decode(self, s: str) -> Graph:
         """
         Deserialize PENMAN-notation string *s* into its Graph object.
 
         Args:
             s: a string containing a single PENMAN-serialized graph
-            triples: if ``True``, parse *s* as a triple conjunction
         Returns:
             The :class:`Graph` object described by *s*.
         Example:
             >>> codec = PENMANCodec()
             >>> codec.decode('(b / bark :ARG1 (d / dog))')
             <Graph object (top=b) at ...>
-            >>> codec.decode(
-            ...     'instance(b, bark) ^ instance(d, dog) ^ ARG1(b, d)',
-            ...     triples=True
-            ... )
-            <Graph object (top=b) at ...>
         """
-        if triples:
-            _triples = self.parse_triples(s)
-            g = Graph(_triples)
-        else:
-            tree = self.parse(s)
-            g = layout.interpret(tree, self.model)
-        return g
+        tree = self.parse(s)
+        return layout.interpret(tree, self.model)
 
     def iterdecode(self,
-                   lines: Union[Iterable[str], str],
-                   triples: bool = False) -> Iterator[Graph]:
+                   lines: Union[Iterable[str], str]) -> Iterator[Graph]:
         """
         Yield graphs parsed from *lines*.
 
         Args:
             lines: a string or open file with PENMAN-serialized graphs
-            triples: if ``True``, parse *s* as a triple conjunction
         Returns:
             The :class:`Graph` objects described in *lines*.
         """
-        if triples:
-            tokens = lex(lines, pattern=TRIPLE_RE)
-            while tokens:
-                _triples = self._parse_triples(tokens)
-                yield Graph(_triples)
-        else:
-            for tree in self.iterparse(lines):
-                yield layout.interpret(tree, self.model)
+        for tree in self.iterparse(lines):
+            yield layout.interpret(tree, self.model)
 
     def iterparse(self, lines: Union[Iterable[str], str]) -> Iterator[Tree]:
         """
@@ -290,7 +271,6 @@ class PENMANCodec(object):
     def encode(self,
                g: Graph,
                top: Variable = None,
-               triples: bool = False,
                indent: Union[int, None] = -1,
                compact: bool = False) -> str:
         """
@@ -299,7 +279,6 @@ class PENMANCodec(object):
         Args:
             g: the Graph object
             top: if given, the node to use as the top in serialization
-            triples: if ``True``, serialize as a conjunction of triples
             indent: how to indent formatted strings
             compact: if ``True``, put initial attributes on the first line
         Returns:
@@ -309,18 +288,10 @@ class PENMANCodec(object):
             >>> codec = PENMANCodec()
             >>> codec.encode(Graph([('h', 'instance', 'hi')]))
             (h / hi)
-            >>> codec.encode(Graph([('h', 'instance', 'hi')]),
-            ...                      triples=True)
-            instance(h, hi)
 
         """
-        if triples:
-            return self.format_triples(
-                g.triples,
-                indent=(indent is not None))
-        else:
-            tree = layout.configure(g, top=top, model=self.model)
-            return self.format(tree, indent=indent, compact=compact)
+        tree = layout.configure(g, top=top, model=self.model)
+        return self.format(tree, indent=indent, compact=compact)
 
     def format(self,
                tree: Tree,

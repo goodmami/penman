@@ -16,7 +16,7 @@ from penman import transform
 logging.basicConfig()  # just default arguments; level will be set later
 
 
-def process(f, model, out, normalize_options, format_options):
+def process(f, model, out, normalize_options, format_options, triples):
     """Read graphs from *f* and write to *out*."""
 
     def _process(t):
@@ -41,7 +41,12 @@ def process(f, model, out, normalize_options, format_options):
         if normalize_options['indicate_branches']:
             g = transform.indicate_branches(g, model)
 
-        return codec.encode(g, **format_options)
+        if triples:
+            return codec.format_triples(
+                g.triples,
+                indent=bool(format_options.get('indent', True)))
+        else:
+            return codec.encode(g, **format_options)
 
     codec = PENMANCodec(model=model)
     trees = codec.iterparse(f)
@@ -154,17 +159,16 @@ def main():
     format_options = {
         'indent': indent,
         'compact': args.compact,
-        'triples': args.triples,
     }
 
     if args.FILE:
         for file in args.FILE:
             with open(file) as f:
                 process(f, model, sys.stdout,
-                        normalize_options, format_options)
+                        normalize_options, format_options, args.triples)
     else:
         process(sys.stdin, model, sys.stdout,
-                normalize_options, format_options)
+                normalize_options, format_options, args.triples)
 
 
 if __name__ == '__main__':

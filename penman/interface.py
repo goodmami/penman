@@ -13,15 +13,13 @@ from penman.types import (Variable, file_or_filename)
 
 
 def decode(s: str,
-           model: Model = None,
-           triples: bool = False) -> Graph:
+           model: Model = None) -> Graph:
     """
     Deserialize PENMAN-serialized *s* into its Graph object
 
     Args:
         s: a string containing a single PENMAN-serialized graph
         model: the model used for interpreting the graph
-        triples: if ``True``, read as a conjunction of triples
     Returns:
         the Graph object described by *s*
     Example:
@@ -31,13 +29,12 @@ def decode(s: str,
 
     """
     codec = PENMANCodec(model=model)
-    return codec.decode(s, triples=triples)
+    return codec.decode(s)
 
 
 def encode(g: Graph,
            top: Variable = None,
            model: Model = None,
-           triples: bool = False,
            indent: Union[int, bool] = -1,
            compact: bool = False) -> str:
     """
@@ -47,7 +44,6 @@ def encode(g: Graph,
         g: the Graph object
         top: if given, the node to use as the top in serialization
         model: the model used for interpreting the graph
-        triples: if ``True``, serialize as a conjunction of triples
         indent: how to indent formatted strings
         compact: if ``True``, put initial attributes on the first line
     Returns:
@@ -61,54 +57,48 @@ def encode(g: Graph,
     codec = PENMANCodec(model=model)
     return codec.encode(g,
                         top=top,
-                        triples=triples,
                         indent=indent,
                         compact=compact)
 
 
 def load(source: file_or_filename,
-         model: Model = None,
-         triples: bool = False) -> List[Graph]:
+         model: Model = None) -> List[Graph]:
     """
     Deserialize a list of PENMAN-encoded graphs from *source*.
 
     Args:
         source: a filename or file-like object to read from
         model: the model used for interpreting the graph
-        triples: if ``True``, read as a conjunction of triples
     Returns:
         a list of Graph objects
     """
     codec = PENMANCodec(model=model)
     if isinstance(source, (str, Path)):
         with open(source) as fh:
-            return list(codec.iterdecode(fh, triples=triples))
+            return list(codec.iterdecode(fh))
     else:
         assert hasattr(source, 'read')
-        return list(codec.iterdecode(source, triples=triples))
+        return list(codec.iterdecode(source))
 
 
 def loads(string: str,
-          model: Model = None,
-          triples: bool = False) -> List[Graph]:
+          model: Model = None) -> List[Graph]:
     """
     Deserialize a list of PENMAN-encoded graphs from *string*.
 
     Args:
         string: a string containing graph data
         model: the model used for interpreting the graph
-        triples: if ``True``, read as a conjunction of triples
     Returns:
         a list of Graph objects
     """
     codec = PENMANCodec(model=model)
-    return list(codec.iterdecode(string, triples=triples))
+    return list(codec.iterdecode(string))
 
 
 def dump(graphs: Iterable[Graph],
          file: file_or_filename,
          model: Model = None,
-         triples: bool = False,
          indent: Union[int, bool] = -1,
          compact: bool = False) -> None:
     """
@@ -118,22 +108,21 @@ def dump(graphs: Iterable[Graph],
         graphs: an iterable of Graph objects
         file: a filename or file-like object to write to
         model: the model used for interpreting the graph
-        triples: if ``True``, serialize as a conjunction of triples
         indent: how to indent formatted strings
         compact: if ``True``, put initial attributes on the first line
     """
     codec = PENMANCodec(model=model)
     if isinstance(file, (str, Path)):
         with open(file, 'w') as fh:
-            _dump(fh, graphs, codec, triples, indent, compact)
+            _dump(fh, graphs, codec, indent, compact)
     else:
         assert hasattr(file, 'write')
-        _dump(file, graphs, codec, triples, indent, compact)
+        _dump(file, graphs, codec, indent, compact)
 
 
-def _dump(fh, gs, codec, triples, indent, compact):
+def _dump(fh, gs, codec, indent, compact):
     """Helper method for dump() for incremental printing."""
-    ss = (codec.encode(g, triples=triples, indent=indent, compact=compact)
+    ss = (codec.encode(g, indent=indent, compact=compact)
           for g in gs)
     try:
         print(next(ss), file=fh)
@@ -146,7 +135,6 @@ def _dump(fh, gs, codec, triples, indent, compact):
 
 def dumps(graphs: Iterable[Graph],
           model: Model = None,
-          triples: bool = False,
           indent: Union[int, bool] = -1,
           compact: bool = False) -> str:
     """
@@ -155,14 +143,12 @@ def dumps(graphs: Iterable[Graph],
     Args:
         graphs: an iterable of Graph objects
         model: the model used for interpreting the graph
-        triples: if ``True``, serialize as a conjunction of triples
         indent: how to indent formatted strings
         compact: if ``True``, put initial attributes on the first line
     Returns:
         the string of serialized graphs
     """
     codec = PENMANCodec(model=model)
-    strings = [codec.encode(g, triples=triples,
-                            indent=indent, compact=compact)
+    strings = [codec.encode(g, indent=indent, compact=compact)
                for g in graphs]
     return '\n\n'.join(strings)

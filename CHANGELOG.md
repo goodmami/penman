@@ -14,6 +14,15 @@
 * `penman.codec.PENMANCodec.ATOMS` ([#44][])
 * `penman.codec.PENMANCodec.IDENTIFIERS` ([#44][])
 * `COMMA` and `CARET` productions in `penma.lexer.PATTERNS` ([#43][])
+* `triples` parameter for the following ([#42][]):
+  - `penman.interface.decode()`
+  - `penman.interface.loads()`
+  - `penman.interface.load()`
+  - `penman.interface.encode()`
+  - `penman.interface.dumps()`
+  - `penman.interface.dump()`
+  - `penman.codec.encode()`
+  - `penman.codec.decode()`
 
 ### Changed
 
@@ -470,5 +479,6 @@ First release with very basic functionality.
 [#35]: https://github.com/goodmami/penman/issues/35
 [#37]: https://github.com/goodmami/penman/issues/37
 [#41]: https://github.com/goodmami/penman/issues/41
+[#42]: https://github.com/goodmami/penman/issues/42
 [#43]: https://github.com/goodmami/penman/issues/43
 [#44]: https://github.com/goodmami/penman/issues/44
