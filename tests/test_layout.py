@@ -127,7 +127,6 @@ def test_issue_34():
               :ARG1 (a / act
                  :polarity -
                  :polarity -)))''')
-    print(configure(g))
     assert configure(g) == Tree(
         ('t', [
             ('/', 'think', []),
