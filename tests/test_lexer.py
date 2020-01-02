@@ -32,12 +32,29 @@ def test_lex_triples():
         return [tok.type for tok in lexer.lex(s, pattern=lexer.TRIPLE_RE)]
 
     assert _lex('') == []
+    # SYMBOL may contain commas, so sometimes they get grouped together
     assert _lex('instance(a, alpha)') == [
-        'SYMBOL', 'LPAREN', 'SYMBOL', 'COMMA', 'SYMBOL', 'RPAREN']
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'SYMBOL', 'RPAREN']
+    assert _lex('instance(a , alpha)') == [
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'SYMBOL', 'SYMBOL', 'RPAREN']
+    assert _lex('instance(a ,alpha)') == [
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'SYMBOL', 'RPAREN']
     assert _lex('instance(a, alpha) ^ VAL(a, 1.0)') == [
-        'SYMBOL', 'LPAREN', 'SYMBOL', 'COMMA', 'SYMBOL', 'RPAREN',
-        'CARET',
-        'SYMBOL', 'LPAREN', 'SYMBOL', 'COMMA', 'SYMBOL', 'RPAREN']
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'SYMBOL', 'RPAREN',
+        'SYMBOL',
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'SYMBOL', 'RPAREN']
+    assert _lex('instance(a, 1,000)') == [
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'SYMBOL', 'RPAREN']
+    assert _lex('instance(a,1,000)') == [
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'RPAREN']
+    assert _lex('role(a,b) ^ role(b,c)') == [
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'RPAREN',
+        'SYMBOL',
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'RPAREN']
+    assert _lex('role(a,b)^role(b,c)') == [
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'RPAREN',
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'RPAREN']
+
 
 def test_TokenIterator():
     pass  # TODO: write tests for expect() and accept()

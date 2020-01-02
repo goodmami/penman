@@ -309,3 +309,39 @@ class TestPENMANCodec(object):
         # string concept
         g = penman.Graph([('one', 'instance', '"a string"')])
         assert encode(g) == '(one / "a string")'
+
+    def test_parse_triples(self):
+        assert codec.parse_triples('role(a,b)') == [
+            ('a', 'role', 'b')]
+        assert codec.parse_triples('role(a, b)') == [
+            ('a', 'role', 'b')]
+        assert codec.parse_triples('role(a ,b)') == [
+            ('a', 'role', 'b')]
+        assert codec.parse_triples('role(a , b)') == [
+            ('a', 'role', 'b')]
+        assert codec.parse_triples('role(a,)') == [
+            ('a', 'role', None)]
+        assert codec.parse_triples('role(a ,)') == [
+            ('a', 'role', None)]
+        assert codec.parse_triples('role(a,b)^role(b,c)') == [
+            ('a', 'role', 'b'), ('b', 'role', 'c')]
+        assert codec.parse_triples('role(a, b) ^role(b, c)') == [
+            ('a', 'role', 'b'), ('b', 'role', 'c')]
+        assert codec.parse_triples('role(a, b) ^ role(b, c)') == [
+            ('a', 'role', 'b'), ('b', 'role', 'c')]
+        with pytest.raises(penman.DecodeError):
+            decode('role')
+        with pytest.raises(penman.DecodeError):
+            decode('role(')
+        with pytest.raises(penman.DecodeError):
+            decode('role(a')
+        with pytest.raises(penman.DecodeError):
+            decode('role()')
+        with pytest.raises(penman.DecodeError):
+            decode('role(a,')
+        with pytest.raises(penman.DecodeError):
+            decode('role(a ^')
+        with pytest.raises(penman.DecodeError):
+            decode('role(a b')
+        with pytest.raises(penman.DecodeError):
+            decode('role(a b)')

@@ -235,23 +235,54 @@ class PENMANCodec(object):
                        tokens: TokenIterator) -> List[BasicTriple]:
         target: Target
         triples = []
+        strip_caret = False
         while True:
             role = tokens.expect('SYMBOL').text
+            if strip_caret and role.startswith('^'):
+                role = role[1:]
             tokens.expect('LPAREN')
-            source = tokens.expect('SYMBOL').text
-            tokens.expect('COMMA')
-            _next = tokens.peek().type
-            if _next in ('SYMBOL', 'STRING'):
-                target = tokens.next().text
-            elif _next == 'RPAREN':  # special case for robustness
-                target = None
+            # SYMBOL may contain commas, so handle it here. If there
+            # is no space between the comma and the next SYMBOL, they
+            # will be grouped as one.
+            symbol = tokens.expect('SYMBOL')
+            source, comma, rest = symbol.text.partition(',')
+            target = None
+            if rest:  # role(a,b)
+                target = rest
+            else:
+                if comma:  # role(a, b) OR role(a,)
+                    _next = tokens.accept('SYMBOL')
+                    if _next:
+                        target = _next.text
+                else:  # role(a , b) OR role(a ,b) OR role(a ,) OR role(a)
+                    _next = tokens.accept('SYMBOL')
+                    if not _next:  # role(a)
+                        pass
+                    elif _next.text == ',':  # role(a , b) OR role(a ,)
+                        _next = tokens.accept('SYMBOL')
+                        if _next:  # role(a , b)
+                            target = _next.text
+                    elif _next.text.startswith(','):  # role(a ,b)
+                        target = _next.text[1:]
+                    else:  # role(a b)
+                        tokens.error("Expected: ','", token=_next)
             tokens.expect('RPAREN')
+
+            if target is None:
+                logger.warning('Triple without a target: %s', symbol.line)
 
             triples.append((source, role, target))
 
             # continue only if triple is followed by ^
-            if tokens.peek().type == 'CARET':
-                tokens.next()
+            if tokens:
+                _next = tokens.peek()
+                if _next.type != 'SYMBOL' or not _next.text.startswith('^'):
+                    break
+                elif _next.text == '^':
+                    strip_caret = False
+                    tokens.next()
+                else:
+                    strip_caret = True
             else:
                 break
         return triples

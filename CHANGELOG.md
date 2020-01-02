@@ -13,10 +13,12 @@
 * `FLOAT` and `INTEGER` productions in `penman.lexer.PATTERNS` ([#44][])
 * `penman.codec.PENMANCodec.ATOMS` ([#44][])
 * `penman.codec.PENMANCodec.IDENTIFIERS` ([#44][])
+* `COMMA` and `CARET` productions in `penma.lexer.PATTERNS` ([#43][])
 
 ### Changed
 
 * Remove support for numeric data detection and casting ([#44][])
+* Allow commas and carets in the `SYMBOL` pattern ([#43][])
 
 
 ## [v0.8.0][]
@@ -468,4 +470,5 @@ First release with very basic functionality.
 [#35]: https://github.com/goodmami/penman/issues/35
 [#37]: https://github.com/goodmami/penman/issues/37
 [#41]: https://github.com/goodmami/penman/issues/41
+[#43]: https://github.com/goodmami/penman/issues/43
 [#44]: https://github.com/goodmami/penman/issues/44
