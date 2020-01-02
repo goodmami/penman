@@ -7,6 +7,17 @@
 * `penman.tree.Tree.reset_variables()` ([#41][])
 * `--make-variables=FMT` command-line option ([#41][])
 
+### Removed
+
+* `penman.lexer.Token.value` property ([#44][])
+* `FLOAT` and `INTEGER` productions in `penman.lexer.PATTERNS` ([#44][])
+* `penman.codec.PENMANCodec.ATOMS` ([#44][])
+* `penman.codec.PENMANCodec.IDENTIFIERS` ([#44][])
+
+### Changed
+
+* Remove support for numeric data detection and casting ([#44][])
+
 
 ## [v0.8.0][]
 
@@ -457,3 +468,4 @@ First release with very basic functionality.
 [#35]: https://github.com/goodmami/penman/issues/35
 [#37]: https://github.com/goodmami/penman/issues/37
 [#41]: https://github.com/goodmami/penman/issues/41
+[#44]: https://github.com/goodmami/penman/issues/44

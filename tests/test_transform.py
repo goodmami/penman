@@ -132,6 +132,6 @@ def test_issue_35():
     assert g.triples == [
         ('a', ':instance', 'alpha'),
         ('a', ':mod', '_'),
-        ('_', ':instance', 7),
+        ('_', ':instance', '7'),
         ('a', ':mod', '_2'),
-        ('_2', ':instance', 7)]
+        ('_2', ':instance', '7')]

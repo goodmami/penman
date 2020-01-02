@@ -14,13 +14,15 @@ def test_lex_penman():
     assert _lex(['(a / alpha', '  :ROLE b)']) == _lex('(a/alpha\n  :ROLE b)')
     assert _lex('(a :INT 1 :STR "hi there" :FLOAT -1.2e3)') == [
         'LPAREN', 'SYMBOL',
-        'ROLE', 'INTEGER',
+        'ROLE', 'SYMBOL',
         'ROLE', 'STRING',
-        'ROLE', 'FLOAT', 'RPAREN']
+        'ROLE', 'SYMBOL',
+        'RPAREN']
     assert _lex('(a :ROLE~e.1,2 b~3)') == [
         'LPAREN', 'SYMBOL',
         'ROLE', 'ALIGNMENT',
-        'SYMBOL', 'ALIGNMENT', 'RPAREN']
+        'SYMBOL', 'ALIGNMENT',
+        'RPAREN']
     assert _lex('# comment\n# (n / nope)\n(a / alpha)') == [
         'COMMENT', 'COMMENT', 'LPAREN', 'SYMBOL', 'SLASH', 'SYMBOL', 'RPAREN']
 
@@ -35,7 +37,7 @@ def test_lex_triples():
     assert _lex('instance(a, alpha) ^ VAL(a, 1.0)') == [
         'SYMBOL', 'LPAREN', 'SYMBOL', 'COMMA', 'SYMBOL', 'RPAREN',
         'CARET',
-        'SYMBOL', 'LPAREN', 'SYMBOL', 'COMMA', 'FLOAT', 'RPAREN']
+        'SYMBOL', 'LPAREN', 'SYMBOL', 'COMMA', 'SYMBOL', 'RPAREN']
 
 def test_TokenIterator():
     pass  # TODO: write tests for expect() and accept()

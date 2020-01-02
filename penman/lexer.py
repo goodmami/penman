@@ -20,18 +20,10 @@ logger = logging.getLogger(__name__)
 PATTERNS = {
     'COMMENT':    r'\#.*$',
     'STRING':     r'"[^"\\]*(?:\\.[^"\\]*)*"',
-    'FLOAT':      r'''
-      [-+]?
-      (?:
-        (?:(?:\d+\.\d*|\.\d+)  # .1   | 1.2
-           (?:[eE][-+]?\d+)?)  # .1e2 | 1.2e3
-       |\d+[eE][-+]?\d+        # 1e2
-      )''',
-    'INTEGER':    r'[-+]?\d+(?=[ )/:])',
     # ROLE cannot be made up of COLON + SYMBOL because it then becomes
     # difficult to detect anonymous roles: (a : b) vs (a :b c)
-    'ROLE':       r':[^\s()\/,:~]*',
-    'SYMBOL':     r'[^\s()\/,:~]+',
+    'ROLE':       r':[^\s()\/:~,]*',
+    'SYMBOL':     r'[^\s()\/:~,]+',
     'ALIGNMENT':  r'~(?:[a-zA-Z]\.?)?\d+(?:,\d+)*',
     'LPAREN':     r'\(',
     'RPAREN':     r'\)',
@@ -51,12 +43,13 @@ def _compile(*names: str) -> Pattern[str]:
 # The order matters in these pattern lists as more permissive patterns
 # can short-circuit stricter patterns.
 PENMAN_RE = _compile('COMMENT',
-                     'STRING', 'FLOAT', 'INTEGER',
+                     'STRING',
                      'LPAREN', 'RPAREN', 'SLASH',
-                     'ALIGNMENT', 'ROLE', 'SYMBOL',
+                     'ALIGNMENT',
+                     'ROLE', 'SYMBOL',
                      'UNEXPECTED')
 TRIPLE_RE = _compile('COMMENT',
-                     'STRING', 'FLOAT', 'INTEGER',
+                     'STRING',
                      'LPAREN', 'RPAREN', 'COMMA', 'CARET',
                      'SYMBOL',
                      'UNEXPECTED')
@@ -71,15 +64,6 @@ class Token(NamedTuple):
     lineno: int  #: The line number the token appears on.
     offset: int  #: The character offset of the token.
     line: str    #: The line the token appears in.
-
-    @property
-    def value(self):
-        if self.type == 'INTEGER':
-            return int(self.text)
-        elif self.type == 'FLOAT':
-            return float(self.text)
-        else:
-            return self.text
 
 
 class TokenIterator(Iterator[Token]):

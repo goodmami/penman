@@ -67,10 +67,10 @@ grammar to allow for surface alignments.
    Start     <- Node
    Node      <- '(' Variable NodeLabel? Relation* ')'
    NodeLabel <- '/' Concept Alignment?
-   Concept   <- Atom
+   Concept   <- Constant
    Relation  <- Role Alignment? (Node / Atom Alignment?)
    Atom      <- Variable / Constant
-   Constant  <- String / Float / Integer / Symbol
+   Constant  <- String / Symbol
    Variable  <- Symbol
 
    # Lexical productions (whitespace is not allowed)
@@ -78,11 +78,7 @@ grammar to allow for surface alignments.
    Role      <- ':' NameChar*
    Alignment <- '~' ([a-zA-Z] '.'?)? Digit+ (',' Digit+)*
    String    <- '"' (!'"' ('\\' . / .))* '"'
-   Float     <- Decimal Exponent? / Integer Exponent
-   Decimal   <- [-+]? (Digit+ '.' Digit* / '.' Digit+ )
-   Exponent  <- [eE] Integer
-   Integer   <- [-+]? Digit+
-   NameChar  <- ![ \n\t\r\f\v()/,:~] .
+   NameChar  <- ![ \n\t\r\f\v()/:,~] .
    Digit     <- [0-9]
 
 This grammar has some seemingly unnecessary ambiguity in that both the

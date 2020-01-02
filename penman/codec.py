@@ -37,10 +37,6 @@ class PENMANCodec(object):
     """
     An encoder/decoder for PENMAN-serialized graphs.
     """
-    # The valid tokens for node identifiers (variables).
-    IDENTIFIERS = 'SYMBOL',
-    #: The valid non-node targets of edges.
-    ATOMS = set(['SYMBOL', 'STRING', 'INTEGER', 'FLOAT'])
 
     def __init__(self, model: Model = None):
         if model is None:
@@ -159,7 +155,7 @@ class PENMANCodec(object):
         edges = []
 
         if tokens.peek().type != 'RPAREN':
-            var = tokens.expect(*self.IDENTIFIERS).value
+            var = tokens.expect('SYMBOL').text
             if tokens.peek().type == 'SLASH':
                 edges.append(self._parse_node_label(tokens))
             while tokens.peek().type != 'RPAREN':
@@ -174,8 +170,8 @@ class PENMANCodec(object):
         concept = None
         epis = []
         # for robustness, don't assume next token is the concept
-        if tokens.peek().type in self.ATOMS:
-            concept = tokens.next().value
+        if tokens.peek().type in ('SYMBOL', 'STRING'):
+            concept = tokens.next().text
             if tokens.peek().type == 'ALIGNMENT':
                 epis.append(
                     self._parse_alignment(tokens, Alignment))
@@ -198,8 +194,8 @@ class PENMANCodec(object):
 
         _next = tokens.peek()
         next_type = _next.type
-        if next_type in self.ATOMS:
-            target = tokens.next().value
+        if next_type in ('SYMBOL', 'STRING'):
+            target = tokens.next().text
             if tokens.peek().type == 'ALIGNMENT':
                 epidata.append(
                     self._parse_alignment(tokens, Alignment))
@@ -209,7 +205,7 @@ class PENMANCodec(object):
         #    (x :ROLE :ROLE2...  <- followed by another role
         #    (x :ROLE )          <- end of node
         elif next_type not in ('ROLE', 'RPAREN'):
-            raise tokens.error('Expected: ATOM, LPAREN', token=_next)
+            raise tokens.error('Expected: SYMBOL, STRING, LPAREN', token=_next)
 
         return (role, target, epidata)
 
@@ -242,11 +238,11 @@ class PENMANCodec(object):
         while True:
             role = tokens.expect('SYMBOL').text
             tokens.expect('LPAREN')
-            source = tokens.expect(*self.IDENTIFIERS).text
+            source = tokens.expect('SYMBOL').text
             tokens.expect('COMMA')
             _next = tokens.peek().type
-            if _next in self.ATOMS:
-                target = tokens.next().value
+            if _next in ('SYMBOL', 'STRING'):
+                target = tokens.next().text
             elif _next == 'RPAREN':  # special case for robustness
                 target = None
             tokens.expect('RPAREN')

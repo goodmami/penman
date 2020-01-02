@@ -182,19 +182,19 @@ class TestPENMANCodec(object):
         # float value
         g = decode('(a :ARG -1.0e-2)')
         assert g.triples == [
-            ('a', ':ARG', -0.01)
+            ('a', ':ARG', '-1.0e-2')
         ]
 
         # int value
         g = decode('(a :ARG 15)')
         assert g.triples == [
-            ('a', ':ARG', 15)
+            ('a', ':ARG', '15')
         ]
 
         # numeric concept
         g = decode('(one / 1)')
         assert g.triples == [
-            ('one', ':instance', 1)
+            ('one', ':instance', '1')
         ]
 
         # string concept
@@ -244,8 +244,9 @@ class TestPENMANCodec(object):
             decode('(a / alpha')
         with pytest.raises(penman.DecodeError):
             decode('(a b)')
-        with pytest.raises(penman.DecodeError):
-            decode('(1 / one)')
+        # the following is not a problem while numbers are symbols
+        # with pytest.raises(penman.DecodeError):
+        #     decode('(1 / one)')
 
     def test_encode(self, x1):
         # empty graph
