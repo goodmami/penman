@@ -230,7 +230,7 @@ class Model(object):
 
     def canonical_order(self, branch: Branch):
         """Branch sorting key that finds a canonical order."""
-        role, _, _ = branch
+        role, _ = branch
         m = re.match(r'(.*\D)(\d+)$', role)
         if m:
             rolename = m.group(1)

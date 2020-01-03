@@ -53,11 +53,13 @@ def _canonicalize_node(node: Node, model: Model) -> Node:
     var, edges = node
     canonical_edges = []
     for i, edge in enumerate(edges):
-        role, tgt, epidata = edge
+        role, tgt = edge
+        # alignments aren't parsed off yet, so handle them superficially
+        role, tilde, alignment = role.partition('~')
         if not is_atomic(tgt):
             tgt = _canonicalize_node(tgt, model)
-        canonical_edges.append(
-            (model.canonicalize_role(role), tgt, list(epidata)))
+        canonical_role = model.canonicalize_role(role) + tilde + alignment
+        canonical_edges.append((canonical_role, tgt))
     return (var, canonical_edges)
 
 

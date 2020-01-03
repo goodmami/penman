@@ -16,11 +16,6 @@ from penman.types import (
 from penman.tree import (Tree, is_atomic)
 from penman.graph import Graph
 from penman.model import Model
-from penman.surface import (
-    AlignmentMarker,
-    Alignment,
-    RoleAlignment,
-)
 from penman.lexer import (
     PENMAN_RE,
     TRIPLE_RE,
@@ -96,7 +91,7 @@ class PENMANCodec(object):
         Example:
             >>> codec = PENMANCodec()
             >>> codec.parse('(b / bark :ARG1 (d / dog))')  # noqa
-            Tree(('b', [('/', 'bark', []), ('ARG1', ('d', [('/', 'dog', [])]), [])]))
+            Tree(('b', [('/', 'bark'), ('ARG1', ('d', [('/', 'dog')]))]))
         """
         tokens = lex(s, pattern=PENMAN_RE)
         return self._parse(tokens)
@@ -149,14 +144,10 @@ class PENMANCodec(object):
     def _parse_node_label(self, tokens: TokenIterator):
         tokens.expect('SLASH')
         concept = None
-        epis = []
         # for robustness, don't assume next token is the concept
         if tokens.peek().type in ('SYMBOL', 'STRING'):
             concept = tokens.next().text
-            if tokens.peek().type == 'ALIGNMENT':
-                epis.append(
-                    self._parse_alignment(tokens, Alignment))
-        return ('/', concept, epis)
+        return ('/', concept)
 
     def _parse_edge(self, tokens: TokenIterator):
         """
@@ -166,20 +157,13 @@ class PENMANCodec(object):
 
             Edge := Role (Constant | Node)
         """
-        epidata = []
         role = tokens.expect('ROLE').text
-        if tokens.peek().type == 'ALIGNMENT':
-            epidata.append(
-                self._parse_alignment(tokens, RoleAlignment))
         target = None
 
         _next = tokens.peek()
         next_type = _next.type
         if next_type in ('SYMBOL', 'STRING'):
             target = tokens.next().text
-            if tokens.peek().type == 'ALIGNMENT':
-                epidata.append(
-                    self._parse_alignment(tokens, Alignment))
         elif next_type == 'LPAREN':
             target = self._parse_node(tokens)
         # for robustness in parsing, allow edges with no target:
@@ -188,24 +172,7 @@ class PENMANCodec(object):
         elif next_type not in ('ROLE', 'RPAREN'):
             raise tokens.error('Expected: SYMBOL, STRING, LPAREN', token=_next)
 
-        return (role, target, epidata)
-
-    def _parse_alignment(self,
-                         tokens: TokenIterator,
-                         cls: Type[AlignmentMarker]):
-        """
-        Parse a PENMAN surface alignment from *tokens*.
-        """
-        token = tokens.expect('ALIGNMENT')
-        m = re.match((r'~(?P<prefix>[a-zA-Z]\.?)?'
-                      r'(?P<indices>\d+(?:,\d+)*)'),
-                     token.text)
-        if m is not None:
-            prefix = m.group('prefix')
-            indices = tuple(map(int, m.group('indices').split(',')))
-        else:
-            prefix, indices = None, ()
-        return cls(indices, prefix=prefix)
+        return (role, target)
 
     def parse_triples(self, s: str) -> List[BasicTriple]:
         """ Parse a triple conjunction from *s*."""
@@ -354,27 +321,20 @@ class PENMANCodec(object):
         """
         Format tree *edge* into a PENMAN string.
         """
-        role, target, epidata = edge
+        role, target = edge
 
         if role != '/' and not role.startswith(':'):
             role = ':' + role
 
-        role_epi = ''.join(str(epi) for epi in epidata if epi.mode == 1)
-        target_epi = ''.join(str(epi) for epi in epidata if epi.mode == 2)
-
         if indent == -1:
-            column += len(role) + len(role_epi) + 1  # +1 for :
+            column += len(role) + 1  # +1 for :
 
         if target is None:
             target = ''
         elif not is_atomic(target):
             target = self._format_node(target, indent, column, vars)
 
-        return '{}{} {!s}{}'.format(
-            role,
-            role_epi,
-            target,
-            target_epi)
+        return '{} {!s}'.format(role, target)
 
     def format_triples(self,
                        triples: Iterable[BasicTriple],

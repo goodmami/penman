@@ -22,9 +22,8 @@ PATTERNS = {
     'STRING':     r'"[^"\\]*(?:\\.[^"\\]*)*"',
     # ROLE cannot be made up of COLON + SYMBOL because it then becomes
     # difficult to detect anonymous roles: (a : b) vs (a :b c)
-    'ROLE':       r':[^\s()\/:~]*',
-    'SYMBOL':     r'[^\s()\/:~]+',
-    'ALIGNMENT':  r'~(?:[a-zA-Z]\.?)?\d+(?:,\d+)*',
+    'ROLE':       r':[^\s()\/:]*',
+    'SYMBOL':     r'[^\s()\/:]+',
     'LPAREN':     r'\(',
     'RPAREN':     r'\)',
     'SLASH':      r'\/',  # concept (node label) role
@@ -43,7 +42,6 @@ def _compile(*names: str) -> Pattern[str]:
 PENMAN_RE = _compile('COMMENT',
                      'STRING',
                      'LPAREN', 'RPAREN', 'SLASH',
-                     'ALIGNMENT',
                      'ROLE', 'SYMBOL',
                      'UNEXPECTED')
 TRIPLE_RE = _compile('COMMENT',

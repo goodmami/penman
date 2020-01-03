@@ -45,6 +45,9 @@ def test_canonicalize_roles_amr_codec():
     t = norm(parse('(a / alpha :mod-of (b / beta))'))
     assert format(t) == '(a / alpha :domain (b / beta))'
 
+    t = norm(parse('(a / alpha :mod-of~1 (b / beta))'))
+    assert format(t) == '(a / alpha :domain~1 (b / beta))'
+
 
 def test_reify_edges_default_codec():
     decode = def_codec.decode

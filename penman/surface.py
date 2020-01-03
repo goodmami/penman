@@ -4,12 +4,15 @@
 Surface strings, tokens, and alignments.
 """
 
-from typing import Type, Mapping, Tuple
+from typing import TypeVar, Type, Mapping, Tuple
 
 from penman.types import BasicTriple
 from penman.graph import Graph
 from penman.epigraph import Epidatum
-# from penman.exceptions import SurfaceError  # currently unused?
+from penman.exceptions import SurfaceError
+
+
+T = TypeVar('T', bound='AlignmentMarker')  # for classmethods
 
 
 class AlignmentMarker(Epidatum):
@@ -20,6 +23,41 @@ class AlignmentMarker(Epidatum):
         super().__init__()
         self.indices = indices
         self.prefix = prefix
+
+    @classmethod
+    def from_string(cls: Type[T], s: str) -> T:
+        """
+        Instantiate the alignment marker from its string *s*.
+
+        Examples:
+            >>> surface.Alignment.from_string('1')
+            Alignment((1,))
+            >>> surface.RoleAlignment.from_string('e.2,3')
+            RoleAlignment((2, 3), prefix='e.')
+        """
+
+        _s = s.lstrip('~')
+        prefix = None
+        try:
+            if _s[0].isalpha():  # ...~e
+                i = 1
+                if _s[1] == '.':  # ...~e.
+                    i = 2
+                prefix = _s[0:i]
+                _s = _s[i:]
+        except IndexError as exc:
+            raise SurfaceError(
+                'invalid alignment marker: {!r}'.format(s)
+            ) from exc
+
+        try:
+            indices = tuple(map(int, _s.split(',')))
+        except ValueError as exc:
+            raise SurfaceError(
+                'invalid alignments: {!r}'.format(s)
+            ) from exc
+
+        return cls(indices, prefix=prefix)
 
     def __repr__(self):
         args = repr(self.indices)

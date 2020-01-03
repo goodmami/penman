@@ -6,11 +6,10 @@ penman.codec
 
    .. autoclass:: PENMANCodec
 
-      .. autoattribute:: ATOMS
-
       .. automethod:: decode
       .. automethod:: iterdecode
       .. automethod:: parse
+      .. automethod:: iterparse
       .. automethod:: parse_triples
 
       .. automethod:: encode

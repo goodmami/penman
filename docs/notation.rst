@@ -17,7 +17,14 @@ carelessly.":
       :manner (c / care-04
                  :polarity -))
 
-Let's break that down a bit:
+Described below are a breakdown of the parts of the PENMAN graph above
+as well as a formal grammar description of PENMAN graphs in general.
+
+
+Graph Anatomy
+-------------
+
+The following diagram explains what each part of the graph above is:
 
 .. code-block:: lisp
 
@@ -46,6 +53,10 @@ which can be referred to later to establish a reentrancy.
 .. _`PENMAN project`: https://www.isi.edu/natural-language/penman/penman.html
 .. _`Abstract Meaning Representation`: https://amr.isi.edu/
 .. _`S-Expressions`: https://en.wikipedia.org/wiki/S-expression
+
+
+Formal Grammar
+--------------
 
 PENMAN notation can be very roughly described with the following `BNF
 <https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form>`_ grammar
@@ -78,7 +89,7 @@ grammar to allow for surface alignments.
    Role      <- ':' NameChar*
    Alignment <- '~' ([a-zA-Z] '.'?)? Digit+ (',' Digit+)*
    String    <- '"' (!'"' ('\\' . / .))* '"'
-   NameChar  <- ![ \n\t\r\f\v()/:,~] .
+   NameChar  <- ![ \n\t\r\f\v()/:~] .
    Digit     <- [0-9]
 
 This grammar has some seemingly unnecessary ambiguity in that both the
@@ -88,6 +99,13 @@ that further restrict the form of variables. Also, the distinction
 between edge relations and attribute relations is semantic: if the
 target of a relation is the variable of some other node, then it is an
 edge, otherwise it is an attribute.
+
+Note that the implementation in the Penman package deviates from this
+grammar in that the ``Alignment`` production is not parsed together
+with the rest of the structure. Instead, the ``~`` character is
+allowed on ``NameChar`` and alignments are thus part of the ``Role``
+or ``Atom`` tokens. They are later detected and extracted during
+graph interpretation (see :func:`penman.layout.interpret`).
 
 .. [KAS1989] Robert T. Kaspar. A Flexible Interface for Linking
              Applications to Penman's Sentence Generator. Speech and
