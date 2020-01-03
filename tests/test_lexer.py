@@ -20,8 +20,7 @@ def test_lex_penman():
         'RPAREN']
     assert _lex('(a :ROLE~e.1,2 b~3)') == [
         'LPAREN', 'SYMBOL',
-        'ROLE', 'ALIGNMENT',
-        'SYMBOL', 'ALIGNMENT',
+        'ROLE', 'SYMBOL',
         'RPAREN']
     assert _lex('# comment\n# (n / nope)\n(a / alpha)') == [
         'COMMENT', 'COMMENT', 'LPAREN', 'SYMBOL', 'SLASH', 'SYMBOL', 'RPAREN']

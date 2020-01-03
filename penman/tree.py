@@ -6,10 +6,9 @@ Definitions of tree structures.
 from typing import Tuple, List, Dict, Set, Mapping, Any
 
 from penman.types import (Variable, Role)
-from penman.epigraph import Epidata
 
 # Tree types
-Branch = Tuple[Role, Any, Epidata]
+Branch = Tuple[Role, Any]
 Node = Tuple[Variable, List[Branch]]
 
 
@@ -61,7 +60,7 @@ class Tree:
         used: Set[Variable] = set()
         for var, edges in self.nodes():
             if var not in varmap:
-                concept = next((tgt for role, tgt, _ in edges if role == '/'),
+                concept = next((tgt for role, tgt in edges if role == '/'),
                                None)
                 pre = _default_variable_prefix(concept)
                 i = 0
@@ -87,18 +86,18 @@ def _format(node, level):
 
 
 def _format_edge(edge, level):
-    role, target, epidata = edge
+    role, target = edge
     if is_atomic(target):
         target = repr(target)
     else:
         target = _format(target, level)
-    return '({!r}, {}, {!r})'.format(role, target, epidata)
+    return '({!r}, {})'.format(role, target)
 
 
 def _nodes(node):
     var, edges = node
     ns = [] if var is None else [node]
-    for _, target, _ in edges:
+    for _, target in edges:
         # if target is not atomic, assume it's a valid tree node
         if not is_atomic(target):
             ns.extend(_nodes(target))
@@ -142,12 +141,12 @@ def _map_vars(node, varmap):
     var, edges = node
 
     newedges = []
-    for role, tgt, epis in edges:
+    for role, tgt in edges:
         if not is_atomic(tgt):
             tgt = _map_vars(tgt, varmap)
         elif role != '/' and tgt in varmap:
             tgt = varmap[tgt]
-        newedges.append((role, tgt, epis))
+        newedges.append((role, tgt))
 
     return (varmap[var], newedges)
 
@@ -163,7 +162,7 @@ def is_atomic(x) -> bool:
         True
         >>> is_atomic(3.14
         True
-        >>> is_atomic(('a', [('/', 'alpha', [])]))
+        >>> is_atomic(('a', [('/', 'alpha')]))
         False
     """
     return x is None or isinstance(x, (str, int, float))

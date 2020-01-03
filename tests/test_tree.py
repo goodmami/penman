@@ -6,31 +6,31 @@ from penman import tree
 
 @pytest.fixture
 def empty_node():
-    return ('a', [])
+    return ('a')
 
 
 @pytest.fixture
 def simple_node():
-    return ('a', [('/', 'alpha', [])])
+    return ('a', [('/', 'alpha')])
 
 
 @pytest.fixture
 def one_arg_node():
-    return ('a', [('/', 'alpha', []),
-                  (':ARG0', ('b', [('/', 'beta', [])]), [])])
+    return ('a', [('/', 'alpha'),
+                  (':ARG0', ('b', [('/', 'beta')]))])
 
 
 @pytest.fixture
 def reentrant():
-    return ('a', [('/', 'alpha', []),
-                  (':ARG0', ('b', [('/', 'beta', [])]), []),
-                  (':ARG1', ('g', [('/', 'gamma', []),
-                                   (':ARG0', 'b', [])]), [])])
+    return ('a', [('/', 'alpha'),
+                  (':ARG0', ('b', [('/', 'beta')])),
+                  (':ARG1', ('g', [('/', 'gamma'),
+                                   (':ARG0', 'b')]))])
 
 @pytest.fixture
 def var_instance():
-    return ('a', [('/', 'alpha', []),
-                  (':ARG0', ('b', [('/', 'b', [])]), [])])
+    return ('a', [('/', 'alpha'),
+                  (':ARG0', ('b', [('/', 'b')]))])
 
 
 class TestTree:
@@ -48,12 +48,12 @@ class TestTree:
 
     def test_nodes(self, one_arg_node, reentrant):
         t = tree.Tree(one_arg_node)
-        assert t.nodes() == [one_arg_node, ('b', [('/', 'beta', [])])]
+        assert t.nodes() == [one_arg_node, ('b', [('/', 'beta')])]
 
         t = tree.Tree(reentrant)
         assert t.nodes() == [reentrant,
-                             ('b', [('/', 'beta', [])]),
-                             ('g', [('/', 'gamma', []), (':ARG0', 'b', [])])]
+                             ('b', [('/', 'beta')]),
+                             ('g', [('/', 'gamma'), (':ARG0', 'b')])]
 
     def test_reset_variables(self, one_arg_node, reentrant, var_instance):
 
@@ -78,10 +78,10 @@ class TestTree:
         t.reset_variables(fmt='a{i}')
         assert _vars(t) == ['a0', 'a1', 'a2']
         assert t == (
-            'a0', [('/', 'alpha', []),
-                   (':ARG0', ('a1', [('/', 'beta', [])]), []),
-                   (':ARG1', ('a2', [('/', 'gamma', []),
-                                   (':ARG0', 'a1', [])]), [])])
+            'a0', [('/', 'alpha'),
+                   (':ARG0', ('a1', [('/', 'beta')])),
+                   (':ARG1', ('a2', [('/', 'gamma'),
+                                   (':ARG0', 'a1')]))])
 
         t.reset_variables()
         assert _vars(t) == ['a', 'b', 'g']
@@ -92,8 +92,8 @@ class TestTree:
         t.reset_variables(fmt='a{i}')
         assert _vars(t) == ['a0', 'a1']
         assert t == (
-            'a0', [('/', 'alpha', []),
-                   (':ARG0', ('a1', [('/', 'b', [])]), [])])
+            'a0', [('/', 'alpha'),
+                   (':ARG0', ('a1', [('/', 'b')]))])
 
         t.reset_variables()
         assert _vars(t) == ['a', 'b']
@@ -103,7 +103,7 @@ def test_is_atomic():
     assert tree.is_atomic('a')
     assert tree.is_atomic(None)
     assert tree.is_atomic(3.14)
-    assert not tree.is_atomic(('a', [('/', 'alpha', [])]))
+    assert not tree.is_atomic(('a', [('/', 'alpha')]))
 
 
 def test_default_variable_prefix():

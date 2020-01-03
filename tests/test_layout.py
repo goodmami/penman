@@ -82,38 +82,26 @@ def test_rearrange():
 
 def test_configure(amr_model):
     g = codec.decode('(a / A)')
-    assert configure(g) == Tree(('a', [('/', 'A', [])]))
+    assert configure(g) == Tree(('a', [('/', 'A')]))
     with pytest.raises(LayoutError):
         configure(g, top='A')
 
     g = codec.decode('(a / A :consist-of (b / B))')
     assert configure(g) == Tree(
-        ('a', [
-            ('/', 'A', []),
-            (':consist-of', ('b', [('/', 'B', [])]), [])
-        ])
-    )
+        ('a', [('/', 'A'),
+               (':consist-of', ('b', [('/', 'B')]))]))
     assert configure(g, top='b') == Tree(
-        ('b', [
-            ('/', 'B', []),
-            (':consist', ('a', [('/', 'A', [])]), [])
-        ])
-    )
+        ('b', [('/', 'B'),
+               (':consist', ('a', [('/', 'A')]))]))
 
     amr_codec = PENMANCodec(model=amr_model)
     g = amr_codec.decode('(a / A :consist-of (b / B))')
     assert configure(g, model=amr_model) == Tree(
-        ('a', [
-            ('/', 'A', []),
-            (':consist-of', ('b', [('/', 'B', [])]), [])
-        ])
-    )
+        ('a', [('/', 'A'),
+               (':consist-of', ('b', [('/', 'B')]))]))
     assert configure(g, top='b', model=amr_model) == Tree(
-        ('b', [
-            ('/', 'B', []),
-            (':consist-of-of', ('a', [('/', 'A', [])]), [])
-        ])
-    )
+        ('b', [('/', 'B'),
+               (':consist-of-of', ('a', [('/', 'A')]))]))
 
 
 def test_issue_34():
@@ -128,18 +116,13 @@ def test_issue_34():
                  :polarity -
                  :polarity -)))''')
     assert configure(g) == Tree(
-        ('t', [
-            ('/', 'think', []),
-            (':ARG0', ('i', [('/', 'i', [])]), []),
-            (':ARG1', ('f', [
-                ('/', 'fail', []),
-                (':ARG0', ('y', [('/', 'you', [])]), []),
-                (':ARG1', ('a', [
-                    ('/', 'act', []),
-                    (':polarity', '-', []),
-                    (':polarity', '-', [])]),
-                 [])]),
-             [])]))
+        ('t', [('/', 'think'),
+               (':ARG0', ('i', [('/', 'i')])),
+               (':ARG1', ('f', [('/', 'fail'),
+                                (':ARG0', ('y', [('/', 'you')])),
+                                (':ARG1', ('a', [('/', 'act'),
+                                                 (':polarity', '-'),
+                                                 (':polarity', '-')]))]))]))
 
 
 def test_appears_inverted():

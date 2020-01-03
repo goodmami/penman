@@ -50,13 +50,14 @@ following data::
                           ('b', ':ARG0', 'd')]            : POP
 """
 
-from typing import Union, Mapping, Callable, Any
+from typing import Union, Mapping, Callable, Any, List
 import copy
 import logging
 
 from penman.exceptions import LayoutError
 from penman.types import Variable, BasicTriple
 from penman.epigraph import Epidatum
+from penman.surface import (AlignmentMarker, Alignment, RoleAlignment)
 from penman.tree import (Tree, Node, Branch, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
@@ -122,9 +123,9 @@ def interpret(t: Tree, model: Model = None) -> Graph:
         >>> from penman import layout
         >>> t = Tree(
         ...   ('b', [
-        ...     ('/', 'bark', []),
+        ...     ('/', 'bark'),
         ...     ('ARG0', ('d', [
-        ...       ('/', 'dog', [])]), [])]))
+        ...       ('/', 'dog')]))]))
         >>> g = layout.interpret(t)
         >>> for triple in g.triples:
         ...     print(triple)
@@ -146,12 +147,19 @@ def _interpret_node(t: Node, model: Model):
     triples = []
     epidata = {}
     var, edges = t
-    for role, target, epis in edges:
+    for role, target in edges:
+        epis: List[AlignmentMarker] = []
         if role == '/':
             role = CONCEPT_ROLE
+        elif '~' in role:
+            role, _, alignment = role.partition('~')
+            epis.append(RoleAlignment.from_string(alignment))
         # atomic targets
         if is_atomic(target):
             child = ()
+            if target and '~' in target:
+                target, _, alignment = target.partition('~')
+                epis.append(Alignment.from_string(alignment))
             target_var = target
         # nested nodes
         else:
@@ -211,9 +219,9 @@ def configure(g: Graph,
         >>> print(t)
         Tree(
           ('b', [
-            ('/', 'bark', []),
+            ('/', 'bark'),
             (':ARG0', ('d', [
-              ('/', 'dog', [])]), [])]))
+              ('/', 'dog')]))]))
     """
     if model is None:
         model = _default_model
@@ -266,7 +274,8 @@ def _preconfigure(g, strict):
     epidata = g.epidata
     pushed = set()
     for triple in g.triples:
-        push, pops, others = None, [], []
+        _triple = list(map(str, triple))
+        push, pops = None, []
         for epi in epidata.get(triple, []):
             if isinstance(epi, Push):
                 if push is not None or epi.variable in pushed:
@@ -285,15 +294,19 @@ def _preconfigure(g, strict):
                 push = epi
             elif epi is POP:
                 pops.append(epi)
+            elif epi.mode == 1:  # role epidata
+                _triple[1] += str(epi)
+            elif epi.mode == 2:  # target epidata
+                _triple[2] += str(epi)
             else:
-                others.append(epi)
+                logging.warning('epigraphical marker lost: %r', epi)
 
         if strict and push and pops:
             raise LayoutError(
                 'incompatible node context changes on triple: {}'
                 .format(triple))
 
-        data.append((triple, others, push))
+        data.append((_triple, push))
         data.extend(pops)
 
     return data
@@ -315,7 +328,7 @@ def _configure_node(var, data, nodemap, model):
         if datum is POP:
             break
 
-        triple, epidata, push = datum
+        triple, push = datum
         if triple[0] == var:
             source, role, target = triple
         elif triple[2] == var:
@@ -339,7 +352,7 @@ def _configure_node(var, data, nodemap, model):
         else:
             index = len(edges)
 
-        edges.insert(index, (role, target, epidata))
+        edges.insert(index, (role, target))
 
     return node
 
@@ -439,7 +452,7 @@ def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
     else:
         first = []
         rest = branches[:]
-    for _, target, _ in rest:
+    for _, target in rest:
         if not is_atomic(target):
             _rearrange(target, key=key)
     branches[:] = first + sorted(rest, key=key)
