@@ -90,7 +90,7 @@ def reify_edges(g: Graph, model: Model) -> Graph:
     new_epidata = dict(g.epidata)
     new_triples: List[BasicTriple] = []
     for triple in g.triples:
-        if model.is_reifiable(triple):
+        if model.is_role_reifiable(triple[1]):
             in_triple, node_triple, out_triple = model.reify(triple, vars)
             new_triples.extend((in_triple, node_triple, out_triple))
             var = node_triple[0]

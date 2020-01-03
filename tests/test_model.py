@@ -194,17 +194,17 @@ class TestModel:
         assert m.canonicalize(('a', 'consist-of', 'b'))     == ('a', ':consist-of', 'b')
         assert m.canonicalize(('a', 'consist-of-of', 'b'))  == ('a', ':consist-of-of', 'b')
 
-    def test_is_reifiable(self, mini_amr):
+    def test_is_role_reifiable(self, mini_amr):
         m = Model()
-        assert not m.is_reifiable(('a', ':ARG0', 'b'))
-        assert not m.is_reifiable(('a', ':accompanier', 'b'))
-        assert not m.is_reifiable(('a', ':domain', 'b'))
-        assert not m.is_reifiable(('a', ':mod', 'b'))
+        assert not m.is_role_reifiable(':ARG0')
+        assert not m.is_role_reifiable(':accompanier')
+        assert not m.is_role_reifiable(':domain')
+        assert not m.is_role_reifiable(':mod')
         m = Model.from_dict(mini_amr)
-        assert not m.is_reifiable(('a', ':ARG0', 'b'))
-        assert m.is_reifiable(('a', ':accompanier', 'b'))
-        assert not m.is_reifiable(('a', ':domain', 'b'))
-        assert m.is_reifiable(('a', ':mod', 'b'))
+        assert not m.is_role_reifiable(':ARG0')
+        assert m.is_role_reifiable(':accompanier')
+        assert not m.is_role_reifiable(':domain')
+        assert m.is_role_reifiable(':mod')
 
     def test_reify(self, mini_amr):
         m = Model()

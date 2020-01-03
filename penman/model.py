@@ -183,9 +183,9 @@ class Model(object):
         canonical = self.canonicalize_role(role)
         return (source, canonical, target)
 
-    def is_reifiable(self, triple: BasicTriple) -> bool:
-        """Return ``True`` if the role of *triple* can be reified."""
-        return triple[1] in self.reifications
+    def is_role_reifiable(self, role: Role) -> bool:
+        """Return ``True`` if *role* can be reified."""
+        return role in self.reifications
 
     def reify(self,
               triple: BasicTriple,

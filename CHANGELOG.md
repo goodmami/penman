@@ -7,6 +7,7 @@
 * `penman.tree.Tree.reset_variables()` ([#41][])
 * `--make-variables=FMT` command-line option ([#41][])
 * `penman.surface.AlignmentMarker.from_string()` ([#45][])
+* `penman.model.Model.is_role_reifiable()` (was `is_reifiable()`)
 
 ### Removed
 
@@ -25,6 +26,7 @@
   - `penman.codec.encode()`
   - `penman.codec.decode()`
 * `ALIGNMENT` production in `penman.lexer.PATTERNS` ([#45][])
+* `penman.model.Model.is_reifiable()` (now `is_role_reifiable()`)
 
 ### Changed
 
