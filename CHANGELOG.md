@@ -9,6 +9,7 @@
 * `penman.surface.AlignmentMarker.from_string()` ([#45][])
 * `penman.model.Model.is_role_reifiable()` (was `is_reifiable()`)
 * `penman.layout.get_pushed_variable()` ([#39][])
+* `penman.layout.node_contexts()`
 
 ### Removed
 

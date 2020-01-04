@@ -516,3 +516,53 @@ def appears_inverted(g: Graph, triple: BasicTriple) -> bool:
     """
     return any(isinstance(epi, Push) and epi.variable == triple[0]
                for epi in g.epidata[triple])
+
+
+def node_contexts(g: Graph) -> List[Union[Variable, None]]:
+    """
+    Return the list of node contexts corresponding to triples in *g*.
+
+    If a node context is unknown, the value ``None`` is substituted.
+
+    Example:
+        >>> from penman import decode, layout
+        >>> g = decode('''
+        ...   (a / alpha
+        ...      :attr val
+        ...      :ARG0 (b / beta :ARG0 (g / gamma))
+        ...      :ARG0-of g)''')
+        >>> for ctx, trp in zip(layout.node_contexts(g), trp):
+        ...     print(ctx, ':', trp)
+        ...
+        a : ('a', ':instance', 'alpha')
+        a : ('a', ':attr', 'val')
+        a : ('a', ':ARG0', 'b')
+        b : ('b', ':instance', 'beta')
+        b : ('b', ':ARG0', 'g')
+        g : ('g', ':instance', 'gamma')
+        a : ('g', ':ARG0', 'a')
+    """
+    variables = g.variables()
+    stack = [g.top]
+    contexts: List[Union[Variable, None]] = [None] * len(g.triples)
+    for i, triple in enumerate(g.triples):
+        eligible: List[Variable] = [triple[0]]
+        if triple[1] != CONCEPT_ROLE and triple[2] in variables:
+            eligible.append(cast(Variable, triple[2]))
+
+        if stack[-1] not in eligible:
+            break
+        else:
+            contexts[i] = stack[-1]
+
+        pushed = get_pushed_variable(g, triple)
+        if pushed:
+            stack.append(pushed)
+
+        try:
+            for epi in g.epidata[triple]:
+                if epi is POP:
+                    stack.pop()
+        except IndexError:
+            break  # more POPs than contexts in stack
+    return contexts

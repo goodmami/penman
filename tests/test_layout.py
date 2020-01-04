@@ -14,6 +14,7 @@ from penman.layout import (
     has_valid_layout,
     get_pushed_variable,
     appears_inverted,
+    node_contexts,
 )
 
 
@@ -144,3 +145,17 @@ def test_appears_inverted():
     assert not appears_inverted(g, ('a', ':instance', 'alpha'))
     assert not appears_inverted(g, ('a', ':ARG0', 'b'))
     assert appears_inverted(g, ('g', ':ARG1', 'a'))
+
+
+def test_node_contexts():
+    g = codec.decode('(a / alpha)')
+    assert node_contexts(g) == ['a']
+
+    g = codec.decode('(a :ARG0 (b / beta))')
+    assert node_contexts(g) == ['a', 'b']
+
+    g = codec.decode('(a :ARG0-of (b / beta))')
+    assert node_contexts(g) == ['a', 'b']
+
+    g = codec.decode('(a :ARG0 (b) :ARG1 (g / gamma))')
+    assert node_contexts(g) == ['a', 'a', 'g']
