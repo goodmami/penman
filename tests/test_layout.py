@@ -12,6 +12,7 @@ from penman.layout import (
     configure,
     reconfigure,
     has_valid_layout,
+    get_pushed_variable,
     appears_inverted,
 )
 
@@ -123,6 +124,16 @@ def test_issue_34():
                                 (':ARG1', ('a', [('/', 'act'),
                                                  (':polarity', '-'),
                                                  (':polarity', '-')]))]))]))
+
+
+def test_get_pushed_variable():
+    g = codec.decode('''
+        (a / alpha
+           :ARG0 (b / beta)
+           :ARG1-of (g / gamma))''')
+    assert get_pushed_variable(g, ('a', ':instance', 'alpha')) is None
+    assert get_pushed_variable(g, ('a', ':ARG0', 'b')) == 'b'
+    assert get_pushed_variable(g, ('g', ':ARG1', 'a')) == 'g'
 
 
 def test_appears_inverted():

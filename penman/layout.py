@@ -475,6 +475,25 @@ def has_valid_layout(g: Graph,
     return len(data) == 0
 
 
+def get_pushed_variable(g: Graph,
+                        triple: BasicTriple) -> Union[Variable, None]:
+    """
+    Return the variable pushed by *triple*, if any, otherwise ``None``.
+
+    Example:
+        >>> from penman import decode
+        >>> from penman.layout import get_pushed_variable
+        >>> g = decode('(a / alpha :ARG0 (b / beta))')
+        >>> get_pushed_variable(g, ('a', ':instance', 'alpha'))  # None
+        >>> get_pushed_variable(g, ('a', ':ARG0', 'b'))
+        'b'
+    """
+    for epi in g.epidata[triple]:
+        if isinstance(epi, Push):
+            return epi.variable
+    return None
+
+
 def appears_inverted(g: Graph, triple: BasicTriple) -> bool:
     """
     Return ``True`` if *triple* appears inverted in serialization.

@@ -8,6 +8,7 @@
 * `--make-variables=FMT` command-line option ([#41][])
 * `penman.surface.AlignmentMarker.from_string()` ([#45][])
 * `penman.model.Model.is_role_reifiable()` (was `is_reifiable()`)
+* `penman.layout.get_pushed_variable()` ([#39][])
 
 ### Removed
 
@@ -486,6 +487,7 @@ First release with very basic functionality.
 [#34]: https://github.com/goodmami/penman/issues/34
 [#35]: https://github.com/goodmami/penman/issues/35
 [#37]: https://github.com/goodmami/penman/issues/37
+[#39]: https://github.com/goodmami/penman/issues/39
 [#41]: https://github.com/goodmami/penman/issues/41
 [#42]: https://github.com/goodmami/penman/issues/42
 [#43]: https://github.com/goodmami/penman/issues/43
