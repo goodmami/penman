@@ -147,6 +147,21 @@ def test_appears_inverted():
     assert appears_inverted(g, ('g', ':ARG1', 'a'))
 
 
+def test_issue_47():
+    # https://github.com/goodmami/penman/issues/47
+    g = codec.decode('''
+        (a / alpha
+           :ARG0 (b / beta)
+           :ARG1 (g / gamma
+                    :ARG0 (d / delta)
+                    :ARG1-of (e / epsilon)
+                    :ARG1-of b))''')
+    assert not appears_inverted(g, ('a', ':ARG0', 'b'))
+    assert not appears_inverted(g, ('g', ':ARG0', 'd'))
+    assert appears_inverted(g, ('e', ':ARG1', 'g'))
+    assert appears_inverted(g, ('b', ':ARG1', 'g'))
+
+
 def test_node_contexts():
     g = codec.decode('(a / alpha)')
     assert node_contexts(g) == ['a']

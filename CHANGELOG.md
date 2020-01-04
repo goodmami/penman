@@ -38,6 +38,8 @@
 * Surface alignments are extracted and formatted in `penman.layout`,
   not `penman.lexer` or `penman.codec` ([#45][])
 * Tree branches are simple 2-tuples: `(role, target)` ([#45][])
+* `penman.layout.appears_inverted()` better detects inverted triples
+  when the target in the serialization was just a variable ([#47][])
 
 
 ## [v0.8.0][]
@@ -494,3 +496,4 @@ First release with very basic functionality.
 [#43]: https://github.com/goodmami/penman/issues/43
 [#44]: https://github.com/goodmami/penman/issues/44
 [#45]: https://github.com/goodmami/penman/issues/45
+[#47]: https://github.com/goodmami/penman/issues/47

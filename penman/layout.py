@@ -514,8 +514,24 @@ def appears_inverted(g: Graph, triple: BasicTriple) -> bool:
     Returns:
         ``True`` if *triple* appears inverted in graph *g*.
     """
-    return any(isinstance(epi, Push) and epi.variable == triple[0]
-               for epi in g.epidata[triple])
+    variables = g.variables()
+    if triple[1] == CONCEPT_ROLE or triple[2] not in variables:
+        # attributes and instance triples should never be inverted
+        return False
+    else:
+        # edges may appear inverted...
+        variable = get_pushed_variable(g, triple)
+        if variable is not None:
+            # ... when their source is pushed
+            return variable == triple[0]
+        else:
+            # ... or when their target is the current node context
+            for variable, _triple in zip(node_contexts(g), g.triples):
+                if variable is None:
+                    break  # we can no longer guess the node context
+                elif _triple == triple:
+                    return triple[2] == variable
+    return False
 
 
 def node_contexts(g: Graph) -> List[Union[Variable, None]]:
