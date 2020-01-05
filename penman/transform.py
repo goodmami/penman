@@ -3,16 +3,17 @@
 Tree and graph transformations.
 """
 
-from typing import Union, List, Tuple
+from typing import Union, Dict, Set, List, Tuple
 import logging
 
-from penman.types import BasicTriple
+from penman.types import Variable, Target, BasicTriple
+from penman.exceptions import ModelError
 from penman.epigraph import (Epidatum, Epidata)
-from penman.surface import (Alignment, RoleAlignment)
+from penman.surface import (Alignment, RoleAlignment, alignments)
 from penman.tree import (Tree, Node, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
-from penman.layout import (Push, POP)
+from penman.layout import (Push, POP, appears_inverted, get_pushed_variable)
 
 
 logger = logging.getLogger(__name__)
@@ -112,13 +113,51 @@ def reify_edges(g: Graph, model: Model) -> Graph:
     return g
 
 
-def contract_edges(g: Graph, model: Model) -> None:
+def dereify_edges(g: Graph, model: Model) -> Graph:
     """
-    Contract all edges in *g* that have reifications in *model*.
+    Dereify edges in *g* that have reifications in *model*.
+
+    Args:
+        g: a :class:`Graph` object
+    Returns:
+        A new :class:`Graph` object with dereified edges.
+    Example:
+        >>> from penman.codec import PENMANCodec
+        >>> from penman.models.amr import model
+        >>> from penman.transform import dereify_edges
+        >>> codec = PENMANCodec(model=model)
+        >>> g = codec.decode(
+        ...   '(c / chapter'
+        ...   '   :ARG1-of (_ / have-mod-91'
+        ...   '               :ARG2 7))')
+        >>> g = dereify_edges(g)
+        >>> print(codec.encode(g))
+        (c / chapter
+           :mod 7)
     """
     if model is None:
         model = Model()
-    raise NotImplementedError()
+    agenda = _dereify_agenda(g, model)
+    new_epidata = dict(g.epidata)
+    new_triples: List[BasicTriple] = []
+    for triple in g.triples:
+        var = triple[0]
+        if var in agenda:
+            first, dereified, epidata = agenda[var]
+            # only insert at the first triple so the dereification
+            # appears in the correct location
+            if triple == first:
+                new_triples.append(dereified)
+                new_epidata[dereified] = epidata
+            if triple in new_epidata:
+                del new_epidata[triple]
+        else:
+            new_triples.append(triple)
+    g = Graph(new_triples,
+              epidata=new_epidata,
+              metadata=g.metadata)
+    logger.info('Dereified edges: %s', g)
+    return g
 
 
 def reify_attributes(g: Graph) -> Graph:
@@ -279,6 +318,58 @@ def _edge_markers(epidata: Epidata) -> Tuple[Epidata, Epidata]:
     out_epis.extend(pops)
 
     return node_epis, out_epis
+
+
+_Dereification = Dict[Variable,
+                      Tuple[BasicTriple,  # inverted triple of reification
+                            BasicTriple,  # dereified triple
+                            List[Epidatum]]]  # computed epidata
+
+
+def _dereify_agenda(g: Graph, model: Model) -> _Dereification:
+
+    alns = alignments(g)
+    agenda: _Dereification = {}
+    fixed: Set[Target] = set([g.top])
+    inst: Dict[Variable, BasicTriple] = {}
+    other: Dict[Variable, List[BasicTriple]] = {}
+
+    for triple in g.triples:
+        var, role, tgt = triple
+        if role == CONCEPT_ROLE:
+            inst[var] = triple
+        else:
+            fixed.add(tgt)
+            if var not in other:
+                other[var] = [triple]
+            else:
+                other[var].append(triple)
+
+    for var, instance in inst.items():
+        if (var not in fixed
+            and len(other.get(var, [])) == 2
+            and model.is_concept_dereifiable(instance[2])):
+            # passed initial checks
+            # now figure out which other edge is the first one
+            first, second = other[var]
+            if get_pushed_variable(g, second) == var:
+                first, second = second, first
+            try:
+                dereified = model.dereify(instance, first, second)
+            except ModelError:
+                pass
+            else:
+                # migrate epidata
+                epidata: List[Epidatum] = []
+                if instance in alns:
+                    aln = alns[instance]
+                    epidata.append(
+                        RoleAlignment(aln.indices, prefix=aln.prefix))
+                epidata.extend(epi for epi in g.epidata[second]
+                               if not isinstance(epi, RoleAlignment))
+                agenda[var] = (first, dereified, epidata)
+
+    return agenda
 
 
 def _attr_markers(epidata: Epidata) -> Tuple[Epidata, Epidata]:

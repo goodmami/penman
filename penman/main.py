@@ -36,6 +36,8 @@ def process(f, model, out, normalize_options, format_options, triples):
         # graph transformations
         if normalize_options['reify_edges']:
             g = transform.reify_edges(g, model)
+        if normalize_options['dereify_edges']:
+            g = transform.dereify_edges(g, model)
         if normalize_options['reify_attributes']:
             g = transform.reify_attributes(g)
         if normalize_options['indicate_branches']:
@@ -110,6 +112,9 @@ def main():
         '--reify-edges', action='store_true',
         help='reify all eligible edges')
     norm.add_argument(
+        '--dereify-edges', action='store_true',
+        help='dereify all eligible edges')
+    norm.add_argument(
         '--reify-attributes', action='store_true',
         help='reify all attributes')
     norm.add_argument(
@@ -153,6 +158,7 @@ def main():
         'rearrange': args.rearrange,
         'canonicalize_roles': args.canonicalize_roles,
         'reify_edges': args.reify_edges,
+        'dereify_edges': args.dereify_edges,
         'reify_attributes': args.reify_attributes,
         'indicate_branches': args.indicate_branches,
     }

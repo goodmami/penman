@@ -12,6 +12,8 @@
 * `penman.model.Model.dereify()` ([#40][])
 * `penman.layout.get_pushed_variable()` ([#39][])
 * `penman.layout.node_contexts()`
+* `penman.transform.dereify_edges()` ([#40][])
+* `--dereify-edges` command-line option ([#40][])
 
 ### Removed
 
@@ -493,6 +495,7 @@ First release with very basic functionality.
 [#35]: https://github.com/goodmami/penman/issues/35
 [#37]: https://github.com/goodmami/penman/issues/37
 [#39]: https://github.com/goodmami/penman/issues/39
+[#40]: https://github.com/goodmami/penman/issues/40
 [#41]: https://github.com/goodmami/penman/issues/41
 [#42]: https://github.com/goodmami/penman/issues/42
 [#43]: https://github.com/goodmami/penman/issues/43

@@ -50,7 +50,7 @@ following data::
                           ('b', ':ARG0', 'd')]            : POP
 """
 
-from typing import Union, Mapping, Callable, Any, List
+from typing import Union, Mapping, Callable, Any, List, cast
 import copy
 import logging
 
@@ -226,6 +226,9 @@ def configure(g: Graph,
     if model is None:
         model = _default_model
     node, data, nodemap = _configure(g, top, model, strict)
+    # remove any superfluous POPs at the end (maybe from dereification)
+    while data and data[-1] is POP:
+        data.pop()
     # if any data remain, the graph was not properly annotated for a tree
     while data:
         skipped, var, data = _find_next(data, nodemap)
