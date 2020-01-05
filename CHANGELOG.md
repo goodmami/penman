@@ -8,6 +8,8 @@
 * `--make-variables=FMT` command-line option ([#41][])
 * `penman.surface.AlignmentMarker.from_string()` ([#45][])
 * `penman.model.Model.is_role_reifiable()` (was `is_reifiable()`)
+* `penman.model.Model.is_concept_dereifiable()` ([#40][])
+* `penman.model.Model.dereify()` ([#40][])
 * `penman.layout.get_pushed_variable()` ([#39][])
 * `penman.layout.node_contexts()`
 

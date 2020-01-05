@@ -21,6 +21,9 @@ penman.model
       .. automethod:: is_role_reifiable
       .. automethod:: reify
 
+      .. automethod:: is_concept_dereifiable
+      .. automethod:: dereify
+
       .. automethod:: original_order
       .. automethod:: canonical_order
       .. automethod:: random_order
