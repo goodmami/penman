@@ -93,6 +93,8 @@ def reify_edges(g: Graph, model: Model) -> Graph:
     for triple in g.triples:
         if model.is_role_reifiable(triple[1]):
             in_triple, node_triple, out_triple = model.reify(triple, vars)
+            if appears_inverted(g, triple):
+                in_triple, out_triple = out_triple, in_triple
             new_triples.extend((in_triple, node_triple, out_triple))
             var = node_triple[0]
             vars.add(var)
