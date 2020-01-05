@@ -114,7 +114,7 @@ class PENMANCodec(object):
                 comment, found, meta = comment.rpartition('::')
                 if found:
                     key, _, value = meta.partition(' ')
-                    metadata[key] = value
+                    metadata[key] = value.rstrip()
         return metadata
 
     def _parse_node(self, tokens: TokenIterator):
@@ -270,7 +270,7 @@ class PENMANCodec(object):
         if not isinstance(tree, Tree):
             tree = Tree(tree)
         vars = [var for var, _ in tree.nodes()] if compact else []
-        parts = ['# ::{} {}'.format(key, value)
+        parts = ['# ::{}{}'.format(key, ' ' + value if value else value)
                  for key, value in tree.metadata.items()]
         parts.append(self._format_node(tree.node, indent, 0, set(vars)))
         return '\n'.join(parts)
