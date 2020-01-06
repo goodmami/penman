@@ -47,6 +47,10 @@
 * Nodes without concepts get a default concept of `None` (again); this
   means that `(b :ARG0-of (a))` is 3 triples instead of 1, but it will
   help distinguish node attributes from true edges.
+* `penman.layout.interpret()` no longer deinverts attributes; doing so
+  leads to triples with constants as a source (or treating constants
+  as variables); this requires looking at the variables of tree nodes
+  to determine which are attributes.
 
 
 ## [v0.8.0][]

@@ -74,6 +74,9 @@ unconventional graphs.
    # Missing node label
    (a / :ROLE (b / b-label))
 
+   # Inverted attributes
+   (a / a-label :ARG0-of 2)
+
 **Disallowed**
 
 .. code-block:: bash

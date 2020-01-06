@@ -50,14 +50,14 @@ following data::
                           ('b', ':ARG0', 'd')]            : POP
 """
 
-from typing import Union, Mapping, Callable, Any, List, cast
+from typing import Union, Mapping, Callable, Any, List, Set, cast
 import copy
 import logging
 
 from penman.exceptions import LayoutError
 from penman.types import Variable, BasicTriple
 from penman.epigraph import Epidatum
-from penman.surface import (AlignmentMarker, Alignment, RoleAlignment)
+from penman.surface import (Alignment, RoleAlignment)
 from penman.tree import (Tree, Node, Branch, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
@@ -137,19 +137,20 @@ def interpret(t: Tree, model: Model = None) -> Graph:
     """
     if model is None:
         model = _default_model
-    top, triples, epidata = _interpret_node(t.node, model)
+    variables = {v for v, _ in t.nodes()}
+    top, triples, epidata = _interpret_node(t.node, variables, model)
     g = Graph(triples, top=top, epidata=epidata, metadata=t.metadata)
     logger.info('Interpreted: %s', g)
     return g
 
 
-def _interpret_node(t: Node, model: Model):
+def _interpret_node(t: Node, variables: Set[Variable], model: Model):
     has_concept = False
     triples = []
     epidata = {}
     var, edges = t
     for role, target in edges:
-        epis: List[AlignmentMarker] = []
+        epis: List[Epidatum] = []
 
         if role == '/':
             role = CONCEPT_ROLE
@@ -160,24 +161,26 @@ def _interpret_node(t: Node, model: Model):
 
         # atomic targets
         if is_atomic(target):
-            child = ()
             if target and '~' in target:
                 target, _, alignment = target.partition('~')
                 epis.append(Alignment.from_string(alignment))
-            target_var = target
+            triple = (var, role, target)
+            if model.is_role_inverted(role):
+                if target in variables:
+                    triple = model.invert(triple)
+                else:
+                    logger.warning('cannot deinvert attribute: %r', triple)
+            triples.append(triple)
+            epidata[triple] = epis
         # nested nodes
         else:
-            child = target
-            target_var = target[0]
+            triple = model.deinvert((var, role, target[0]))
+            triples.append(triple)
+            epidata[triple] = epis
 
-        triple = model.deinvert((var, role, target_var))
-        triples.append(triple)
-        epidata[triple] = epis
-
-        # recurse to nested nodes
-        if child:
-            epidata[triple].append(Push(target_var))
-            _, _triples, _epis = _interpret_node(child, model)
+            # recurse to nested nodes
+            epidata[triple].append(Push(target[0]))
+            _, _triples, _epis = _interpret_node(target, variables, model)
             triples.extend(_triples)
             epidata.update(_epis)
             epidata[triples[-1]].append(POP)

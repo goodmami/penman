@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 import pytest
 
 import penman
@@ -173,6 +175,29 @@ class TestPENMANCodec(object):
 
         # fuller examples
         assert decode(x1[0]).triples == x1[1]
+
+    def test_decode_inverted_attributes(self, caplog):
+        caplog.set_level(logging.WARNING, logger='penman.layout')
+
+        g = decode('(b :-of 1)')
+        assert g.top == 'b'
+        assert g.triples == [
+            ('b', ':instance', None),
+            ('b', ':-of', '1'),
+        ]
+        assert 'cannot deinvert attribute' in caplog.text
+        assert g.variables() == {'b'}
+        caplog.clear()
+
+        g = decode('(a :ARG-of "string")')
+        assert g.top == 'a'
+        assert g.triples == [
+            ('a', ':instance', None),
+            ('a', ':ARG-of', '"string"'),
+        ]
+        assert 'cannot deinvert attribute' in caplog.text
+        assert g.variables() == {'a'}
+        caplog.clear()
 
     def test_decode_atoms(self):
         # string value
