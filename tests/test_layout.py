@@ -166,11 +166,13 @@ def test_node_contexts():
     g = codec.decode('(a / alpha)')
     assert node_contexts(g) == ['a']
 
+    # note here and below: the first 'a' is for ('a', ':instance', None)
     g = codec.decode('(a :ARG0 (b / beta))')
-    assert node_contexts(g) == ['a', 'b']
+    assert node_contexts(g) == ['a', 'a', 'b']
 
     g = codec.decode('(a :ARG0-of (b / beta))')
-    assert node_contexts(g) == ['a', 'b']
+    assert node_contexts(g) == ['a', 'a', 'b']
 
+    # also ('b', ':instance', None) here
     g = codec.decode('(a :ARG0 (b) :ARG1 (g / gamma))')
-    assert node_contexts(g) == ['a', 'a', 'g']
+    assert node_contexts(g) == ['a', 'a', 'b', 'a', 'g']

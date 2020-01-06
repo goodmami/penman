@@ -144,16 +144,20 @@ def interpret(t: Tree, model: Model = None) -> Graph:
 
 
 def _interpret_node(t: Node, model: Model):
+    has_concept = False
     triples = []
     epidata = {}
     var, edges = t
     for role, target in edges:
         epis: List[AlignmentMarker] = []
+
         if role == '/':
             role = CONCEPT_ROLE
+            has_concept = True
         elif '~' in role:
             role, _, alignment = role.partition('~')
             epis.append(RoleAlignment.from_string(alignment))
+
         # atomic targets
         if is_atomic(target):
             child = ()
@@ -165,9 +169,11 @@ def _interpret_node(t: Node, model: Model):
         else:
             child = target
             target_var = target[0]
+
         triple = model.deinvert((var, role, target_var))
         triples.append(triple)
         epidata[triple] = epis
+
         # recurse to nested nodes
         if child:
             epidata[triple].append(Push(target_var))
@@ -175,6 +181,11 @@ def _interpret_node(t: Node, model: Model):
             triples.extend(_triples)
             epidata.update(_epis)
             epidata[triples[-1]].append(POP)
+
+    if not has_concept:
+        instance = (var, CONCEPT_ROLE, None)
+        triples.insert(0, instance)
+        epidata[instance] = []
 
     return var, triples, epidata
 
@@ -277,7 +288,7 @@ def _preconfigure(g, strict):
     epidata = g.epidata
     pushed = set()
     for triple in g.triples:
-        _triple = list(map(str, triple))
+        var, role, target = triple
         push, pops = None, []
         for epi in epidata.get(triple, []):
             if isinstance(epi, Push):
@@ -297,9 +308,9 @@ def _preconfigure(g, strict):
             elif epi is POP:
                 pops.append(epi)
             elif epi.mode == 1:  # role epidata
-                _triple[1] += str(epi)
-            elif epi.mode == 2:  # target epidata
-                _triple[2] += str(epi)
+                role = f'{role!s}{epi!s}'
+            elif target and epi.mode == 2:  # target epidata
+                target = f'{target!s}{epi!s}'
             else:
                 logging.warning('epigraphical marker lost: %r', epi)
 
@@ -307,7 +318,7 @@ def _preconfigure(g, strict):
             raise LayoutError(
                 f'incompatible node context changes on triple: {triple!r}')
 
-        data.append((_triple, push))
+        data.append(((var, role, target), push))
         data.extend(pops)
 
     return data
@@ -339,6 +350,14 @@ def _configure_node(var, data, nodemap, model):
             data.append(datum)
             break
 
+        if role == CONCEPT_ROLE:
+            if not target:
+                continue  # prefer (a) over (a /) when concept is missing
+            role = '/'
+            index = 0
+        else:
+            index = len(edges)
+
         if push and push.variable == target:
             nodemap[push.variable] = (push.variable, [])
             target = _configure_node(
@@ -346,12 +365,6 @@ def _configure_node(var, data, nodemap, model):
         elif target in nodemap and nodemap[target] is None:
             # site of potential node context
             nodemap[target] = node
-
-        if role == CONCEPT_ROLE:
-            role = '/'
-            index = 0
-        else:
-            index = len(edges)
 
         edges.insert(index, (role, target))
 

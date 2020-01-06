@@ -44,10 +44,10 @@ class TestPENMANCodec(object):
         ) == '(a)'
         assert codec.format(
             ('a', [('/', None)])
-        ) == '(a / )'
+        ) == '(a /)'
         assert codec.format(
             ('a', [('/', '')])
-        ) == '(a / )'
+        ) == '(a /)'
         assert codec.format(
             ('a', [('/', 'alpha')])
         ) == '(a / alpha)'
@@ -57,6 +57,9 @@ class TestPENMANCodec(object):
         assert codec.format(
             ('a', [(':', 'b')])
         ) == '(a : b)'
+        assert codec.format(
+            ('a', [(':', (None, []))])
+        ) == '(a : ())'
         assert codec.format(
             ('a', [('', ('b', []))])
         ) == '(a : (b))'
@@ -125,7 +128,7 @@ class TestPENMANCodec(object):
         # unlabeled single node
         g = decode('(a)')
         assert g.top == 'a'
-        assert g.triples == []
+        assert g.triples == [('a', ':instance', None)]
 
         # labeled node
         g = decode('(a / alpha)')
@@ -135,22 +138,38 @@ class TestPENMANCodec(object):
         # unlabeled edge to unlabeled node
         g = decode('(a : (b))')
         assert g.top == 'a'
-        assert g.triples == [('a', ':', 'b')]
+        assert g.triples == [
+            ('a', ':instance', None),
+            ('a', ':', 'b'),
+            ('b', ':instance', None),
+        ]
 
         # inverted unlabeled edge
         g = decode('(b :-of (a))')
         assert g.top == 'b'
-        assert g.triples == [('a', ':', 'b')]
+        assert g.triples == [
+            ('b', ':instance', None),
+            ('a', ':', 'b'),
+            ('a', ':instance', None),
+        ]
 
         # labeled edge to unlabeled node
         g = decode('(a :ARG (b))')
         assert g.top == 'a'
-        assert g.triples == [('a', ':ARG', 'b')]
+        assert g.triples == [
+            ('a', ':instance', None),
+            ('a', ':ARG', 'b'),
+            ('b', ':instance', None),
+        ]
 
         # inverted edge
         g = decode('(b :ARG-of (a))')
         assert g.top == 'b'
-        assert g.triples == [('a', ':ARG', 'b')]
+        assert g.triples == [
+            ('b', ':instance', None),
+            ('a', ':ARG', 'b'),
+            ('a', ':instance', None),
+        ]
 
         # fuller examples
         assert decode(x1[0]).triples == x1[1]
@@ -159,24 +178,28 @@ class TestPENMANCodec(object):
         # string value
         g = decode('(a :ARG "string")')
         assert g.triples == [
+            ('a', ':instance', None),
             ('a', ':ARG', '"string"'),
         ]
 
         # symbol value
         g = decode('(a :ARG symbol)')
         assert g.triples == [
+            ('a', ':instance', None),
             ('a', ':ARG', 'symbol')
         ]
 
         # float value
         g = decode('(a :ARG -1.0e-2)')
         assert g.triples == [
+            ('a', ':instance', None),
             ('a', ':ARG', '-1.0e-2')
         ]
 
         # int value
         g = decode('(a :ARG 15)')
         assert g.triples == [
+            ('a', ':instance', None),
             ('a', ':ARG', '15')
         ]
 

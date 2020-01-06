@@ -44,6 +44,9 @@
 * Tree branches are simple 2-tuples: `(role, target)` ([#45][])
 * `penman.layout.appears_inverted()` better detects inverted triples
   when the target in the serialization was just a variable ([#47][])
+* Nodes without concepts get a default concept of `None` (again); this
+  means that `(b :ARG0-of (a))` is 3 triples instead of 1, but it will
+  help distinguish node attributes from true edges.
 
 
 ## [v0.8.0][]
