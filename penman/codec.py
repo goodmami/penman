@@ -128,26 +128,26 @@ class PENMANCodec(object):
         tokens.expect('LPAREN')
 
         var = None
+        concept: Union[str, None]
         edges = []
 
         if tokens.peek().type != 'RPAREN':
             var = tokens.expect('SYMBOL').text
             if tokens.peek().type == 'SLASH':
-                edges.append(self._parse_node_label(tokens))
+                slash = tokens.next()
+                # for robustness, don't assume next token is the concept
+                if tokens.peek().type in ('SYMBOL', 'STRING'):
+                    concept = tokens.next().text
+                else:
+                    concept = None
+                    logger.warning('Missing concept: %s', slash.line)
+                edges.append(('/', concept))
             while tokens.peek().type != 'RPAREN':
                 edges.append(self._parse_edge(tokens))
 
         tokens.expect('RPAREN')
 
         return (var, edges)
-
-    def _parse_node_label(self, tokens: TokenIterator):
-        tokens.expect('SLASH')
-        concept = None
-        # for robustness, don't assume next token is the concept
-        if tokens.peek().type in ('SYMBOL', 'STRING'):
-            concept = tokens.next().text
-        return ('/', concept)
 
     def _parse_edge(self, tokens: TokenIterator):
         """
@@ -157,7 +157,7 @@ class PENMANCodec(object):
 
             Edge := Role (Constant | Node)
         """
-        role = tokens.expect('ROLE').text
+        role = tokens.expect('ROLE')
         target = None
 
         _next = tokens.peek()
@@ -171,8 +171,10 @@ class PENMANCodec(object):
         #    (x :ROLE )          <- end of node
         elif next_type not in ('ROLE', 'RPAREN'):
             raise tokens.error('Expected: SYMBOL, STRING, LPAREN', token=_next)
+        else:
+            logger.warning('Missing target: %s', role.line)
 
-        return (role, target)
+        return (role.text, target)
 
     def parse_triples(self, s: str) -> List[BasicTriple]:
         """ Parse a triple conjunction from *s*."""

@@ -13,9 +13,6 @@ from penman.codec import PENMANCodec
 from penman import transform
 
 
-logging.basicConfig()  # just default arguments; level will be set later
-
-
 def process(f, model, out, normalize_options, format_options, triples):
     """Read graphs from *f* and write to *out*."""
 
