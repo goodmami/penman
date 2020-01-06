@@ -96,7 +96,7 @@ For example:
    >>> from penman import PENMANCodec
    >>> codec = PENMANCodec()
    >>> g = codec.decode('(b / bark-01 :ARG0 (d / dog))')
-   >>> g.attributes()
+   >>> g.instances()
    [Attribute(source='b', role=':instance', target='bark-01'), Attribute(source='d', role=':instance', target='dog')]
    >>> g.edges()
    [Edge(source='b', role=':ARG0', target='d')]

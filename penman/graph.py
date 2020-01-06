@@ -188,6 +188,13 @@ class Graph(object):
             vs.add(self._top)
         return vs
 
+    def instances(self) -> List[Attribute]:
+        """
+        Return instances (concept triples).
+        """
+        return [Attribute(*t)
+                for t in self._filter_triples(None, CONCEPT_ROLE, None)]
+
     def edges(self,
               source: Optional[Variable] = None,
               role: Role = None,
@@ -209,12 +216,13 @@ class Graph(object):
         """
         Return attributes filtered by their *source*, *role*, or *target*.
 
-        Attributes don't include triples where the target is a nonterminal.
+        Attributes don't include concept triples or those where the
+        target is a nonterminal.
         """
         variables = self.variables()
         return [Attribute(*t)
                 for t in self._filter_triples(source, role, target)
-                if t[1] == CONCEPT_ROLE or t[2] not in variables]
+                if t[1] != CONCEPT_ROLE and t[2] not in variables]
 
     def _filter_triples(self,
                         source: Optional[Variable],

@@ -14,6 +14,7 @@
 * `penman.layout.node_contexts()`
 * `penman.transform.dereify_edges()` ([#40][])
 * `--dereify-edges` command-line option ([#40][])
+* `penman.graph.Graph.instances()` ([#48][])
 
 ### Removed
 
@@ -51,6 +52,8 @@
   leads to triples with constants as a source (or treating constants
   as variables); this requires looking at the variables of tree nodes
   to determine which are attributes.
+* `penman.graph.Graph.attributes()` no longer returns `:instance`
+  triples ([#48][])
 
 
 ## [v0.8.0][]
@@ -509,3 +512,4 @@ First release with very basic functionality.
 [#44]: https://github.com/goodmami/penman/issues/44
 [#45]: https://github.com/goodmami/penman/issues/45
 [#47]: https://github.com/goodmami/penman/issues/47
+[#48]: https://github.com/goodmami/penman/issues/48
