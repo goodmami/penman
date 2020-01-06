@@ -191,7 +191,7 @@ def reify_attributes(g: Graph) -> Graph:
             # get unique var for new node
             var = '_'
             while var in variables:
-                var = '_{}'.format(i)
+                var = f'_{i}'
                 i += 1
             variables.add(var)
             role_triple = (source, role, var)

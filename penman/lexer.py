@@ -32,8 +32,7 @@ PATTERNS = {
 
 
 def _compile(*names: str) -> Pattern[str]:
-    pat = '\n|'.join('(?P<{}>{})'.format(name, PATTERNS[name])
-                     for name in names)
+    pat = '\n|'.join(f'(?P<{name}>{PATTERNS[name]})' for name in names)
     return re.compile(pat, flags=re.VERBOSE)
 
 
@@ -199,7 +198,7 @@ def _lex(lines: Iterable[str], regex: Pattern[str]) -> Iterator[Token]:
             if typ is None:
                 raise ValueError(
                     'Lexer pattern generated a match without a named '
-                    'capturing group:\n{}'.format(regex.pattern))
+                    f'capturing group:\n{regex.pattern}')
             token = Token(typ, val, i, m.start(), line)
             if debug:
                 logger.debug(token)

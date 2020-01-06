@@ -287,7 +287,7 @@ class PENMANCodec(object):
         if not var:
             return '()'  # empty node
         if not edges:
-            return '({!s})'.format(var)  # var-only node
+            return f'({var!s})'  # var-only node
 
         # determine appropriate joiner based on value of indent
         if indent is None:
@@ -315,7 +315,7 @@ class PENMANCodec(object):
         if compact:
             parts = [' '.join(parts)]
 
-        return '({!s} {})'.format(var, joiner.join(parts))
+        return f'({var!s} {joiner.join(parts)})'
 
     def _format_edge(self, edge, indent, column, vars):
         """
@@ -329,12 +329,13 @@ class PENMANCodec(object):
         if indent == -1:
             column += len(role) + 1  # +1 for :
 
-        if target is None:
-            target = ''
+        sep = ' '
+        if not target:
+            target = sep = ''
         elif not is_atomic(target):
             target = self._format_node(target, indent, column, vars)
 
-        return '{} {!s}'.format(role, target)
+        return f'{role}{sep}{target!s}'
 
     def format_triples(self,
                        triples: Iterable[BasicTriple],
@@ -358,6 +359,6 @@ class PENMANCodec(object):
         """
         delim = ' ^\n' if indent else ' ^ '
         # need to remove initial : on roles for triples
-        conjunction = ['{}({}, {})'.format(role.lstrip(':'), source, target)
+        conjunction = [f'{role.lstrip(":")}({source}, {target})'
                        for source, role, target in triples]
         return delim.join(conjunction)

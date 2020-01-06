@@ -35,10 +35,11 @@ class Tree:
         return self.node == other
 
     def __repr__(self) -> str:
-        return 'Tree({!r})'.format(self.node)
+        return f'Tree({self.node!r})'
 
     def __str__(self) -> str:
-        return 'Tree(\n  {})'.format(_format(self.node, 2))
+        s = _format(self.node, 2)
+        return f'Tree(\n  {s})'
 
     def nodes(self):
         """
@@ -91,7 +92,7 @@ def _format_edge(edge, level):
         target = repr(target)
     else:
         target = _format(target, level)
-    return '({!r}, {})'.format(role, target)
+    return f'({role!r}, {target})'
 
 
 def _nodes(node):

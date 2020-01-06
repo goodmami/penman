@@ -47,14 +47,14 @@ class AlignmentMarker(Epidatum):
                 _s = _s[i:]
         except IndexError as exc:
             raise SurfaceError(
-                'invalid alignment marker: {!r}'.format(s)
+                f'invalid alignment marker: {s!r}'
             ) from exc
 
         try:
             indices = tuple(map(int, _s.split(',')))
         except ValueError as exc:
             raise SurfaceError(
-                'invalid alignments: {!r}'.format(s)
+                f'invalid alignments: {s!r}'
             ) from exc
 
         return cls(indices, prefix=prefix)
@@ -62,8 +62,9 @@ class AlignmentMarker(Epidatum):
     def __repr__(self):
         args = repr(self.indices)
         if self.prefix:
-            args += ', prefix={}'.format(repr(self.prefix))
-        return '{}({})'.format(type(self).__name__, args)
+            args += f', prefix={self.prefix!r}'
+        name = type(self).__name__
+        return f'{name}({args})'
 
     def __str__(self):
         return '~{}{}'.format(self.prefix or '',

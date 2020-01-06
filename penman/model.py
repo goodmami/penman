@@ -215,14 +215,14 @@ class Model(object):
         """
         source, role, target = triple
         if role not in self.reifications:
-            raise ModelError("'{}' cannot be reified".format(role))
+            raise ModelError(f"'{role}' cannot be reified")
         concept, source_role, target_role = next(iter(self.reifications[role]))
 
         var = '_'
         if variables:
             i = 2
             while var in variables:
-                var = '_{}'.format(i)
+                var = f'_{i}'
                 i += 1
 
         return ((var, source_role, source),
@@ -264,7 +264,7 @@ class Model(object):
         target_role = target_triple[1]
 
         if concept not in self.dereifications:
-            raise ModelError("{!r} cannot be dereified".format(concept))
+            raise ModelError(f"{concept!r} cannot be dereified")
         for role, source, target in self.dereifications[concept]:
             if source == source_role and target == target_role:
                 return (cast(Variable, source_triple[2]),
@@ -275,8 +275,8 @@ class Model(object):
                         role,
                         source_triple[2])
 
-        raise ModelError('{!r} and {!r} are not valid roles to dereify {!r}'
-                         .format(source_role, target_role, concept))
+        raise ModelError(f'{source_role!r} and {target_role!r} '
+                         f'are not valid roles to dereify {concept!r}')
 
     def original_order(self, branch: Branch):
         """Branch sorting key that does not change the order."""

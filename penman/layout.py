@@ -85,7 +85,7 @@ class Push(LayoutMarker):
         self.variable = variable
 
     def __repr__(self):
-        return 'Push({})'.format(self.variable)
+        return f'Push({self.variable})'
 
 
 class _Pop(LayoutMarker):
@@ -258,7 +258,7 @@ def _configure(g, top, model, strict):
     if top is None:
         top = g.top
     if top not in nodemap:
-        raise LayoutError('top is not a variable: {!r}'.format(top))
+        raise LayoutError(f'top is not a variable: {top!r}')
     nodemap[top] = (top, [])
 
     data = list(reversed(_preconfigure(g, strict)))
@@ -284,14 +284,13 @@ def _preconfigure(g, strict):
                 if push is not None or epi.variable in pushed:
                     if strict:
                         raise LayoutError(
-                            "multiple node contexts for '{}'"
-                            .format(epi.variable))
+                            f"multiple node contexts for '{epi.variable}'")
                     pass  # change to 'continue' to disallow multiple contexts
                 if epi.variable not in (triple[0], triple[2]):
                     if strict:
                         raise LayoutError(
-                            "node context '{}' invalid for triple: {}"
-                            .format(epi.variable, triple))
+                            f"node context '{epi.variable}' "
+                            f"invalid for triple: {triple!r}")
                     continue
                 pushed.add(epi.variable)
                 push = epi
@@ -306,8 +305,7 @@ def _preconfigure(g, strict):
 
         if strict and push and pops:
             raise LayoutError(
-                'incompatible node context changes on triple: {}'
-                .format(triple))
+                f'incompatible node context changes on triple: {triple!r}')
 
         data.append((_triple, push))
         data.extend(pops)

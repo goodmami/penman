@@ -103,17 +103,14 @@ class Graph(object):
         self.metadata = dict(metadata)
 
     def __repr__(self):
-        return '<{} object (top={}) at {}>'.format(
-            self.__class__.__name__,
-            self.top,
-            id(self)
-        )
+        name = self.__class__.__name__
+        return f'<{name} object (top={self.top}) at {id(self)}>'
 
     def __str__(self):
         triples = '[{}]'.format(',\n   '.join(map(repr, self.triples)))
         epidata = '{{{}}}'.format(',\n    '.join(
             map('{0[0]!r}: {0[1]!r}'.format, self.epidata.items())))
-        return 'Graph(\n  {},\n  epidata={})'.format(triples, epidata)
+        return f'Graph(\n  {triples},\n  epidata={epidata})'
 
     def __eq__(self, other):
         if not isinstance(other, Graph):
