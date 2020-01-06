@@ -349,8 +349,8 @@ def _dereify_agenda(g: Graph, model: Model) -> _Dereification:
 
     for var, instance in inst.items():
         if (var not in fixed
-            and len(other.get(var, [])) == 2
-            and model.is_concept_dereifiable(instance[2])):
+                and len(other.get(var, [])) == 2
+                and model.is_concept_dereifiable(instance[2])):
             # passed initial checks
             # now figure out which other edge is the first one
             first, second = other[var]

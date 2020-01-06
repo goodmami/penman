@@ -4,8 +4,7 @@
 Serialization of PENMAN graphs.
 """
 
-from typing import Optional, Union, Type, Iterable, Iterator, List
-import re
+from typing import Optional, Union, Iterable, Iterator, List
 import logging
 
 from penman.types import (
