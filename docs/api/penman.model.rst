@@ -18,8 +18,11 @@ penman.model
       .. automethod:: canonicalize_role
       .. automethod:: canonicalize
 
-      .. automethod:: is_reifiable
+      .. automethod:: is_role_reifiable
       .. automethod:: reify
+
+      .. automethod:: is_concept_dereifiable
+      .. automethod:: dereify
 
       .. automethod:: original_order
       .. automethod:: canonical_order

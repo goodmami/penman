@@ -12,7 +12,7 @@ penman.lexer
       A dictionary mapping token names to regular expressions. For
       instance::
 
-	'ROLE':  r':[^\s()\/,:~^]*'
+	'ROLE':  r':[^\s()\/:]*'
 
       The token names are used later by the :class:`TokenIterator` to
       help with parsing.

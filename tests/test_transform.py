@@ -5,7 +5,7 @@ from penman.codec import PENMANCodec
 from penman.transform import (
     canonicalize_roles,
     reify_edges,
-    contract_edges,
+    dereify_edges,
     reify_attributes,
     indicate_branches,
 )
@@ -45,6 +45,9 @@ def test_canonicalize_roles_amr_codec():
     t = norm(parse('(a / alpha :mod-of (b / beta))'))
     assert format(t) == '(a / alpha :domain (b / beta))'
 
+    t = norm(parse('(a / alpha :mod-of~1 (b / beta))'))
+    assert format(t) == '(a / alpha :domain~1 (b / beta))'
+
 
 def test_reify_edges_default_codec():
     decode = def_codec.decode
@@ -80,8 +83,71 @@ def test_reify_edges_amr_codec():
         ':ARG1 (b / beta~2 :ARG1-of (_2 / have-polarity-91 :ARG2 -))))')
 
 
-def contract_edges():
-    pass
+def test_dereify_edges_default_codec():
+    decode = def_codec.decode
+    norm = lambda g: dereify_edges(g, def_model)
+    encode = lambda g: def_codec.encode(g, indent=None)
+
+    g = norm(decode('(a / alpha :ARG1-of (_ / have-mod-91'
+                    '                       :ARG2 (b / beta)))'))
+    assert encode(g) == (
+        '(a / alpha :ARG1-of (_ / have-mod-91 :ARG2 (b / beta)))')
+
+    g = norm(decode('(a / alpha :ARG2-of (_ / have-mod-91'
+                    '                       :ARG1 (b / beta)))'))
+    assert encode(g) == (
+        '(a / alpha :ARG2-of (_ / have-mod-91 :ARG1 (b / beta)))')
+
+
+def test_dereify_edges_amr_codec():
+    decode = amr_codec.decode
+    norm = lambda g: dereify_edges(g, amr_model)
+    encode = lambda g: amr_codec.encode(g, indent=None)
+
+    g = norm(decode('(a / alpha :ARG1-of~1 (_ / have-mod-91~2'
+                    '                         :ARG2~3 7~4))'))
+    assert encode(g) == '(a / alpha :mod~2 7~4)'
+
+    g = norm(decode('(a / alpha :ARG1-of~1 (_ / have-mod-91~2'
+                    '                       :ARG2~3 (b / beta~4)))'))
+    assert encode(g) == '(a / alpha :mod~2 (b / beta~4))'
+
+    g = norm(decode('(a / alpha :ARG2-of (_ / have-mod-91'
+                    '                       :ARG1 (b / beta)))'))
+    assert encode(g) == '(a / alpha :mod-of (b / beta))'
+
+    # dereification is blocked because node has additional relations
+    g = norm(decode('(a / alpha :ARG1-of (_ / have-mod-91'
+                    '                       :ARG2 (b / beta)'
+                    '                       :polarity -))'))
+    assert encode(g) == (
+        '(a / alpha :ARG1-of (_ / have-mod-91 :ARG2 (b / beta) :polarity -))')
+
+    g = norm(decode('''
+        (a / alpha
+            :ARG1-of (b / beta
+                        :ARG0 p)
+            :ARG1-of (g / gamma
+                        :ARG0-of (_ / own-01
+       	                            :ARG1 (p / pi))))'''))
+    assert encode(g) == (
+        '(a / alpha :ARG1-of (b / beta :ARG0 p)'
+        ' :ARG1-of (g / gamma :poss (p / pi)))')
+
+    # Re-enable the following test if we have a way to remove POPs
+    # from epidata at the ends of "branches" in the graph
+    #
+    # g = norm(decode('''
+    #     (a / alpha
+    #        :ARG0 (b / beta)
+    #        :ARG1 (g / gamma
+    #                  :ARG1-of (_ / have-quant-91
+    #                              :ARG2 4)
+    #                  :ARG2-of (_2 / have-part-91
+    #                               :ARG1 b))))'''))
+    # assert encode(g) == (
+    #     '(a / alpha :ARG0 (b / beta)'
+    #     ' :ARG1 (g / gamma :quant 4 :part-of b))')
 
 
 def test_reify_attributes():
@@ -132,6 +198,6 @@ def test_issue_35():
     assert g.triples == [
         ('a', ':instance', 'alpha'),
         ('a', ':mod', '_'),
-        ('_', ':instance', 7),
+        ('_', ':instance', '7'),
         ('a', ':mod', '_2'),
-        ('_2', ':instance', 7)]
+        ('_2', ':instance', '7')]

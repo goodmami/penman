@@ -22,12 +22,12 @@ __all__ = [
     'dumps',
 ]
 
+import logging
 
 from penman.__about__ import (
     __version__,
     __version_info__,
 )
-
 from penman.exceptions import (
     PenmanError,
     DecodeError,
@@ -37,7 +37,6 @@ from penman.graph import (
     Graph,
 )
 from penman.codec import PENMANCodec
-
 from penman.interface import (
     decode,
     encode,
@@ -46,3 +45,5 @@ from penman.interface import (
     dump,
     dumps,
 )
+
+logging.basicConfig()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.8.0'
+__version__ = '0.9.0'
 __version_info__ = tuple(
     int(x) if x.isdigit() else x
     for x in __version__.replace('.', ' ').replace('-', ' ').split()
@@ -14,4 +14,4 @@ __author__ = 'Michael Wayne Goodman'
 __email__ = 'goodman.m.w@gmail.com'
 
 __license__ = 'MIT'
-__copyright__ = '2016--2019 %s <%s>' % (__author__, __email__)
+__copyright__ = '2016--2020 %s <%s>' % (__author__, __email__)

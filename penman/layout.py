@@ -50,13 +50,14 @@ following data::
                           ('b', ':ARG0', 'd')]            : POP
 """
 
-from typing import Union, Mapping, Callable, Any
+from typing import Union, Mapping, Callable, Any, List, Set, cast
 import copy
 import logging
 
 from penman.exceptions import LayoutError
 from penman.types import Variable, BasicTriple
 from penman.epigraph import Epidatum
+from penman.surface import (Alignment, RoleAlignment)
 from penman.tree import (Tree, Node, Branch, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
@@ -84,7 +85,7 @@ class Push(LayoutMarker):
         self.variable = variable
 
     def __repr__(self):
-        return 'Push({})'.format(self.variable)
+        return f'Push({self.variable})'
 
 
 class _Pop(LayoutMarker):
@@ -122,9 +123,9 @@ def interpret(t: Tree, model: Model = None) -> Graph:
         >>> from penman import layout
         >>> t = Tree(
         ...   ('b', [
-        ...     ('/', 'bark', []),
+        ...     ('/', 'bark'),
         ...     ('ARG0', ('d', [
-        ...       ('/', 'dog', [])]), [])]))
+        ...       ('/', 'dog')]))]))
         >>> g = layout.interpret(t)
         >>> for triple in g.triples:
         ...     print(triple)
@@ -136,37 +137,58 @@ def interpret(t: Tree, model: Model = None) -> Graph:
     """
     if model is None:
         model = _default_model
-    top, triples, epidata = _interpret_node(t.node, model)
+    variables = {v for v, _ in t.nodes()}
+    top, triples, epidata = _interpret_node(t.node, variables, model)
     g = Graph(triples, top=top, epidata=epidata, metadata=t.metadata)
     logger.info('Interpreted: %s', g)
     return g
 
 
-def _interpret_node(t: Node, model: Model):
+def _interpret_node(t: Node, variables: Set[Variable], model: Model):
+    has_concept = False
     triples = []
     epidata = {}
     var, edges = t
-    for role, target, epis in edges:
+    for role, target in edges:
+        epis: List[Epidatum] = []
+
         if role == '/':
             role = CONCEPT_ROLE
+            has_concept = True
+        elif '~' in role:
+            role, _, alignment = role.partition('~')
+            epis.append(RoleAlignment.from_string(alignment))
+
         # atomic targets
         if is_atomic(target):
-            child = ()
-            target_var = target
+            if target and '~' in target:
+                target, _, alignment = target.partition('~')
+                epis.append(Alignment.from_string(alignment))
+            triple = (var, role, target)
+            if model.is_role_inverted(role):
+                if target in variables:
+                    triple = model.invert(triple)
+                else:
+                    logger.warning('cannot deinvert attribute: %r', triple)
+            triples.append(triple)
+            epidata[triple] = epis
         # nested nodes
         else:
-            child = target
-            target_var = target[0]
-        triple = model.deinvert((var, role, target_var))
-        triples.append(triple)
-        epidata[triple] = epis
-        # recurse to nested nodes
-        if child:
-            epidata[triple].append(Push(target_var))
-            _, _triples, _epis = _interpret_node(child, model)
+            triple = model.deinvert((var, role, target[0]))
+            triples.append(triple)
+            epidata[triple] = epis
+
+            # recurse to nested nodes
+            epidata[triple].append(Push(target[0]))
+            _, _triples, _epis = _interpret_node(target, variables, model)
             triples.extend(_triples)
             epidata.update(_epis)
             epidata[triples[-1]].append(POP)
+
+    if not has_concept:
+        instance = (var, CONCEPT_ROLE, None)
+        triples.insert(0, instance)
+        epidata[instance] = []
 
     return var, triples, epidata
 
@@ -211,13 +233,16 @@ def configure(g: Graph,
         >>> print(t)
         Tree(
           ('b', [
-            ('/', 'bark', []),
+            ('/', 'bark'),
             (':ARG0', ('d', [
-              ('/', 'dog', [])]), [])]))
+              ('/', 'dog')]))]))
     """
     if model is None:
         model = _default_model
     node, data, nodemap = _configure(g, top, model, strict)
+    # remove any superfluous POPs at the end (maybe from dereification)
+    while data and data[-1] is POP:
+        data.pop()
     # if any data remain, the graph was not properly annotated for a tree
     while data:
         skipped, var, data = _find_next(data, nodemap)
@@ -247,7 +272,7 @@ def _configure(g, top, model, strict):
     if top is None:
         top = g.top
     if top not in nodemap:
-        raise LayoutError('top is not a variable: {!r}'.format(top))
+        raise LayoutError(f'top is not a variable: {top!r}')
     nodemap[top] = (top, [])
 
     data = list(reversed(_preconfigure(g, strict)))
@@ -266,34 +291,37 @@ def _preconfigure(g, strict):
     epidata = g.epidata
     pushed = set()
     for triple in g.triples:
-        push, pops, others = None, [], []
+        var, role, target = triple
+        push, pops = None, []
         for epi in epidata.get(triple, []):
             if isinstance(epi, Push):
                 if push is not None or epi.variable in pushed:
                     if strict:
                         raise LayoutError(
-                            "multiple node contexts for '{}'"
-                            .format(epi.variable))
+                            f"multiple node contexts for '{epi.variable}'")
                     pass  # change to 'continue' to disallow multiple contexts
                 if epi.variable not in (triple[0], triple[2]):
                     if strict:
                         raise LayoutError(
-                            "node context '{}' invalid for triple: {}"
-                            .format(epi.variable, triple))
+                            f"node context '{epi.variable}' "
+                            f"invalid for triple: {triple!r}")
                     continue
                 pushed.add(epi.variable)
                 push = epi
             elif epi is POP:
                 pops.append(epi)
+            elif epi.mode == 1:  # role epidata
+                role = f'{role!s}{epi!s}'
+            elif target and epi.mode == 2:  # target epidata
+                target = f'{target!s}{epi!s}'
             else:
-                others.append(epi)
+                logging.warning('epigraphical marker lost: %r', epi)
 
         if strict and push and pops:
             raise LayoutError(
-                'incompatible node context changes on triple: {}'
-                .format(triple))
+                f'incompatible node context changes on triple: {triple!r}')
 
-        data.append((triple, others, push))
+        data.append(((var, role, target), push))
         data.extend(pops)
 
     return data
@@ -315,7 +343,7 @@ def _configure_node(var, data, nodemap, model):
         if datum is POP:
             break
 
-        triple, epidata, push = datum
+        triple, push = datum
         if triple[0] == var:
             source, role, target = triple
         elif triple[2] == var:
@@ -325,6 +353,14 @@ def _configure_node(var, data, nodemap, model):
             data.append(datum)
             break
 
+        if role == CONCEPT_ROLE:
+            if not target:
+                continue  # prefer (a) over (a /) when concept is missing
+            role = '/'
+            index = 0
+        else:
+            index = len(edges)
+
         if push and push.variable == target:
             nodemap[push.variable] = (push.variable, [])
             target = _configure_node(
@@ -333,13 +369,7 @@ def _configure_node(var, data, nodemap, model):
             # site of potential node context
             nodemap[target] = node
 
-        if role == CONCEPT_ROLE:
-            role = '/'
-            index = 0
-        else:
-            index = len(edges)
-
-        edges.insert(index, (role, target, epidata))
+        edges.insert(index, (role, target))
 
     return node
 
@@ -439,7 +469,7 @@ def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
     else:
         first = []
         rest = branches[:]
-    for _, target, _ in rest:
+    for _, target in rest:
         if not is_atomic(target):
             _rearrange(target, key=key)
     branches[:] = first + sorted(rest, key=key)
@@ -462,6 +492,25 @@ def has_valid_layout(g: Graph,
     return len(data) == 0
 
 
+def get_pushed_variable(g: Graph,
+                        triple: BasicTriple) -> Union[Variable, None]:
+    """
+    Return the variable pushed by *triple*, if any, otherwise ``None``.
+
+    Example:
+        >>> from penman import decode
+        >>> from penman.layout import get_pushed_variable
+        >>> g = decode('(a / alpha :ARG0 (b / beta))')
+        >>> get_pushed_variable(g, ('a', ':instance', 'alpha'))  # None
+        >>> get_pushed_variable(g, ('a', ':ARG0', 'b'))
+        'b'
+    """
+    for epi in g.epidata[triple]:
+        if isinstance(epi, Push):
+            return epi.variable
+    return None
+
+
 def appears_inverted(g: Graph, triple: BasicTriple) -> bool:
     """
     Return ``True`` if *triple* appears inverted in serialization.
@@ -482,5 +531,71 @@ def appears_inverted(g: Graph, triple: BasicTriple) -> bool:
     Returns:
         ``True`` if *triple* appears inverted in graph *g*.
     """
-    return any(isinstance(epi, Push) and epi.variable == triple[0]
-               for epi in g.epidata[triple])
+    variables = g.variables()
+    if triple[1] == CONCEPT_ROLE or triple[2] not in variables:
+        # attributes and instance triples should never be inverted
+        return False
+    else:
+        # edges may appear inverted...
+        variable = get_pushed_variable(g, triple)
+        if variable is not None:
+            # ... when their source is pushed
+            return variable == triple[0]
+        else:
+            # ... or when their target is the current node context
+            for variable, _triple in zip(node_contexts(g), g.triples):
+                if variable is None:
+                    break  # we can no longer guess the node context
+                elif _triple == triple:
+                    return triple[2] == variable
+    return False
+
+
+def node_contexts(g: Graph) -> List[Union[Variable, None]]:
+    """
+    Return the list of node contexts corresponding to triples in *g*.
+
+    If a node context is unknown, the value ``None`` is substituted.
+
+    Example:
+        >>> from penman import decode, layout
+        >>> g = decode('''
+        ...   (a / alpha
+        ...      :attr val
+        ...      :ARG0 (b / beta :ARG0 (g / gamma))
+        ...      :ARG0-of g)''')
+        >>> for ctx, trp in zip(layout.node_contexts(g), trp):
+        ...     print(ctx, ':', trp)
+        ...
+        a : ('a', ':instance', 'alpha')
+        a : ('a', ':attr', 'val')
+        a : ('a', ':ARG0', 'b')
+        b : ('b', ':instance', 'beta')
+        b : ('b', ':ARG0', 'g')
+        g : ('g', ':instance', 'gamma')
+        a : ('g', ':ARG0', 'a')
+    """
+    variables = g.variables()
+    stack = [g.top]
+    contexts: List[Union[Variable, None]] = [None] * len(g.triples)
+    for i, triple in enumerate(g.triples):
+        eligible: List[Variable] = [triple[0]]
+        if triple[1] != CONCEPT_ROLE and triple[2] in variables:
+            eligible.append(cast(Variable, triple[2]))
+
+        if stack[-1] not in eligible:
+            break
+        else:
+            contexts[i] = stack[-1]
+
+        pushed = get_pushed_variable(g, triple)
+        if pushed:
+            stack.append(pushed)
+
+        try:
+            for epi in g.epidata[triple]:
+                if epi is POP:
+                    stack.pop()
+        except IndexError:
+            break  # more POPs than contexts in stack
+    return contexts

@@ -194,17 +194,17 @@ class TestModel:
         assert m.canonicalize(('a', 'consist-of', 'b'))     == ('a', ':consist-of', 'b')
         assert m.canonicalize(('a', 'consist-of-of', 'b'))  == ('a', ':consist-of-of', 'b')
 
-    def test_is_reifiable(self, mini_amr):
+    def test_is_role_reifiable(self, mini_amr):
         m = Model()
-        assert not m.is_reifiable(('a', ':ARG0', 'b'))
-        assert not m.is_reifiable(('a', ':accompanier', 'b'))
-        assert not m.is_reifiable(('a', ':domain', 'b'))
-        assert not m.is_reifiable(('a', ':mod', 'b'))
+        assert not m.is_role_reifiable(':ARG0')
+        assert not m.is_role_reifiable(':accompanier')
+        assert not m.is_role_reifiable(':domain')
+        assert not m.is_role_reifiable(':mod')
         m = Model.from_dict(mini_amr)
-        assert not m.is_reifiable(('a', ':ARG0', 'b'))
-        assert m.is_reifiable(('a', ':accompanier', 'b'))
-        assert not m.is_reifiable(('a', ':domain', 'b'))
-        assert m.is_reifiable(('a', ':mod', 'b'))
+        assert not m.is_role_reifiable(':ARG0')
+        assert m.is_role_reifiable(':accompanier')
+        assert not m.is_role_reifiable(':domain')
+        assert m.is_role_reifiable(':mod')
 
     def test_reify(self, mini_amr):
         m = Model()
@@ -234,3 +234,32 @@ class TestModel:
             ('_2', ':ARG1', 'a'),
             ('_2', ':instance', 'have-mod-91'),
             ('_2', ':ARG2', 'b'))
+
+    def test_is_concept_dereifiable(self, mini_amr):
+        m = Model()
+        assert not m.is_concept_dereifiable('chase-01')
+        assert not m.is_concept_dereifiable(':mod')
+        assert not m.is_concept_dereifiable('have-mod-91')
+        m = Model.from_dict(mini_amr)
+        assert not m.is_concept_dereifiable('chase-01')
+        assert not m.is_concept_dereifiable(':mod')
+        assert m.is_concept_dereifiable('have-mod-91')
+
+    def test_dereify(self, mini_amr):
+        # (a :ARG1-of (_ / age-01 :ARG2 b)) -> (a :age b)
+        t1 = ('_', ':instance', 'have-mod-91')
+        t1b = ('_', ':instance', 'chase-01')
+        t2 = ('_', ':ARG1', 'a')
+        t3 = ('_', ':ARG2', 'b')
+        m = Model()
+        with pytest.raises(TypeError):
+            m.dereify(t1)
+        with pytest.raises(TypeError):
+            m.dereify(t1, t2)
+        with pytest.raises(ModelError):
+            m.dereify(t1, t2, t3)
+        m = Model.from_dict(mini_amr)
+        assert m.dereify(t1, t2, t3) == ('a', ':mod', 'b')
+        assert m.dereify(t1, t3, t2) == ('a', ':mod', 'b')
+        with pytest.raises(ModelError):
+            m.dereify(t1b, t2, t3)

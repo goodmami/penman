@@ -116,6 +116,15 @@ class TestGraph(object):
         assert Graph(x1[1]).variables() == set(['e2', 'x1', '_1', 'e3'])
         assert Graph([('a', ':ARG', 'b')], top='b').variables() == set('ab')
 
+    def test_instances(self, x1):
+        g = Graph(x1[1])
+        assert g.instances() == [
+            ('e2', ':instance', '_try_v_1'),
+            ('x1', ':instance', 'named'),
+            ('_1', ':instance', 'proper_q'),
+            ('e3', ':instance', '_sleep_v_1'),
+        ]
+
     def test_edges(self, x1):
         g = Graph(x1[1])
         assert g.edges() == [
@@ -141,37 +150,34 @@ class TestGraph(object):
     def test_attributes(self, x1):
         g = Graph(x1[1])
         assert g.attributes() == [
-            ('e2', ':instance', '_try_v_1'),
-            ('x1', ':instance', 'named'),
             ('x1', ':CARG', '"Abrams"'),
-            ('_1', ':instance', 'proper_q'),
-            ('e3', ':instance', '_sleep_v_1'),
         ]
         assert g.attributes(source='x1') == [
-            ('x1', ':instance', 'named'),
             ('x1', ':CARG', '"Abrams"'),
         ]
-        assert g.attributes(target='named') == [
-            ('x1', ':instance', 'named'),
+        assert g.attributes(target='"Abrams"') == [
+            ('x1', ':CARG', '"Abrams"'),
         ]
-        assert g.attributes(role=':instance') == [
-            ('e2', ':instance', '_try_v_1'),
-            ('x1', ':instance', 'named'),
-            ('_1', ':instance', 'proper_q'),
-            ('e3', ':instance', '_sleep_v_1'),
-        ]
+        assert g.attributes(role=':instance') == []
 
     def test_attributes_issue_29(self):
         # https://github.com/goodmami/penman/issues/29
+        #
+        # added :polarity triple to distinguish instances() from
+        # attributes()
         g = Graph([('f', ':instance', 'follow'),
+                   ('f', ':polarity', '-'),
                    ('f', ':ARG0', 'i'),
                    ('i', ':instance', 'it'),
                    ('f', ':ARG1', 'i2'),
                    ('i2', ':instance', 'i')])
-        assert g.attributes() == [
+        assert g.instances() == [
             ('f', ':instance', 'follow'),
             ('i', ':instance', 'it'),
-            ('i2', ':instance', 'i')
+            ('i2', ':instance', 'i'),
+        ]
+        assert g.attributes() == [
+            ('f', ':polarity', '-'),
         ]
 
     def test_reentrancies(self, x1):

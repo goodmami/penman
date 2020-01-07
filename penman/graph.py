@@ -103,17 +103,14 @@ class Graph(object):
         self.metadata = dict(metadata)
 
     def __repr__(self):
-        return '<{} object (top={}) at {}>'.format(
-            self.__class__.__name__,
-            self.top,
-            id(self)
-        )
+        name = self.__class__.__name__
+        return f'<{name} object (top={self.top}) at {id(self)}>'
 
     def __str__(self):
         triples = '[{}]'.format(',\n   '.join(map(repr, self.triples)))
         epidata = '{{{}}}'.format(',\n    '.join(
             map('{0[0]!r}: {0[1]!r}'.format, self.epidata.items())))
-        return 'Graph(\n  {},\n  epidata={})'.format(triples, epidata)
+        return f'Graph(\n  {triples},\n  epidata={epidata})'
 
     def __eq__(self, other):
         if not isinstance(other, Graph):
@@ -191,6 +188,13 @@ class Graph(object):
             vs.add(self._top)
         return vs
 
+    def instances(self) -> List[Attribute]:
+        """
+        Return instances (concept triples).
+        """
+        return [Attribute(*t)
+                for t in self._filter_triples(None, CONCEPT_ROLE, None)]
+
     def edges(self,
               source: Optional[Variable] = None,
               role: Role = None,
@@ -212,12 +216,13 @@ class Graph(object):
         """
         Return attributes filtered by their *source*, *role*, or *target*.
 
-        Attributes don't include triples where the target is a nonterminal.
+        Attributes don't include concept triples or those where the
+        target is a nonterminal.
         """
         variables = self.variables()
         return [Attribute(*t)
                 for t in self._filter_triples(source, role, target)
-                if t[1] == CONCEPT_ROLE or t[2] not in variables]
+                if t[1] != CONCEPT_ROLE and t[2] not in variables]
 
     def _filter_triples(self,
                         source: Optional[Variable],

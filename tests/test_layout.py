@@ -12,7 +12,9 @@ from penman.layout import (
     configure,
     reconfigure,
     has_valid_layout,
+    get_pushed_variable,
     appears_inverted,
+    node_contexts,
 )
 
 
@@ -82,38 +84,26 @@ def test_rearrange():
 
 def test_configure(amr_model):
     g = codec.decode('(a / A)')
-    assert configure(g) == Tree(('a', [('/', 'A', [])]))
+    assert configure(g) == Tree(('a', [('/', 'A')]))
     with pytest.raises(LayoutError):
         configure(g, top='A')
 
     g = codec.decode('(a / A :consist-of (b / B))')
     assert configure(g) == Tree(
-        ('a', [
-            ('/', 'A', []),
-            (':consist-of', ('b', [('/', 'B', [])]), [])
-        ])
-    )
+        ('a', [('/', 'A'),
+               (':consist-of', ('b', [('/', 'B')]))]))
     assert configure(g, top='b') == Tree(
-        ('b', [
-            ('/', 'B', []),
-            (':consist', ('a', [('/', 'A', [])]), [])
-        ])
-    )
+        ('b', [('/', 'B'),
+               (':consist', ('a', [('/', 'A')]))]))
 
     amr_codec = PENMANCodec(model=amr_model)
     g = amr_codec.decode('(a / A :consist-of (b / B))')
     assert configure(g, model=amr_model) == Tree(
-        ('a', [
-            ('/', 'A', []),
-            (':consist-of', ('b', [('/', 'B', [])]), [])
-        ])
-    )
+        ('a', [('/', 'A'),
+               (':consist-of', ('b', [('/', 'B')]))]))
     assert configure(g, top='b', model=amr_model) == Tree(
-        ('b', [
-            ('/', 'B', []),
-            (':consist-of-of', ('a', [('/', 'A', [])]), [])
-        ])
-    )
+        ('b', [('/', 'B'),
+               (':consist-of-of', ('a', [('/', 'A')]))]))
 
 
 def test_issue_34():
@@ -127,20 +117,24 @@ def test_issue_34():
               :ARG1 (a / act
                  :polarity -
                  :polarity -)))''')
-    print(configure(g))
     assert configure(g) == Tree(
-        ('t', [
-            ('/', 'think', []),
-            (':ARG0', ('i', [('/', 'i', [])]), []),
-            (':ARG1', ('f', [
-                ('/', 'fail', []),
-                (':ARG0', ('y', [('/', 'you', [])]), []),
-                (':ARG1', ('a', [
-                    ('/', 'act', []),
-                    (':polarity', '-', []),
-                    (':polarity', '-', [])]),
-                 [])]),
-             [])]))
+        ('t', [('/', 'think'),
+               (':ARG0', ('i', [('/', 'i')])),
+               (':ARG1', ('f', [('/', 'fail'),
+                                (':ARG0', ('y', [('/', 'you')])),
+                                (':ARG1', ('a', [('/', 'act'),
+                                                 (':polarity', '-'),
+                                                 (':polarity', '-')]))]))]))
+
+
+def test_get_pushed_variable():
+    g = codec.decode('''
+        (a / alpha
+           :ARG0 (b / beta)
+           :ARG1-of (g / gamma))''')
+    assert get_pushed_variable(g, ('a', ':instance', 'alpha')) is None
+    assert get_pushed_variable(g, ('a', ':ARG0', 'b')) == 'b'
+    assert get_pushed_variable(g, ('g', ':ARG1', 'a')) == 'g'
 
 
 def test_appears_inverted():
@@ -151,3 +145,34 @@ def test_appears_inverted():
     assert not appears_inverted(g, ('a', ':instance', 'alpha'))
     assert not appears_inverted(g, ('a', ':ARG0', 'b'))
     assert appears_inverted(g, ('g', ':ARG1', 'a'))
+
+
+def test_issue_47():
+    # https://github.com/goodmami/penman/issues/47
+    g = codec.decode('''
+        (a / alpha
+           :ARG0 (b / beta)
+           :ARG1 (g / gamma
+                    :ARG0 (d / delta)
+                    :ARG1-of (e / epsilon)
+                    :ARG1-of b))''')
+    assert not appears_inverted(g, ('a', ':ARG0', 'b'))
+    assert not appears_inverted(g, ('g', ':ARG0', 'd'))
+    assert appears_inverted(g, ('e', ':ARG1', 'g'))
+    assert appears_inverted(g, ('b', ':ARG1', 'g'))
+
+
+def test_node_contexts():
+    g = codec.decode('(a / alpha)')
+    assert node_contexts(g) == ['a']
+
+    # note here and below: the first 'a' is for ('a', ':instance', None)
+    g = codec.decode('(a :ARG0 (b / beta))')
+    assert node_contexts(g) == ['a', 'a', 'b']
+
+    g = codec.decode('(a :ARG0-of (b / beta))')
+    assert node_contexts(g) == ['a', 'a', 'b']
+
+    # also ('b', ':instance', None) here
+    g = codec.decode('(a :ARG0 (b) :ARG1 (g / gamma))')
+    assert node_contexts(g) == ['a', 'a', 'b', 'a', 'g']

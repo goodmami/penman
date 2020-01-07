@@ -14,14 +14,13 @@ The above PENMAN string is parsed to the following tree:
 
 .. code-block:: python
 
-   Tree(('b', [(':instance', 'bark', []),
-               (':ARG0', ('d', [(':instance', 'dog', [])]), [])]))
+   Tree(('b', [(':instance', 'bark'),
+               (':ARG0', ('d', [(':instance', 'dog')]))]))
 
 The structure of a tree node is ``(var, branches)`` while the
-structure of a branch is ``(role, target, epidata)``. The target of a
-branch can be an atomic value or a tree node. The epidata field is a
-list of epigraphical markers. This tree is then interpreted to the
-following triples:
+structure of a branch is ``(role, target)``. The target of a branch
+can be an atomic value or a tree node. This tree is then interpreted
+to the following graph (triples and associated layout markers):
 
 .. code-block:: python
 
@@ -74,6 +73,9 @@ unconventional graphs.
 
    # Missing node label
    (a / :ROLE (b / b-label))
+
+   # Inverted attributes
+   (a / a-label :ARG0-of 2)
 
 **Disallowed**
 

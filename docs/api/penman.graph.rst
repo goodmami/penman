@@ -23,6 +23,7 @@ penman.graph
 
 	 Metadata for the graph.
 
+      .. automethod:: instances
       .. automethod:: edges
       .. automethod:: attributes
       .. automethod:: variables

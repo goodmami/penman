@@ -32,4 +32,6 @@ Diagnostic Functions
 --------------------
 
 .. autofunction:: has_valid_layout
+.. autofunction:: get_pushed_variable
 .. autofunction:: appears_inverted
+.. autofunction:: node_contexts

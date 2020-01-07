@@ -14,6 +14,7 @@ from penman.types import (
     Variable,
     Role,
     Constant,
+    Target,
     BasicTriple
 )
 from penman.tree import Branch
@@ -22,6 +23,7 @@ from penman.graph import CONCEPT_ROLE
 
 _ReificationSpec = Tuple[Role, Constant, Role, Role]
 _Reified = Tuple[Constant, Role, Role]
+_Dereified = Tuple[Role, Role, Role]
 _Reification = Tuple[BasicTriple, BasicTriple, BasicTriple]
 
 
@@ -62,10 +64,13 @@ class Model(object):
         self.normalizations = normalizations or {}
 
         reifs: Dict[Role, List[_Reified]] = defaultdict(list)
+        deifs: Dict[Constant, List[_Dereified]] = defaultdict(list)
         if reifications:
             for role, concept, source, target in reifications:
                 reifs[role].append((concept, source, target))
+                deifs[concept].append((role, source, target))
         self.reifications = dict(reifs)
+        self.dereifications = dict(deifs)
 
     def __eq__(self, other):
         if not isinstance(other, Model):
@@ -183,9 +188,9 @@ class Model(object):
         canonical = self.canonicalize_role(role)
         return (source, canonical, target)
 
-    def is_reifiable(self, triple: BasicTriple) -> bool:
-        """Return ``True`` if the role of *triple* can be reified."""
-        return triple[1] in self.reifications
+    def is_role_reifiable(self, role: Role) -> bool:
+        """Return ``True`` if *role* can be reified."""
+        return role in self.reifications
 
     def reify(self,
               triple: BasicTriple,
@@ -210,19 +215,68 @@ class Model(object):
         """
         source, role, target = triple
         if role not in self.reifications:
-            raise ModelError("'{}' cannot be reified".format(role))
+            raise ModelError(f"'{role}' cannot be reified")
         concept, source_role, target_role = next(iter(self.reifications[role]))
 
         var = '_'
         if variables:
             i = 2
             while var in variables:
-                var = '_{}'.format(i)
+                var = f'_{i}'
                 i += 1
 
         return ((var, source_role, source),
                 (var, CONCEPT_ROLE, concept),
                 (var, target_role, target))
+
+    def is_concept_dereifiable(self, concept: Target) -> bool:
+        """Return ``True`` if *concept* can be dereified."""
+        return concept in self.dereifications
+
+    def dereify(self,
+                instance_triple: BasicTriple,
+                source_triple: BasicTriple,
+                target_triple: BasicTriple) -> BasicTriple:
+        """
+        Return the triple that dereifies the three argument triples.
+
+        If the target of *instance_triple* does not have a defined
+        dereification, or if the roles of *source_triple* and
+        *target_triple* do not match those for the dereification of the
+        concept, a :exc:`ModelError` is raised. A :exc:`ValueError` is
+        raised if *instance_triple* is not an instance triple or any
+        triple does not have the same source variable as the others.
+
+        Args:
+            instance_triple: the triple containing the node's concept
+            source_triple: the source triple from the node
+            target_triple: the target triple from the node
+        Returns:
+            The triple that dereifies the three argument triples.
+        """
+        if instance_triple[1] != CONCEPT_ROLE:
+            raise ValueError('second argument is not an instance triple')
+        if not (instance_triple[0] == source_triple[0] == target_triple[0]):
+            raise ValueError('triples do not share the same source')
+
+        concept = instance_triple[2]
+        source_role = source_triple[1]
+        target_role = target_triple[1]
+
+        if concept not in self.dereifications:
+            raise ModelError(f"{concept!r} cannot be dereified")
+        for role, source, target in self.dereifications[concept]:
+            if source == source_role and target == target_role:
+                return (cast(Variable, source_triple[2]),
+                        role,
+                        target_triple[2])
+            elif target == source_role and source == target_role:
+                return (cast(Variable, target_triple[2]),
+                        role,
+                        source_triple[2])
+
+        raise ModelError(f'{source_role!r} and {target_role!r} '
+                         f'are not valid roles to dereify {concept!r}')
 
     def original_order(self, branch: Branch):
         """Branch sorting key that does not change the order."""
@@ -230,7 +284,7 @@ class Model(object):
 
     def canonical_order(self, branch: Branch):
         """Branch sorting key that finds a canonical order."""
-        role, _, _ = branch
+        role, _ = branch
         m = re.match(r'(.*\D)(\d+)$', role)
         if m:
             rolename = m.group(1)

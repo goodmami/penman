@@ -4,8 +4,7 @@
 Serialization of PENMAN graphs.
 """
 
-from typing import Optional, Union, Type, Iterable, Iterator, List
-import re
+from typing import Optional, Union, Iterable, Iterator, List
 import logging
 
 from penman.types import (
@@ -16,11 +15,6 @@ from penman.types import (
 from penman.tree import (Tree, is_atomic)
 from penman.graph import Graph
 from penman.model import Model
-from penman.surface import (
-    AlignmentMarker,
-    Alignment,
-    RoleAlignment,
-)
 from penman.lexer import (
     PENMAN_RE,
     TRIPLE_RE,
@@ -37,63 +31,40 @@ class PENMANCodec(object):
     """
     An encoder/decoder for PENMAN-serialized graphs.
     """
-    # The valid tokens for node identifiers (variables).
-    IDENTIFIERS = 'SYMBOL',
-    #: The valid non-node targets of edges.
-    ATOMS = set(['SYMBOL', 'STRING', 'INTEGER', 'FLOAT'])
 
     def __init__(self, model: Model = None):
         if model is None:
             model = Model()
         self.model = model
 
-    def decode(self, s: str, triples: bool = False) -> Graph:
+    def decode(self, s: str) -> Graph:
         """
         Deserialize PENMAN-notation string *s* into its Graph object.
 
         Args:
             s: a string containing a single PENMAN-serialized graph
-            triples: if ``True``, parse *s* as a triple conjunction
         Returns:
             The :class:`Graph` object described by *s*.
         Example:
             >>> codec = PENMANCodec()
             >>> codec.decode('(b / bark :ARG1 (d / dog))')
             <Graph object (top=b) at ...>
-            >>> codec.decode(
-            ...     'instance(b, bark) ^ instance(d, dog) ^ ARG1(b, d)',
-            ...     triples=True
-            ... )
-            <Graph object (top=b) at ...>
         """
-        if triples:
-            _triples = self.parse_triples(s)
-            g = Graph(_triples)
-        else:
-            tree = self.parse(s)
-            g = layout.interpret(tree, self.model)
-        return g
+        tree = self.parse(s)
+        return layout.interpret(tree, self.model)
 
     def iterdecode(self,
-                   lines: Union[Iterable[str], str],
-                   triples: bool = False) -> Iterator[Graph]:
+                   lines: Union[Iterable[str], str]) -> Iterator[Graph]:
         """
         Yield graphs parsed from *lines*.
 
         Args:
             lines: a string or open file with PENMAN-serialized graphs
-            triples: if ``True``, parse *s* as a triple conjunction
         Returns:
             The :class:`Graph` objects described in *lines*.
         """
-        if triples:
-            tokens = lex(lines, pattern=TRIPLE_RE)
-            while tokens:
-                _triples = self._parse_triples(tokens)
-                yield Graph(_triples)
-        else:
-            for tree in self.iterparse(lines):
-                yield layout.interpret(tree, self.model)
+        for tree in self.iterparse(lines):
+            yield layout.interpret(tree, self.model)
 
     def iterparse(self, lines: Union[Iterable[str], str]) -> Iterator[Tree]:
         """
@@ -119,7 +90,7 @@ class PENMANCodec(object):
         Example:
             >>> codec = PENMANCodec()
             >>> codec.parse('(b / bark :ARG1 (d / dog))')  # noqa
-            Tree(('b', [('/', 'bark', []), ('ARG1', ('d', [('/', 'dog', [])]), [])]))
+            Tree(('b', [('/', 'bark'), ('ARG1', ('d', [('/', 'dog')]))]))
         """
         tokens = lex(s, pattern=PENMAN_RE)
         return self._parse(tokens)
@@ -142,7 +113,7 @@ class PENMANCodec(object):
                 comment, found, meta = comment.rpartition('::')
                 if found:
                     key, _, value = meta.partition(' ')
-                    metadata[key] = value
+                    metadata[key] = value.rstrip()
         return metadata
 
     def _parse_node(self, tokens: TokenIterator):
@@ -156,30 +127,26 @@ class PENMANCodec(object):
         tokens.expect('LPAREN')
 
         var = None
+        concept: Union[str, None]
         edges = []
 
         if tokens.peek().type != 'RPAREN':
-            var = tokens.expect(*self.IDENTIFIERS).value
+            var = tokens.expect('SYMBOL').text
             if tokens.peek().type == 'SLASH':
-                edges.append(self._parse_node_label(tokens))
+                slash = tokens.next()
+                # for robustness, don't assume next token is the concept
+                if tokens.peek().type in ('SYMBOL', 'STRING'):
+                    concept = tokens.next().text
+                else:
+                    concept = None
+                    logger.warning('Missing concept: %s', slash.line)
+                edges.append(('/', concept))
             while tokens.peek().type != 'RPAREN':
                 edges.append(self._parse_edge(tokens))
 
         tokens.expect('RPAREN')
 
         return (var, edges)
-
-    def _parse_node_label(self, tokens: TokenIterator):
-        tokens.expect('SLASH')
-        concept = None
-        epis = []
-        # for robustness, don't assume next token is the concept
-        if tokens.peek().type in self.ATOMS:
-            concept = tokens.next().value
-            if tokens.peek().type == 'ALIGNMENT':
-                epis.append(
-                    self._parse_alignment(tokens, Alignment))
-        return ('/', concept, epis)
 
     def _parse_edge(self, tokens: TokenIterator):
         """
@@ -189,46 +156,24 @@ class PENMANCodec(object):
 
             Edge := Role (Constant | Node)
         """
-        epidata = []
-        role = tokens.expect('ROLE').text
-        if tokens.peek().type == 'ALIGNMENT':
-            epidata.append(
-                self._parse_alignment(tokens, RoleAlignment))
+        role = tokens.expect('ROLE')
         target = None
 
         _next = tokens.peek()
         next_type = _next.type
-        if next_type in self.ATOMS:
-            target = tokens.next().value
-            if tokens.peek().type == 'ALIGNMENT':
-                epidata.append(
-                    self._parse_alignment(tokens, Alignment))
+        if next_type in ('SYMBOL', 'STRING'):
+            target = tokens.next().text
         elif next_type == 'LPAREN':
             target = self._parse_node(tokens)
         # for robustness in parsing, allow edges with no target:
         #    (x :ROLE :ROLE2...  <- followed by another role
         #    (x :ROLE )          <- end of node
         elif next_type not in ('ROLE', 'RPAREN'):
-            raise tokens.error('Expected: ATOM, LPAREN', token=_next)
-
-        return (role, target, epidata)
-
-    def _parse_alignment(self,
-                         tokens: TokenIterator,
-                         cls: Type[AlignmentMarker]):
-        """
-        Parse a PENMAN surface alignment from *tokens*.
-        """
-        token = tokens.expect('ALIGNMENT')
-        m = re.match((r'~(?P<prefix>[a-zA-Z]\.?)?'
-                      r'(?P<indices>\d+(?:,\d+)*)'),
-                     token.text)
-        if m is not None:
-            prefix = m.group('prefix')
-            indices = tuple(map(int, m.group('indices').split(',')))
+            raise tokens.error('Expected: SYMBOL, STRING, LPAREN', token=_next)
         else:
-            prefix, indices = None, ()
-        return cls(indices, prefix=prefix)
+            logger.warning('Missing target: %s', role.line)
+
+        return (role.text, target)
 
     def parse_triples(self, s: str) -> List[BasicTriple]:
         """ Parse a triple conjunction from *s*."""
@@ -239,23 +184,54 @@ class PENMANCodec(object):
                        tokens: TokenIterator) -> List[BasicTriple]:
         target: Target
         triples = []
+        strip_caret = False
         while True:
             role = tokens.expect('SYMBOL').text
+            if strip_caret and role.startswith('^'):
+                role = role[1:]
             tokens.expect('LPAREN')
-            source = tokens.expect(*self.IDENTIFIERS).text
-            tokens.expect('COMMA')
-            _next = tokens.peek().type
-            if _next in self.ATOMS:
-                target = tokens.next().value
-            elif _next == 'RPAREN':  # special case for robustness
-                target = None
+            # SYMBOL may contain commas, so handle it here. If there
+            # is no space between the comma and the next SYMBOL, they
+            # will be grouped as one.
+            symbol = tokens.expect('SYMBOL')
+            source, comma, rest = symbol.text.partition(',')
+            target = None
+            if rest:  # role(a,b)
+                target = rest
+            else:
+                if comma:  # role(a, b) OR role(a,)
+                    _next = tokens.accept('SYMBOL')
+                    if _next:
+                        target = _next.text
+                else:  # role(a , b) OR role(a ,b) OR role(a ,) OR role(a)
+                    _next = tokens.accept('SYMBOL')
+                    if not _next:  # role(a)
+                        pass
+                    elif _next.text == ',':  # role(a , b) OR role(a ,)
+                        _next = tokens.accept('SYMBOL')
+                        if _next:  # role(a , b)
+                            target = _next.text
+                    elif _next.text.startswith(','):  # role(a ,b)
+                        target = _next.text[1:]
+                    else:  # role(a b)
+                        tokens.error("Expected: ','", token=_next)
             tokens.expect('RPAREN')
+
+            if target is None:
+                logger.warning('Triple without a target: %s', symbol.line)
 
             triples.append((source, role, target))
 
             # continue only if triple is followed by ^
-            if tokens.peek().type == 'CARET':
-                tokens.next()
+            if tokens:
+                _next = tokens.peek()
+                if _next.type != 'SYMBOL' or not _next.text.startswith('^'):
+                    break
+                elif _next.text == '^':
+                    strip_caret = False
+                    tokens.next()
+                else:
+                    strip_caret = True
             else:
                 break
         return triples
@@ -263,7 +239,6 @@ class PENMANCodec(object):
     def encode(self,
                g: Graph,
                top: Variable = None,
-               triples: bool = False,
                indent: Union[int, None] = -1,
                compact: bool = False) -> str:
         """
@@ -272,7 +247,6 @@ class PENMANCodec(object):
         Args:
             g: the Graph object
             top: if given, the node to use as the top in serialization
-            triples: if ``True``, serialize as a conjunction of triples
             indent: how to indent formatted strings
             compact: if ``True``, put initial attributes on the first line
         Returns:
@@ -282,18 +256,10 @@ class PENMANCodec(object):
             >>> codec = PENMANCodec()
             >>> codec.encode(Graph([('h', 'instance', 'hi')]))
             (h / hi)
-            >>> codec.encode(Graph([('h', 'instance', 'hi')]),
-            ...                      triples=True)
-            instance(h, hi)
 
         """
-        if triples:
-            return self.format_triples(
-                g.triples,
-                indent=(indent is not None))
-        else:
-            tree = layout.configure(g, top=top, model=self.model)
-            return self.format(tree, indent=indent, compact=compact)
+        tree = layout.configure(g, top=top, model=self.model)
+        return self.format(tree, indent=indent, compact=compact)
 
     def format(self,
                tree: Tree,
@@ -305,7 +271,7 @@ class PENMANCodec(object):
         if not isinstance(tree, Tree):
             tree = Tree(tree)
         vars = [var for var, _ in tree.nodes()] if compact else []
-        parts = ['# ::{} {}'.format(key, value)
+        parts = ['# ::{}{}'.format(key, ' ' + value if value else value)
                  for key, value in tree.metadata.items()]
         parts.append(self._format_node(tree.node, indent, 0, set(vars)))
         return '\n'.join(parts)
@@ -322,7 +288,7 @@ class PENMANCodec(object):
         if not var:
             return '()'  # empty node
         if not edges:
-            return '({!s})'.format(var)  # var-only node
+            return f'({var!s})'  # var-only node
 
         # determine appropriate joiner based on value of indent
         if indent is None:
@@ -350,33 +316,27 @@ class PENMANCodec(object):
         if compact:
             parts = [' '.join(parts)]
 
-        return '({!s} {})'.format(var, joiner.join(parts))
+        return f'({var!s} {joiner.join(parts)})'
 
     def _format_edge(self, edge, indent, column, vars):
         """
         Format tree *edge* into a PENMAN string.
         """
-        role, target, epidata = edge
+        role, target = edge
 
         if role != '/' and not role.startswith(':'):
             role = ':' + role
 
-        role_epi = ''.join(str(epi) for epi in epidata if epi.mode == 1)
-        target_epi = ''.join(str(epi) for epi in epidata if epi.mode == 2)
-
         if indent == -1:
-            column += len(role) + len(role_epi) + 1  # +1 for :
+            column += len(role) + 1  # +1 for :
 
-        if target is None:
-            target = ''
+        sep = ' '
+        if not target:
+            target = sep = ''
         elif not is_atomic(target):
             target = self._format_node(target, indent, column, vars)
 
-        return '{}{} {!s}{}'.format(
-            role,
-            role_epi,
-            target,
-            target_epi)
+        return f'{role}{sep}{target!s}'
 
     def format_triples(self,
                        triples: Iterable[BasicTriple],
@@ -400,6 +360,6 @@ class PENMANCodec(object):
         """
         delim = ' ^\n' if indent else ' ^ '
         # need to remove initial : on roles for triples
-        conjunction = ['{}({}, {})'.format(role.lstrip(':'), source, target)
+        conjunction = [f'{role.lstrip(":")}({source}, {target})'
                        for source, role, target in triples]
         return delim.join(conjunction)

@@ -20,44 +20,32 @@ logger = logging.getLogger(__name__)
 PATTERNS = {
     'COMMENT':    r'\#.*$',
     'STRING':     r'"[^"\\]*(?:\\.[^"\\]*)*"',
-    'FLOAT':      r'''
-      [-+]?
-      (?:
-        (?:(?:\d+\.\d*|\.\d+)  # .1   | 1.2
-           (?:[eE][-+]?\d+)?)  # .1e2 | 1.2e3
-       |\d+[eE][-+]?\d+        # 1e2
-      )''',
-    'INTEGER':    r'[-+]?\d+(?=[ )/:])',
     # ROLE cannot be made up of COLON + SYMBOL because it then becomes
     # difficult to detect anonymous roles: (a : b) vs (a :b c)
-    'ROLE':       r':[^\s()\/,:~]*',
-    'SYMBOL':     r'[^\s()\/,:~]+',
-    'ALIGNMENT':  r'~(?:[a-zA-Z]\.?)?\d+(?:,\d+)*',
+    'ROLE':       r':[^\s()\/:]*',
+    'SYMBOL':     r'[^\s()\/:]+',
     'LPAREN':     r'\(',
     'RPAREN':     r'\)',
     'SLASH':      r'\/',  # concept (node label) role
-    'COMMA':      r',',   # used in triple conjunctions
-    'CARET':      r'\^',  # used in triple conjunctions
     'UNEXPECTED': r'[^\s]'
 }
 
 
 def _compile(*names: str) -> Pattern[str]:
-    pat = '\n|'.join('(?P<{}>{})'.format(name, PATTERNS[name])
-                     for name in names)
+    pat = '\n|'.join(f'(?P<{name}>{PATTERNS[name]})' for name in names)
     return re.compile(pat, flags=re.VERBOSE)
 
 
 # The order matters in these pattern lists as more permissive patterns
 # can short-circuit stricter patterns.
 PENMAN_RE = _compile('COMMENT',
-                     'STRING', 'FLOAT', 'INTEGER',
+                     'STRING',
                      'LPAREN', 'RPAREN', 'SLASH',
-                     'ALIGNMENT', 'ROLE', 'SYMBOL',
+                     'ROLE', 'SYMBOL',
                      'UNEXPECTED')
 TRIPLE_RE = _compile('COMMENT',
-                     'STRING', 'FLOAT', 'INTEGER',
-                     'LPAREN', 'RPAREN', 'COMMA', 'CARET',
+                     'STRING',
+                     'LPAREN', 'RPAREN',
                      'SYMBOL',
                      'UNEXPECTED')
 
@@ -71,15 +59,6 @@ class Token(NamedTuple):
     lineno: int  #: The line number the token appears on.
     offset: int  #: The character offset of the token.
     line: str    #: The line the token appears in.
-
-    @property
-    def value(self):
-        if self.type == 'INTEGER':
-            return int(self.text)
-        elif self.type == 'FLOAT':
-            return float(self.text)
-        else:
-            return self.text
 
 
 class TokenIterator(Iterator[Token]):
@@ -208,19 +187,19 @@ def lex(lines: Union[Iterable[str], str],
 
 
 def _lex(lines: Iterable[str], regex: Pattern[str]) -> Iterator[Token]:
+    debug = logger.isEnabledFor(logging.DEBUG)
     for i, line in enumerate(lines, 1):
-        logger.debug('Line %d: %r', i, line)
-        matches = list(regex.finditer(line))
-        tokens = []
+        if debug:
+            logger.debug('Line %d: %r', i, line)
+        matches = regex.finditer(line)
         for m in matches:
-            if m.lastgroup is None:
+            typ = m.lastgroup
+            val = m.group()
+            if typ is None:
                 raise ValueError(
                     'Lexer pattern generated a match without a named '
-                    'capturing group:\n{}'.format(regex.pattern))
-            tokens.append(Token(m.lastgroup, m.group(), i, m.start(), line))
-
-        if logger.isEnabledFor(logging.DEBUG):
-            for token in tokens:
+                    f'capturing group:\n{regex.pattern}')
+            token = Token(typ, val, i, m.start(), line)
+            if debug:
                 logger.debug(token)
-
-        yield from tokens
+            yield token
