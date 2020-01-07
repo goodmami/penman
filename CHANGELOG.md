@@ -2,6 +2,16 @@
 
 ## [Unreleased][unreleased]
 
+(no unreleased changes yet)
+
+
+## [v0.9.0][]
+
+**Release date: 2020-01-07**
+
+Added support for node relabeling and dereification, and also
+optimized parsing time by simplifying the work done during parsing.
+
 ### Added
 
 * `penman.tree.Tree.reset_variables()` ([#41][])
@@ -58,6 +68,8 @@
 
 ## [v0.8.0][]
 
+**Release date: 2019-12-12**
+
 This release adds a handful of minor functions and expands the
 documentation.
 
@@ -73,6 +85,8 @@ documentation.
 
 
 ## [v0.7.2][]
+
+**Release date: 2019-11-25**
 
 ### Added
 
@@ -95,6 +109,8 @@ documentation.
 
 ## [v0.7.1][]
 
+**Release date: 2019-11-21**
+
 The [v0.7.0](#v070) release was missing a declaration for the new
 `penman.models` sub-package, so it was not available for new
 installs. This release fixes that.
@@ -108,6 +124,8 @@ installs. This release fixes that.
 
 
 ## [v0.7.0][]
+
+**Release date: 2019-11-21**
 
 This release comprises a major restructuring from previous
 versions. No longer is there a single `penman.py` module, but the
@@ -268,6 +286,8 @@ modules.
 
 ## [v0.6.2][]
 
+**Release date: 2017-10-04**
+
 ### Fixed
 
 * Value-cast patterns terminated with `$` to invalid casts ([#9][])
@@ -278,6 +298,8 @@ modules.
 
 
 ## [v0.6.1][]
+
+**Release date: 2017-03-14**
 
 ### Added
 
@@ -296,6 +318,8 @@ modules.
 
 
 ## [v0.6.0][]
+
+**Release date: 2017-03-04**
 
 ### Fixed
 
@@ -336,6 +360,8 @@ modules.
 
 ## [v0.5.1][]
 
+**Release date: 2017-02-20**
+
 ### Fixed
 
 * Numeric conversion in `PENMANCodec.handle_triple()` now happens to
@@ -347,6 +373,8 @@ modules.
 
 
 ## [v0.5.0][]
+
+**Release date: 2017-01-13**
 
 ### Fixed
 
@@ -383,6 +411,8 @@ modules.
 
 ## [v0.4.0][]
 
+**Release date: 2017-01-01**
+
 This release is a major rewrite of the serialization mechanism. Now a
 serialization codec manages the interface between graphs and PENMAN or
 triple conjunctions, and it can be instantiated with parameters or
@@ -418,6 +448,8 @@ subclassed to customize behavior.
 
 ## [v0.3.0][]
 
+**Release date: 2017-01-01**
+
 ### Added
 
 * `TOP` and `TOP_RELATION` as module-level variables
@@ -443,6 +475,8 @@ subclassed to customize behavior.
 
 ## [v0.2.0][]
 
+**Release date: 2016-11-09**
+
 ### Changed
 
 * PENMAN serialization uses slightly more sophisticated default weights
@@ -455,6 +489,8 @@ subclassed to customize behavior.
 
 
 ## [v0.1.0][]
+
+**Release date: 2016-11-08**
 
 First release with very basic functionality.
 
@@ -480,6 +516,7 @@ First release with very basic functionality.
 [v0.7.1]: ../../releases/tag/v0.7.1
 [v0.7.2]: ../../releases/tag/v0.7.2
 [v0.8.0]: ../../releases/tag/v0.8.0
+[v0.9.0]: ../../releases/tag/v0.9.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
