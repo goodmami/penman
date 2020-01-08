@@ -99,8 +99,8 @@ class TokenIterator(Iterator[Token]):
         Advance the iterator and return the next token.
 
         Raises:
-            :exc:`StopIteration`: if the iterator is already
-                exhausted.
+            StopIteration
+                If the iterator is already exhausted.
         """
         current = self._next
         try:
@@ -119,8 +119,8 @@ class TokenIterator(Iterator[Token]):
         The iterator is advanced if successful.
 
         Raises:
-            :exc:`~penman.exceptions.DecodeError`: if the
-                next token type is not in *choices*
+            ~penman.exceptions.DecodeError
+                If the next token type is not in *choices*.
         """
         try:
             token = self.next()
