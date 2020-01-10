@@ -6,6 +6,14 @@
 Welcome to Penman's documentation!
 ==================================
 
+.. sidebar:: Quick Links
+
+  - `Project page <https://github.com/goodmami/penman>`_
+  - `How to contribute <https://github.com/goodmami/penman/blob/master/CONTRIBUTING.md>`_
+  - `Report a bug <https://github.com/goodmami/penman/issues>`_
+  - `Changelog <https://github.com/goodmami/penman/blob/master/CHANGELOG.md>`_
+  - `License (MIT) <https://github.com/goodmami/penman/blob/master/LICENSE>`_
+
 The Penman package is a library for working with graphs in the PENMAN
 format. Its primary job is thus parsing the serialized form into an
 internal :class:`graph <penman.graph.Graph>` representation and format

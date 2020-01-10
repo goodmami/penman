@@ -27,15 +27,16 @@ or as a [script](#script-usage).
 - [x] Read surface alignments (e.g., `foo~e.1,2`)
 - [x] Inspect and manipulate the [graph][] or [tree][] structures
 - [x] Customize graphs for writing:
-  - [x] adjust indentation and compactness
-  - [x] select a new top node
-  - [x] rearrange edges
-  - [x] restructure the tree shape
+  - Adjust indentation and compactness
+  - Select a new top node
+  - Rearrange edges
+  - Restructure the tree shape
+  - Relabel node variables
 - [x] [Transform][transform] the graph
-  - [x] Canonicalize roles
-  - [x] Reify edges
-  - [x] Reify attributes
-  - [x] Embed the tree structure with additional `TOP` triples
+  - Canonicalize roles
+  - Reify and dereify edges
+  - Reify attributes
+  - Embed the tree structure with additional `TOP` triples
 - [x] [AMR model][]: role inventory and transformations
 - [x] Tested (but not yet 100% coverage)
 - [x] Documented (see the [documentation][])
@@ -58,13 +59,18 @@ or as a [script](#script-usage).
 (b / bark :ARG0 (d / dog))
 ```
 
+(more information [in the documentation][docs-as-library])
+
+[docs-as-library]: https://penman.readthedocs.io/en/latest/basic.html#using-penman-as-a-library
+
 
 ### Script Usage
 
 ```console
 $ penman --help
-usage: penman [-h] [-V] [--model FILE | --amr] [--indent N] [--compact]
-              [--triples] [--canonicalize-roles] [--reify-edges]
+usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr] [--indent N]
+              [--compact] [--triples] [--make-variables FMT] [--rearrange KEY]
+              [--canonicalize-roles] [--reify-edges] [--dereify-edges]
               [--reify-attributes] [--indicate-branches]
               [FILE [FILE ...]]
 
@@ -76,6 +82,8 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -V, --version         show program's version number and exit
+  -v, --verbose         increase verbosity
+  -q, --quiet           suppress output on <stdout> and <stderr>
   --model FILE          JSON model file describing the semantic model
   --amr                 use the AMR model
 
@@ -85,8 +93,11 @@ formatting options:
   --triples             print graphs as triple conjunctions
 
 normalization options:
+  --make-variables FMT  recreate node variables with FMT (e.g.: '{prefix}{j}')
+  --rearrange KEY       sort or randomize the order of relations on each node
   --canonicalize-roles  canonicalize role forms
   --reify-edges         reify all eligible edges
+  --dereify-edges       dereify all eligible edges
   --reify-attributes    reify all attributes
   --indicate-branches   insert triples to indicate tree structure
 
@@ -96,6 +107,11 @@ $ penman <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
    :ARG1 (g / go
             :ARG0 b))
 ```
+
+(more information [in the documentation][docs-as-tool])
+
+[docs-as-tool]: https://penman.readthedocs.io/en/latest/basic.html#using-penman-as-a-tool
+
 
 ### PENMAN Notation
 

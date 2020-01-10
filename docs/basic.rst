@@ -36,8 +36,8 @@ PENMAN graphs without having to write any Python code. Run
 
    usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr] [--indent N]
                  [--compact] [--triples] [--make-variables FMT] [--rearrange KEY]
-                 [--canonicalize-roles] [--reify-edges] [--reify-attributes]
-                 [--indicate-branches]
+                 [--canonicalize-roles] [--reify-edges] [--dereify-edges]
+                 [--reify-attributes] [--indicate-branches]
                  [FILE [FILE ...]]
 
    Read and write graphs in the PENMAN notation.
@@ -63,14 +63,15 @@ PENMAN graphs without having to write any Python code. Run
      --rearrange KEY       sort or randomize the order of relations on each node
      --canonicalize-roles  canonicalize role forms
      --reify-edges         reify all eligible edges
+     --dereify-edges       dereify all eligible edges
      --reify-attributes    reify all attributes
      --indicate-branches   insert triples to indicate tree structure
 
 The :command:`penman` command can read input from stdin or from one or
-more files. Currently it always outputs to stdout. Options are
-available to customize the formatting of the output, such as for
-controlling indentation. Normalization options allow one to transform
-the graph in predefined ways prior to serialization. For example:
+more files. Output is printed to stdout. Options are available to
+customize the formatting of the output, such as for controlling
+indentation. Normalization options allow one to transform the graph in
+predefined ways prior to serialization. For example:
 
 .. code-block:: console
 
