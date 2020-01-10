@@ -44,7 +44,7 @@ or as a [script](#script-usage).
 
 ### Library Usage
 
-```python
+```python-console
 >>> import penman
 >>> g = penman.decode('(b / bark-01 :ARG0 (d / dog))')
 >>> g.triples
@@ -59,9 +59,9 @@ or as a [script](#script-usage).
 (b / bark-01 :ARG0 (d / dog))
 ```
 
-(more information [in the documentation][docs-as-library])
+([more information][as-library])
 
-[docs-as-library]: https://penman.readthedocs.io/en/latest/basic.html#using-penman-as-a-library
+[as-library]: https://penman.readthedocs.io/en/latest/basic.html#using-penman-as-a-library
 
 
 ### Script Usage
@@ -108,9 +108,9 @@ $ penman <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
             :ARG0 b))
 ```
 
-(more information [in the documentation][docs-as-tool])
+([more information][as-tool])
 
-[docs-as-tool]: https://penman.readthedocs.io/en/latest/basic.html#using-penman-as-a-tool
+[as-tool]: https://penman.readthedocs.io/en/latest/basic.html#using-penman-as-a-tool
 
 
 ### PENMAN Notation
