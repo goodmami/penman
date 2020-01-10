@@ -123,14 +123,14 @@ def interpret(t: Tree, model: Model = None) -> Graph:
         >>> from penman import layout
         >>> t = Tree(
         ...   ('b', [
-        ...     ('/', 'bark'),
+        ...     ('/', 'bark-01'),
         ...     ('ARG0', ('d', [
         ...       ('/', 'dog')]))]))
         >>> g = layout.interpret(t)
         >>> for triple in g.triples:
         ...     print(triple)
         ...
-        ('b', ':instance', 'bark')
+        ('b', ':instance', 'bark-01')
         ('b', ':ARG0', 'd')
         ('d', ':instance', 'dog')
 
@@ -226,14 +226,14 @@ def configure(g: Graph,
 
         >>> from penman.graph import Graph
         >>> from penman import layout
-        >>> g = Graph([('b', ':instance', 'bark'),
+        >>> g = Graph([('b', ':instance', 'bark-01'),
         ...            ('b', ':ARG0', 'd'),
         ...            ('d', ':instance', 'dog')])
         >>> t = layout.configure(g)
         >>> print(t)
         Tree(
           ('b', [
-            ('/', 'bark'),
+            ('/', 'bark-01'),
             (':ARG0', ('d', [
               ('/', 'dog')]))]))
     """
@@ -448,10 +448,10 @@ def rearrange(t: Tree,
         >>> from penman.model import Model
         >>> from penman.codec import PENMANCodec
         >>> c = PENMANCodec()
-        >>> t = c.parse('(s / see :ARG0 (d / dog) :ARG1 (c / cat))')
+        >>> t = c.parse('(s / see-01 :ARG0 (d / dog) :ARG1 (c / cat))')
         >>> layout.rearrange(t, key=Model().random_order)
         >>> print(c.format(t))
-        (s / see
+        (s / see-01
            :ARG1 (c / cat)
            :ARG0 (d / dog))
 

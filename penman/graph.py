@@ -77,9 +77,9 @@ class Graph(object):
         epidata: a mapping of triples to epigraphical markers
         metadata: a mapping of metadata types to descriptions
     Example:
-        >>> Graph([('b', ':instance', 'bark'),
+        >>> Graph([('b', ':instance', 'bark-01'),
         ...        ('d', ':instance', 'dog'),
-        ...        ('b', ':ARG1', 'd')])
+        ...        ('b', ':ARG0', 'd')])
     """
 
     def __init__(self,

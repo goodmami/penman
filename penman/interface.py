@@ -24,7 +24,7 @@ def decode(s: str,
         the Graph object described by *s*
     Example:
 
-        >>> decode('(b / bark :ARG1 (d / dog))')
+        >>> decode('(b / bark-01 :ARG0 (d / dog))')
         <Graph object (top=b) at ...>
 
     """

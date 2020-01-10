@@ -7,8 +7,8 @@ as a library. For motivation, here's an example of its tool usage:
 
 .. code-block:: console
 
-   $ penman --indent 3 --compact <<< '(s / sleep :polarity - :ARG0 (i / i))'
-   (s / sleep :polarity -
+   $ penman --indent 3 --compact <<< '(s / sleep-01 :polarity - :ARG0 (i / i))'
+   (s / sleep-01 :polarity -
       :ARG0 (i / i))
 
 And here's an example of its library usage:

@@ -46,17 +46,17 @@ or as a [script](#script-usage).
 
 ```python
 >>> import penman
->>> g = penman.decode('(b / bark :ARG0 (d / dog))')
+>>> g = penman.decode('(b / bark-01 :ARG0 (d / dog))')
 >>> g.triples
-[('b', ':instance', 'bark'), ('b', ':ARG0', 'd'), ('d', ':instance', 'dog')]
+[('b', ':instance', 'bark-01'), ('b', ':ARG0', 'd'), ('d', ':instance', 'dog')]
 >>> print(penman.encode(g))
-(b / bark
+(b / bark-01
    :ARG0 (d / dog))
 >>> print(penman.encode(g, top='d', indent=6))
 (d / dog
-      :ARG0-of (b / bark))
+      :ARG0-of (b / bark-01))
 >>> print(penman.encode(g, indent=False))
-(b / bark :ARG0 (d / dog))
+(b / bark-01 :ARG0 (d / dog))
 ```
 
 (more information [in the documentation][docs-as-library])

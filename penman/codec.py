@@ -47,7 +47,7 @@ class PENMANCodec(object):
             The :class:`Graph` object described by *s*.
         Example:
             >>> codec = PENMANCodec()
-            >>> codec.decode('(b / bark :ARG1 (d / dog))')
+            >>> codec.decode('(b / bark-01 :ARG0 (d / dog))')
             <Graph object (top=b) at ...>
         """
         tree = self.parse(s)
@@ -89,8 +89,8 @@ class PENMANCodec(object):
             The tree structure described by *s*.
         Example:
             >>> codec = PENMANCodec()
-            >>> codec.parse('(b / bark :ARG1 (d / dog))')  # noqa
-            Tree(('b', [('/', 'bark'), ('ARG1', ('d', [('/', 'dog')]))]))
+            >>> codec.parse('(b / bark-01 :ARG0 (d / dog))')  # noqa
+            Tree(('b', [('/', 'bark-01'), ('ARG0', ('d', [('/', 'dog')]))]))
         """
         tokens = lex(s, pattern=PENMAN_RE)
         return self._parse(tokens)

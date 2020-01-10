@@ -7,14 +7,14 @@ tree and then the pure graph is interpreted from it.
 
 .. code-block:: lisp
 
-   (b / bark
+   (b / bark-01
       :ARG0 (d / dog))
 
 The above PENMAN string is parsed to the following tree:
 
 .. code-block:: python
 
-   Tree(('b', [(':instance', 'bark'),
+   Tree(('b', [(':instance', 'bark-01'),
                (':ARG0', ('d', [(':instance', 'dog')]))]))
 
 The structure of a tree node is ``(var, branches)`` while the
@@ -25,7 +25,7 @@ to the following graph (triples and associated layout markers):
 .. code-block:: python
 
    Graph(triples=[
-          ('b', ':instance', 'bark'),
+          ('b', ':instance', 'bark-01'),
           ('b', ':ARG0', 'd'),
           ('d', ':instance', 'dog')
 	 ],
