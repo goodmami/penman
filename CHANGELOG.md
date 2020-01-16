@@ -4,6 +4,15 @@
 
 (no unreleased changes yet)
 
+
+## [v0.9.1][]
+
+**Release date: 2020-01-16**
+
+Partially revert some changes regarding the parsing of surface
+alignments as they caused issues, particular when strings contain `~`
+characters.
+
 ### Added
 
 * `ALIGNMENT` production in `penman.lexer.PATTERNS` (this reverts a
