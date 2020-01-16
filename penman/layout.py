@@ -161,9 +161,18 @@ def _interpret_node(t: Node, variables: Set[Variable], model: Model):
 
         # atomic targets
         if is_atomic(target):
+            # remove any alignments
             if target and '~' in target:
-                target, _, alignment = target.partition('~')
-                epis.append(Alignment.from_string(alignment))
+                if target.startswith('"'):
+                    # need to handle alignments on strings differently
+                    # because strings may contain ~ inside the quotes
+                    pivot = target.rindex('"') + 1
+                    if pivot < len(target):
+                        epis.append(Alignment.from_string(target[pivot:]))
+                        target = target[:pivot]
+                else:
+                    target, _, alignment = target.partition('~')
+                    epis.append(Alignment.from_string(alignment))
             triple = (var, role, target)
             if model.is_role_inverted(role):
                 if target in variables:

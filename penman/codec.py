@@ -137,6 +137,8 @@ class PENMANCodec(object):
                 # for robustness, don't assume next token is the concept
                 if tokens.peek().type in ('SYMBOL', 'STRING'):
                     concept = tokens.next().text
+                    if tokens.peek().type == 'ALIGNMENT':
+                        concept += tokens.next().text
                 else:
                     concept = None
                     logger.warning('Missing concept: %s', slash.line)
@@ -156,13 +158,18 @@ class PENMANCodec(object):
 
             Edge := Role (Constant | Node)
         """
-        role = tokens.expect('ROLE')
-        target = None
+        role_token = tokens.expect('ROLE')
+        role = role_token.text
+        if tokens.peek().type == 'ALIGNMENT':
+            role += tokens.next().text
 
+        target = None
         _next = tokens.peek()
         next_type = _next.type
         if next_type in ('SYMBOL', 'STRING'):
             target = tokens.next().text
+            if tokens.peek().type == 'ALIGNMENT':
+                target += tokens.next().text
         elif next_type == 'LPAREN':
             target = self._parse_node(tokens)
         # for robustness in parsing, allow edges with no target:
@@ -171,9 +178,9 @@ class PENMANCodec(object):
         elif next_type not in ('ROLE', 'RPAREN'):
             raise tokens.error('Expected: SYMBOL, STRING, LPAREN', token=_next)
         else:
-            logger.warning('Missing target: %s', role.line)
+            logger.warning('Missing target: %s', role_token.line)
 
-        return (role.text, target)
+        return (role, target)
 
     def parse_triples(self, s: str) -> List[BasicTriple]:
         """ Parse a triple conjunction from *s*."""
