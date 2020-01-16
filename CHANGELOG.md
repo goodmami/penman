@@ -4,6 +4,19 @@
 
 (no unreleased changes yet)
 
+### Added
+
+* `ALIGNMENT` production in `penman.lexer.PATTERNS` (this reverts a
+  change in v0.9.0) ([#50][])
+
+### Changed
+
+* Disallow tildes in the `ROLE` and `SYMBOL` patterns (this reverts a
+  change in v0.9.0) ([#50][])
+* `ALIGNMENT` tokens are joined to their previous `ROLE`, `SYMBOL`, or
+  `STRING`, which means they can now be separated with a space (for
+  example, `(a / alpha ~1)`)
+
 
 ## [v0.9.0][]
 
@@ -550,3 +563,4 @@ First release with very basic functionality.
 [#45]: https://github.com/goodmami/penman/issues/45
 [#47]: https://github.com/goodmami/penman/issues/47
 [#48]: https://github.com/goodmami/penman/issues/48
+[#50]: https://github.com/goodmami/penman/issues/50

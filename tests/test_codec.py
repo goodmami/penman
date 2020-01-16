@@ -36,6 +36,11 @@ class TestPENMANCodec(object):
             'a', [(':ARG-of', 'b')])
         assert codec.parse('(a :ARG~1 b~2)') == (
             'a', [(':ARG~1', 'b~2')])
+        # https://github.com/goodmami/penman/issues/50
+        assert codec.parse('(a :ARG "str~ing")') == (
+            'a', [(':ARG', '"str~ing"')])
+        assert codec.parse('(a :ARG "str~ing"~1)') == (
+            'a', [(':ARG', '"str~ing"~1')])
 
     def test_format(self):
         assert codec.format(
@@ -247,6 +252,40 @@ class TestPENMANCodec(object):
             ('g', ':null_edge', 'x20'),
             ('x20', ':instance', '876-9'),
         ]
+
+    def test_decode_alignments(self):
+        g = decode('(a / alpha~1)')
+        assert g.triples == [
+            ('a', ':instance', 'alpha'),
+        ]
+        assert surface.alignments(g) == {
+            ('a', ':instance', 'alpha'): surface.Alignment((1,)),
+        }
+        assert surface.role_alignments(g) == {}
+
+        assert decode('(a / alpha~1)') == decode('(a / alpha ~1)')
+
+        g = decode('(a :ARG~e.1,2 b)')
+        assert g.triples == [
+            ('a', ':instance', None),
+            ('a', ':ARG', 'b'),
+        ]
+        assert surface.alignments(g) == {}
+        assert surface.role_alignments(g) == {
+            ('a', ':ARG', 'b'): surface.RoleAlignment((1, 2), prefix='e.'),
+        }
+
+        # https://github.com/goodmami/penman/issues/50
+        g = decode('(a :ARG1 "str~ing" :ARG2 "str~ing"~1)')
+        assert g.triples == [
+            ('a', ':instance', None),
+            ('a', ':ARG1', '"str~ing"'),
+            ('a', ':ARG2', '"str~ing"'),
+        ]
+        assert surface.alignments(g) == {
+            ('a', ':ARG2', '"str~ing"'): surface.Alignment((1,)),
+        }
+        assert surface.role_alignments(g) == {}
 
     def test_decode_invalid_graphs(self):
         # some robustness

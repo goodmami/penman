@@ -20,10 +20,16 @@ def test_lex_penman():
         'RPAREN']
     assert _lex('(a :ROLE~e.1,2 b~3)') == [
         'LPAREN', 'SYMBOL',
-        'ROLE', 'SYMBOL',
+        'ROLE', 'ALIGNMENT', 'SYMBOL', 'ALIGNMENT',
         'RPAREN']
     assert _lex('# comment\n# (n / nope)\n(a / alpha)') == [
         'COMMENT', 'COMMENT', 'LPAREN', 'SYMBOL', 'SLASH', 'SYMBOL', 'RPAREN']
+
+
+def test_lexing_issue_50():
+    # https://github.com/goodmami/penman/issues/50
+    assert [tok.type for tok in lexer.lex('(a :ROLE "a~b"~1)')] == [
+        'LPAREN', 'SYMBOL', 'ROLE', 'STRING', 'ALIGNMENT', 'RPAREN']
 
 
 def test_lex_triples():
