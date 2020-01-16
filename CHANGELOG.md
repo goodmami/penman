@@ -539,6 +539,7 @@ First release with very basic functionality.
 [v0.7.2]: ../../releases/tag/v0.7.2
 [v0.8.0]: ../../releases/tag/v0.8.0
 [v0.9.0]: ../../releases/tag/v0.9.0
+[v0.9.1]: ../../releases/tag/v0.9.1
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
