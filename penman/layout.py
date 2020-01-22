@@ -55,10 +55,10 @@ import copy
 import logging
 
 from penman.exceptions import LayoutError
-from penman.types import Variable, BasicTriple
+from penman.types import Variable, Role, BasicTriple
 from penman.epigraph import Epidatum
 from penman.surface import (Alignment, RoleAlignment)
-from penman.tree import (Tree, Node, Branch, is_atomic)
+from penman.tree import (Tree, Node, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
 
@@ -113,7 +113,7 @@ def interpret(t: Tree, model: Model = None) -> Graph:
     not provided, the default model will be used.
 
     Args:
-        t: the :class:`Tree` to interpret
+        t: the :class:`~penman.tree.Tree` to interpret
         model: the :class:`~penman.model.Model` used to interpret *t*
     Returns:
         The interpreted :class:`~penman.graph.Graph`.
@@ -230,7 +230,7 @@ def configure(g: Graph,
         strict: if ``True``, raise :exc:`~penman.exceptions.LayoutError`
             if decisions must be made about the configuration
     Returns:
-        The configured :class:`Tree`.
+        The configured :class:`~penman.tree.Tree`.
     Example:
 
         >>> from penman.graph import Graph
@@ -430,19 +430,30 @@ def _get_or_establish_site(var, nodemap):
 def reconfigure(g: Graph,
                 top: Variable = None,
                 model: Model = None,
+                key: Callable[[Role], Any] = None,
                 strict: bool = False) -> Tree:
     """
     Create a tree from a graph after any discarding layout markers.
+
+    If *key* is provided, triples are sorted according to the key.
     """
     p = copy.deepcopy(g)
     for epilist in p.epidata.values():
         epilist[:] = [epi for epi in epilist
                       if not isinstance(epi, LayoutMarker)]
+    if key is not None:
+
+        # function def because mypy doesn't like key in lambda
+        def _key(triple):
+            return key(triple[1])
+
+        p.triples.sort(key=_key)
+
     return configure(p, top=top, model=model, strict=strict)
 
 
 def rearrange(t: Tree,
-              key: Callable[[Branch], Any] = None) -> None:
+              key: Callable[[Role], Any] = None) -> None:
     """
     Sort the branches at each node in tree *t* according to *key*.
 
@@ -470,7 +481,7 @@ def rearrange(t: Tree,
     _rearrange(t.node, key=key)
 
 
-def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
+def _rearrange(node: Node, key: Callable[[Role], Any]) -> None:
     _, branches = node
     if branches and branches[0][0] == '/':
         first = branches[0:1]
@@ -481,7 +492,7 @@ def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
     for _, target in rest:
         if not is_atomic(target):
             _rearrange(target, key=key)
-    branches[:] = first + sorted(rest, key=key)
+    branches[:] = first + sorted(rest, key=lambda branch: key(branch[0]))
 
 
 def has_valid_layout(g: Graph,

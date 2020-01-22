@@ -95,10 +95,10 @@ def alignments(g: Graph) -> _Alignments:
     Return a mapping of triples to alignments in graph *g*.
 
     Args:
-        g: a :class:`Graph` containing alignment data
+        g: a :class:`~penman.graph.Graph` containing alignment data
     Returns:
-        A :class:`dict` mapping :class:`Triple` objects to their
-        corresponding :class:`Alignment` objects, if any.
+        A :class:`dict` mapping :class:`~penman.graph.Triple` objects
+        to their corresponding :class:`Alignment` objects, if any.
     """
     return _get_alignments(g, Alignment)
 
@@ -108,10 +108,11 @@ def role_alignments(g: Graph) -> _Alignments:
     Return a mapping of triples to role alignments in graph *g*.
 
     Args:
-        g: a :class:`Graph` containing role alignment data
+        g: a :class:`~penman.graph.Graph` containing role alignment
+        data
     Returns:
-        A :class:`dict` mapping :class:`Triple` objects to their
-        corresponding :class:`RoleAlignment` objects, if any.
+        A :class:`dict` mapping :class:`~penman.graph.Triple` objects
+        to their corresponding :class:`RoleAlignment` objects, if any.
     """
     return _get_alignments(g, RoleAlignment)
 

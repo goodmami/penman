@@ -17,7 +17,6 @@ from penman.types import (
     Target,
     BasicTriple
 )
-from penman.tree import Branch
 from penman.graph import CONCEPT_ROLE
 
 
@@ -204,7 +203,7 @@ class Model(object):
         should then be replaced.
 
         If the role of *triple* does not have a defined reification, a
-        :exc:`ModelError` is raised.
+        :exc:`~penman.exceptions.ModelError` is raised.
 
         Args:
             triple: the triple to reify
@@ -242,10 +241,11 @@ class Model(object):
 
         If the target of *instance_triple* does not have a defined
         dereification, or if the roles of *source_triple* and
-        *target_triple* do not match those for the dereification of the
-        concept, a :exc:`ModelError` is raised. A :exc:`ValueError` is
-        raised if *instance_triple* is not an instance triple or any
-        triple does not have the same source variable as the others.
+        *target_triple* do not match those for the dereification of
+        the concept, a :exc:`~penman.exceptions.ModelError` is
+        raised. A :exc:`ValueError` is raised if *instance_triple* is
+        not an instance triple or any triple does not have the same
+        source variable as the others.
 
         Args:
             instance_triple: the triple containing the node's concept
@@ -278,13 +278,12 @@ class Model(object):
         raise ModelError(f'{source_role!r} and {target_role!r} '
                          f'are not valid roles to dereify {concept!r}')
 
-    def original_order(self, branch: Branch):
-        """Branch sorting key that does not change the order."""
+    def original_order(self, role: Role):
+        """Role sorting key that does not change the order."""
         return True
 
-    def canonical_order(self, branch: Branch):
-        """Branch sorting key that finds a canonical order."""
-        role, _ = branch
+    def canonical_order(self, role: Role):
+        """Role sorting key that finds a canonical order."""
         m = re.match(r'(.*\D)(\d+)$', role)
         if m:
             rolename = m.group(1)
@@ -293,6 +292,6 @@ class Model(object):
             rolename, roleno = role, 0
         return (self.is_role_inverted(role), rolename, roleno)
 
-    def random_order(self, branch: Branch):
-        """Branch sorting key that randomizes the order."""
+    def random_order(self, role: Role):
+        """Role sorting key that randomizes the order."""
         return random.random()

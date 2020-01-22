@@ -5,6 +5,28 @@
 (no unreleased changes yet)
 
 
+## [v0.10.0][]
+
+**Release date: 2020-01-16**
+
+Add triple sorting to the `reconfigure()` function and make it
+available at the command line.
+
+### Added
+
+* `penman.layout.reconfigure()` now has a `key` parameter ([#52][])
+* `--reconfigure` command-line option ([#52][])
+
+### Changed
+
+* `penman.model.Model.original_order()` takes a `Role` instead of a
+  `Branch` argument ([#53][])
+* `penman.model.Model.canonical_order()` takes a `Role` instead of a
+  `Branch` argument ([#53][])
+* `penman.model.Model.random_order()` takes a `Role` instead of a
+  `Branch` argument ([#53][])
+
+
 ## [v0.9.1][]
 
 **Release date: 2020-01-16**
@@ -540,6 +562,7 @@ First release with very basic functionality.
 [v0.8.0]: ../../releases/tag/v0.8.0
 [v0.9.0]: ../../releases/tag/v0.9.0
 [v0.9.1]: ../../releases/tag/v0.9.1
+[v0.10.0]: ../../releases/tag/v0.10.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
@@ -574,3 +597,5 @@ First release with very basic functionality.
 [#47]: https://github.com/goodmami/penman/issues/47
 [#48]: https://github.com/goodmami/penman/issues/48
 [#50]: https://github.com/goodmami/penman/issues/50
+[#52]: https://github.com/goodmami/penman/issues/52
+[#53]: https://github.com/goodmami/penman/issues/53

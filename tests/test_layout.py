@@ -127,6 +127,28 @@ def test_issue_34():
                                                  (':polarity', '-')]))]))]))
 
 
+def test_reconfigure():
+    g = codec.decode('''
+        (a / alpha
+           :ARG0 b
+           :ARG1 (g / gamma
+                    :ARG0-of (b / beta)))''')
+    # original order reconfiguration puts node definitions at first
+    # appearance of a variable
+    assert reconfigure(g) == Tree(
+        ('a', [('/', 'alpha'),
+               (':ARG0', ('b', [('/', 'beta')])),
+               (':ARG1', ('g', [('/', 'gamma'),
+                                (':ARG0-of', 'b')]))]))
+    # canonical order reconfiguration can also shift things like
+    # inverted arguments
+    assert reconfigure(g, key=model.canonical_order) == Tree(
+        ('a', [('/', 'alpha'),
+               (':ARG0', ('b', [('/', 'beta'),
+                                (':ARG0', ('g', [('/', 'gamma')]))])),
+               (':ARG1', 'g')]))
+
+
 def test_get_pushed_variable():
     g = codec.decode('''
         (a / alpha

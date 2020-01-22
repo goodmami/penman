@@ -7,9 +7,10 @@ from penman.model import Model
 
 
 #: The roles are the edge labels of reifications. The purpose of roles
-#: in a :class:`Model` is mainly to define the set of valid roles, but
-#: they map to arbitrary data which is not used by the :class:`Model`
-#: but may be inspected or used by client code.
+#: in a :class:`~penman.model.Model` is mainly to define the set of
+#: valid roles, but they map to arbitrary data which is not used by
+#: the :class:`~penman.model.Model` but may be inspected or used by
+#: client code.
 roles = {
     # role                  arbitrary data
     ":ARG0":                {"type": "frame"},
@@ -104,8 +105,9 @@ roles = {
 
 
 #: Normalizations are like role aliases. If the left side of the
-#: normalization is encountered by :meth:`Model.canonicalize_role`
-#: then it is replaced with the right side.
+#: normalization is encountered by
+#: :meth:`penman.model.Model.canonicalize_role` then it is replaced
+#: with the right side.
 normalizations = {
     ":mod-of":    ":domain",
     ":domain-of": ":mod",
@@ -158,8 +160,8 @@ reifications = [
 ]
 
 
-#: The AMR model is an instance of :class:`Model` using the roles,
-#: normalizations, and reifications defined in this module.
+#: The AMR model is an instance of :class:`~penman.model.Model` using
+#: the roles, normalizations, and reifications defined in this module.
 model = Model(
     top_variable='top',
     top_role=':TOP',
