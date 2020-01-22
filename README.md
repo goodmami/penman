@@ -1,4 +1,6 @@
 
+# Penman &mdash; a Python library for PENMAN graph notation
+
 [![PyPI Version](https://img.shields.io/pypi/v/penman.svg)](https://pypi.org/project/Penman/)
 ![Python Support](https://img.shields.io/pypi/pyversions/penman.svg)
 [![Build Status](https://travis-ci.org/goodmami/penman.svg?branch=develop)](https://travis-ci.org/goodmami/penman)
