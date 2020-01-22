@@ -7,7 +7,7 @@
 
 ## [v0.10.0][]
 
-**Release date: 2020-01-16**
+**Release date: 2020-01-22**
 
 Add triple sorting to the `reconfigure()` function and make it
 available at the command line.
