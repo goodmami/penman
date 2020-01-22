@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.9.1'
+__version__ = '0.10.0'
 __version_info__ = tuple(
     int(x) if x.isdigit() else x
     for x in __version__.replace('.', ' ').replace('-', ' ').split()
