@@ -55,10 +55,10 @@ import copy
 import logging
 
 from penman.exceptions import LayoutError
-from penman.types import Variable, BasicTriple
+from penman.types import Variable, Role, BasicTriple
 from penman.epigraph import Epidatum
 from penman.surface import (Alignment, RoleAlignment)
-from penman.tree import (Tree, Node, Branch, is_atomic)
+from penman.tree import (Tree, Node, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
 
@@ -470,7 +470,7 @@ def rearrange(t: Tree,
     _rearrange(t.node, key=key)
 
 
-def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
+def _rearrange(node: Node, key: Callable[[Role], Any]) -> None:
     _, branches = node
     if branches and branches[0][0] == '/':
         first = branches[0:1]
@@ -481,7 +481,7 @@ def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
     for _, target in rest:
         if not is_atomic(target):
             _rearrange(target, key=key)
-    branches[:] = first + sorted(rest, key=key)
+    branches[:] = first + sorted(rest, key=lambda branch: key(branch[0]))
 
 
 def has_valid_layout(g: Graph,

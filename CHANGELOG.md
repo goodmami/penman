@@ -2,7 +2,15 @@
 
 ## [Unreleased][unreleased]
 
-(no unreleased changes yet)
+### Changed
+
+* `penman.model.Model.original_order()` takes a `Role` instead of a
+  `Branch` argument ([#53][])
+* `penman.model.Model.canonical_order()` takes a `Role` instead of a
+  `Branch` argument ([#53][])
+* `penman.model.Model.random_order()` takes a `Role` instead of a
+  `Branch` argument ([#53][])
+
 
 
 ## [v0.9.1][]
@@ -574,3 +582,4 @@ First release with very basic functionality.
 [#47]: https://github.com/goodmami/penman/issues/47
 [#48]: https://github.com/goodmami/penman/issues/48
 [#50]: https://github.com/goodmami/penman/issues/50
+[#53]: https://github.com/goodmami/penman/issues/53
