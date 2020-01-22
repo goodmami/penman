@@ -441,8 +441,14 @@ def reconfigure(g: Graph,
     for epilist in p.epidata.values():
         epilist[:] = [epi for epi in epilist
                       if not isinstance(epi, LayoutMarker)]
-    if key:
-        p.triples.sort(key=lambda triple: key(triple[1]))
+    if key is not None:
+
+        # function def because mypy doesn't like key in lambda
+        def _key(triple):
+            return key(triple[1])
+
+        p.triples.sort(key=_key)
+
     return configure(p, top=top, model=model, strict=strict)
 
 
