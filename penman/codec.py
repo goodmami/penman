@@ -44,7 +44,7 @@ class PENMANCodec(object):
         Args:
             s: a string containing a single PENMAN-serialized graph
         Returns:
-            The :class:`Graph` object described by *s*.
+            The :class:`~penman.graph.Graph` object described by *s*.
         Example:
             >>> codec = PENMANCodec()
             >>> codec.decode('(b / bark-01 :ARG0 (d / dog))')
@@ -61,7 +61,8 @@ class PENMANCodec(object):
         Args:
             lines: a string or open file with PENMAN-serialized graphs
         Returns:
-            The :class:`Graph` objects described in *lines*.
+            The :class:`~penman.graph.Graph` objects described in
+            *lines*.
         """
         for tree in self.iterparse(lines):
             yield layout.interpret(tree, self.model)
@@ -73,7 +74,8 @@ class PENMANCodec(object):
         Args:
             lines: a string or open file with PENMAN-serialized graphs
         Returns:
-            The :class:`Tree` object described in *lines*.
+            The :class:`~penman.tree.Tree` object described in
+            *lines*.
         """
         tokens = lex(lines, pattern=PENMAN_RE)
         while tokens and tokens.peek().type in ('COMMENT', 'LPAREN'):

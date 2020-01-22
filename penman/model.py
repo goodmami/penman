@@ -203,7 +203,7 @@ class Model(object):
         should then be replaced.
 
         If the role of *triple* does not have a defined reification, a
-        :exc:`ModelError` is raised.
+        :exc:`~penman.exceptions.ModelError` is raised.
 
         Args:
             triple: the triple to reify
@@ -241,10 +241,11 @@ class Model(object):
 
         If the target of *instance_triple* does not have a defined
         dereification, or if the roles of *source_triple* and
-        *target_triple* do not match those for the dereification of the
-        concept, a :exc:`ModelError` is raised. A :exc:`ValueError` is
-        raised if *instance_triple* is not an instance triple or any
-        triple does not have the same source variable as the others.
+        *target_triple* do not match those for the dereification of
+        the concept, a :exc:`~penman.exceptions.ModelError` is
+        raised. A :exc:`ValueError` is raised if *instance_triple* is
+        not an instance triple or any triple does not have the same
+        source variable as the others.
 
         Args:
             instance_triple: the triple containing the node's concept

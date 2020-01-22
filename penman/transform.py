@@ -28,10 +28,11 @@ def canonicalize_roles(t: Tree, model: Model) -> Tree:
     until the graph is configured into a tree.
 
     Args:
-        t: a :class:`Tree` object
+        t: a :class:`~penman.tree.Tree` object
         model: a model defining role normalizations
     Returns:
-        A new :class:`Tree` object with canonicalized roles.
+        A new :class:`~penman.tree.Tree` object with canonicalized
+        roles.
     Example:
         >>> from penman.codec import PENMANCodec
         >>> from penman.models.amr import model
@@ -69,10 +70,10 @@ def reify_edges(g: Graph, model: Model) -> Graph:
     Reify all edges in *g* that have reifications in *model*.
 
     Args:
-        g: a :class:`Graph` object
+        g: a :class:`~penman.graph.Graph` object
         model: a model defining reifications
     Returns:
-        A new :class:`Graph` object with reified edges.
+        A new :class:`~penman.graph.Graph` object with reified edges.
     Example:
         >>> from penman.codec import PENMANCodec
         >>> from penman.models.amr import model
@@ -120,9 +121,10 @@ def dereify_edges(g: Graph, model: Model) -> Graph:
     Dereify edges in *g* that have reifications in *model*.
 
     Args:
-        g: a :class:`Graph` object
+        g: a :class:`~penman.graph.Graph` object
     Returns:
-        A new :class:`Graph` object with dereified edges.
+        A new :class:`~penman.graph.Graph` object with dereified
+        edges.
     Example:
         >>> from penman.codec import PENMANCodec
         >>> from penman.models.amr import model
@@ -167,9 +169,10 @@ def reify_attributes(g: Graph) -> Graph:
     Reify all attributes in *g*.
 
     Args:
-        g: a :class:`Graph` object
+        g: a :class:`~penman.graph.Graph` object
     Returns:
-        A new :class:`Graph` object with reified attributes.
+        A new :class:`~penman.graph.Graph` object with reified
+        attributes.
     Example:
         >>> from penman.codec import PENMANCodec
         >>> from penman.models.amr import model
@@ -222,11 +225,11 @@ def indicate_branches(g: Graph, model: Model) -> Graph:
         were removed.
 
     Args:
-        g: a :class:`Graph` object
+        g: a :class:`~penman.graph.Graph` object
         model: a model defining the TOP role
     Returns:
-        A new :class:`Graph` object with TOP roles indicating tree
-        branches.
+        A new :class:`~penman.graph.Graph` object with TOP roles
+        indicating tree branches.
     Example:
         >>> from penman.codec import PENMANCodec
         >>> from penman.models.amr import model

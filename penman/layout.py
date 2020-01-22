@@ -113,7 +113,7 @@ def interpret(t: Tree, model: Model = None) -> Graph:
     not provided, the default model will be used.
 
     Args:
-        t: the :class:`Tree` to interpret
+        t: the :class:`~penman.tree.Tree` to interpret
         model: the :class:`~penman.model.Model` used to interpret *t*
     Returns:
         The interpreted :class:`~penman.graph.Graph`.
@@ -230,7 +230,7 @@ def configure(g: Graph,
         strict: if ``True``, raise :exc:`~penman.exceptions.LayoutError`
             if decisions must be made about the configuration
     Returns:
-        The configured :class:`Tree`.
+        The configured :class:`~penman.tree.Tree`.
     Example:
 
         >>> from penman.graph import Graph
