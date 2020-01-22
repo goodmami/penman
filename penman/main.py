@@ -30,6 +30,17 @@ def process(f, model, out, normalize_options, format_options, triples):
 
         g = layout.interpret(t, model)
 
+        # reconfiguration (by round-tripping; a bit inefficient, but
+        # oh well)
+        if normalize_options['reconfigure']:
+            key = model.original_order
+            if normalize_options['reconfigure'] == 'canonical':
+                key = model.canonical_order
+            elif normalize_options['reconfigure'] == 'random':
+                key = model.random_order
+            t = layout.reconfigure(g, key=key)
+            g = layout.interpret(t, model)
+
         # graph transformations
         if normalize_options['reify_edges']:
             g = transform.reify_edges(g, model)
@@ -101,7 +112,11 @@ def main():
         help="recreate node variables with FMT (e.g.: '{prefix}{j}')")
     norm.add_argument(
         '--rearrange', metavar='KEY', choices=('random', 'canonical'),
-        help='sort or randomize the order of relations on each node')
+        help='reorder the branches of the tree')
+    norm.add_argument(
+        '--reconfigure', metavar='KEY',
+        choices=('original', 'random', 'canonical'),
+        help='reconfigure the graph layout with reordered triples')
     norm.add_argument(
         '--canonicalize-roles', action='store_true',
         help='canonicalize role forms')
@@ -153,6 +168,7 @@ def main():
     normalize_options = {
         'make_variables': args.make_variables,
         'rearrange': args.rearrange,
+        'reconfigure': args.reconfigure,
         'canonicalize_roles': args.canonicalize_roles,
         'reify_edges': args.reify_edges,
         'dereify_edges': args.dereify_edges,

@@ -430,19 +430,24 @@ def _get_or_establish_site(var, nodemap):
 def reconfigure(g: Graph,
                 top: Variable = None,
                 model: Model = None,
+                key: Callable[[Role], Any] = None,
                 strict: bool = False) -> Tree:
     """
     Create a tree from a graph after any discarding layout markers.
+
+    If *key* is provided, triples are sorted according to the key.
     """
     p = copy.deepcopy(g)
     for epilist in p.epidata.values():
         epilist[:] = [epi for epi in epilist
                       if not isinstance(epi, LayoutMarker)]
+    if key:
+        p.triples.sort(key=lambda triple: key(triple[1]))
     return configure(p, top=top, model=model, strict=strict)
 
 
 def rearrange(t: Tree,
-              key: Callable[[Branch], Any] = None) -> None:
+              key: Callable[[Role], Any] = None) -> None:
     """
     Sort the branches at each node in tree *t* according to *key*.
 

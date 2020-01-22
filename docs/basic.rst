@@ -36,8 +36,8 @@ PENMAN graphs without having to write any Python code. Run
 
    usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr] [--indent N]
                  [--compact] [--triples] [--make-variables FMT] [--rearrange KEY]
-                 [--canonicalize-roles] [--reify-edges] [--dereify-edges]
-                 [--reify-attributes] [--indicate-branches]
+                 [--reconfigure KEY] [--canonicalize-roles] [--reify-edges]
+                 [--dereify-edges] [--reify-attributes] [--indicate-branches]
                  [FILE [FILE ...]]
 
    Read and write graphs in the PENMAN notation.
@@ -60,7 +60,8 @@ PENMAN graphs without having to write any Python code. Run
 
    normalization options:
      --make-variables FMT  recreate node variables with FMT (e.g.: '{prefix}{j}')
-     --rearrange KEY       sort or randomize the order of relations on each node
+     --rearrange KEY       reorder the branches of the tree
+     --reconfigure KEY     reconfigure the graph layout with reordered triples
      --canonicalize-roles  canonicalize role forms
      --reify-edges         reify all eligible edges
      --dereify-edges       dereify all eligible edges

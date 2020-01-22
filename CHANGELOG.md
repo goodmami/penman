@@ -2,6 +2,11 @@
 
 ## [Unreleased][unreleased]
 
+### Added
+
+* `penman.layout.reconfigure()` now has a `key` parameter ([#52][])
+* `--reconfigure` command-line option ([#52][])
+
 ### Changed
 
 * `penman.model.Model.original_order()` takes a `Role` instead of a
@@ -582,4 +587,5 @@ First release with very basic functionality.
 [#47]: https://github.com/goodmami/penman/issues/47
 [#48]: https://github.com/goodmami/penman/issues/48
 [#50]: https://github.com/goodmami/penman/issues/50
+[#52]: https://github.com/goodmami/penman/issues/52
 [#53]: https://github.com/goodmami/penman/issues/53
