@@ -13,7 +13,14 @@ from penman.codec import PENMANCodec
 from penman import transform
 
 
-def process(f, model, out, normalize_options, format_options, triples):
+def process(f,
+            model,
+            out,
+            err,
+            check,
+            normalize_options,
+            format_options,
+            triples):
     """Read graphs from *f* and write to *out*."""
 
     def _process(t):
@@ -51,25 +58,31 @@ def process(f, model, out, normalize_options, format_options, triples):
         if normalize_options['indicate_branches']:
             g = transform.indicate_branches(g, model)
 
-        if triples:
-            return codec.format_triples(
-                g.triples,
-                indent=bool(format_options.get('indent', True)))
-        else:
-            return codec.encode(g, **format_options)
+        return g
 
     codec = PENMANCodec(model=model)
     trees = codec.iterparse(f)
 
-    # the try... block is to do an incremental '\n\n'.join(graphs)
-    try:
-        t = next(trees)
-        print(_process(t), file=out)
-    except StopIteration:
-        return
+    first = True
     for t in trees:
-        print(file=out)
-        print(_process(t), file=out)
+        if first:
+            first = False
+        else:
+            print(file=out)
+
+        g = _process(t)
+        if check:
+            model.check(g)
+
+        if triples:
+            s = codec.format_triples(
+                g.triples,
+                indent=bool(format_options.get('indent', True)))
+        else:
+            s = codec.encode(g, **format_options)
+        err.flush()
+        print(s, file=out)
+        out.flush()
 
 
 def main():
@@ -96,6 +109,9 @@ def main():
     model_group.add_argument(
         '--amr', action='store_true',
         help='use the AMR model')
+    parser.add_argument(
+        '--check', action='store_true',
+        help='check graphs for compliance with the model')
     form = parser.add_argument_group('formatting options')
     form.add_argument(
         '--indent', metavar='N',
@@ -183,10 +199,10 @@ def main():
     if args.FILE:
         for file in args.FILE:
             with open(file) as f:
-                process(f, model, sys.stdout,
+                process(f, model, sys.stdout, sys.stderr, args.check,
                         normalize_options, format_options, args.triples)
     else:
-        process(sys.stdin, model, sys.stdout,
+        process(sys.stdin, model, sys.stdout, sys.stderr, args.check,
                 normalize_options, format_options, args.triples)
 
 

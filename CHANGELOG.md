@@ -5,6 +5,7 @@
 ### Added
 
 * `penman.model.Model.check()` ([#55][])
+* `--check` command-line option ([#55][])
 
 
 ## [v0.10.0][]
