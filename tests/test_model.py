@@ -3,7 +3,7 @@ import pytest
 
 from penman.exceptions import ModelError
 from penman.model import Model
-
+from penman.graph import Graph
 
 
 class TestModel:
@@ -263,3 +263,23 @@ class TestModel:
         assert m.dereify(t1, t3, t2) == ('a', ':mod', 'b')
         with pytest.raises(ModelError):
             m.dereify(t1b, t2, t3)
+
+    def test_check(self, mini_amr):
+        m = Model()
+        a = Model.from_dict(mini_amr)
+        # basic roles
+        g = Graph([('a', ':instance', 'alpha')])
+        assert m.check(g)
+        g = Graph([('a', ':instance', 'alpha'), ('a', ':mod', '1')])
+        assert not m.check(g)
+        assert a.check(g)
+        # regex role names
+        g = Graph([('n', ':instance', 'name'),
+                   ('n', ':op1', 'Foo'),
+                   ('n', ':op2', 'Bar')])
+        assert a.check(g)
+        # disconnected graph
+        g = Graph([('a', ':instance', 'alpha'),
+                   ('b', ':instance', 'beta')])
+        assert not m.check(g)
+        assert not a.check(g)

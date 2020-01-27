@@ -8,6 +8,7 @@ from typing import (cast, Tuple, List, Dict, Set, Iterable, Mapping, Any)
 import re
 from collections import defaultdict
 import random
+import logging
 
 from penman.exceptions import ModelError
 from penman.types import (
@@ -17,7 +18,10 @@ from penman.types import (
     Target,
     BasicTriple
 )
-from penman.graph import CONCEPT_ROLE
+from penman.graph import CONCEPT_ROLE, Graph
+
+
+logger = logging.getLogger(__name__)
 
 
 _ReificationSpec = Tuple[Role, Constant, Role, Role]
@@ -295,3 +299,56 @@ class Model(object):
     def random_order(self, role: Role):
         """Role sorting key that randomizes the order."""
         return random.random()
+
+    def check(self, graph: Graph) -> bool:
+        """
+        Return ``True`` if *graph* conforms to the model.
+
+        Errors with the graph are logged at the WARNING level.
+        """
+        success = True
+        if len(graph.triples) == 0:
+            logger.warning('graph is empty')
+        else:
+            g: Dict[Variable, List[BasicTriple]] = {}
+            for triple in graph.triples:
+                var, role, tgt = triple
+                if not self.has_role(role):
+                    logger.warning('invalid role: %s', role)
+                    success = False
+                if var not in g:
+                    g[var] = []
+                g[var].append(triple)
+            if graph.top not in g:
+                logger.warning('top is not set to a variable in the graph')
+                success = False
+            else:
+                reachable = _dfs(g, graph.top)
+                unreachable = set(g).difference(reachable)
+                if unreachable:
+                    logger.warning(
+                        'graph is disconnected; unreachable nodes: %r',
+                        unreachable)
+                    success = False
+        return success
+
+
+def _dfs(g, top):
+    # just keep source and target of edge relations
+    q = {var: {tgt for _, _, tgt in triples if tgt in g}
+         for var, triples in g.items()}
+    # make edges bidirectional
+    for var, tgts in q.items():
+        for tgt in tgts:
+            if tgt not in q:
+                q[tgt] = set()
+            q[tgt].add(var)
+
+    visited = set()
+    agenda = [top]
+    while agenda:
+        cur = agenda.pop()
+        if cur not in visited:
+            visited.add(cur)
+            agenda.extend(t for t in q.get(cur, []) if t not in visited)
+    return visited

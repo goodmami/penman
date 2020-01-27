@@ -2,7 +2,9 @@
 
 ## [Unreleased][unreleased]
 
-(no unreleased changes yet)
+### Added
+
+* `penman.model.Model.check()` ([#55][])
 
 
 ## [v0.10.0][]
@@ -599,3 +601,4 @@ First release with very basic functionality.
 [#50]: https://github.com/goodmami/penman/issues/50
 [#52]: https://github.com/goodmami/penman/issues/52
 [#53]: https://github.com/goodmami/penman/issues/53
+[#55]: https://github.com/goodmami/penman/issues/55
