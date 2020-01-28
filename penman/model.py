@@ -327,8 +327,8 @@ class Model(object):
                 unreachable = set(g).difference(reachable)
                 if unreachable:
                     logger.warning(
-                        'graph is disconnected; unreachable nodes: %r',
-                        unreachable)
+                        'graph is disconnected; unreachable nodes: %s',
+                        ', '.join(unreachable))
                     success = False
         return success
 
