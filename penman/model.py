@@ -305,6 +305,18 @@ class Model(object):
         Return ``True`` if *graph* conforms to the model.
 
         Errors with the graph are logged at the WARNING level.
+
+        Example:
+
+            >>> from penman.models.amr import model
+            >>> from penman.graph import Graph
+            >>> g = Graph([('a', ':instance', 'alpha'),
+            ...            ('a', ':foo', 'bar'),
+            ...            ('b', ':instance', 'beta')])
+            >>> model.check(g)
+            WARNING:penman.model:invalid role: :foo
+            WARNING:penman.model:graph is disconnected; unreachable nodes: b
+            False
         """
         success = True
         if len(graph.triples) == 0:

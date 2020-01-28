@@ -40,6 +40,7 @@ or as a [script](#script-usage).
   - Reify attributes
   - Embed the tree structure with additional `TOP` triples
 - [x] [AMR model][]: role inventory and transformations
+- [x] Check graphs for model compliance
 - [x] Tested (but not yet 100% coverage)
 - [x] Documented (see the [documentation][])
 
@@ -70,10 +71,11 @@ or as a [script](#script-usage).
 
 ```console
 $ penman --help
-usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr] [--indent N]
-              [--compact] [--triples] [--make-variables FMT] [--rearrange KEY]
-              [--reconfigure KEY] [--canonicalize-roles] [--reify-edges]
-              [--dereify-edges] [--reify-attributes] [--indicate-branches]
+usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr] [--check]
+              [--indent N] [--compact] [--triples] [--make-variables FMT]
+              [--rearrange KEY] [--reconfigure KEY] [--canonicalize-roles]
+              [--reify-edges] [--dereify-edges] [--reify-attributes]
+              [--indicate-branches]
               [FILE [FILE ...]]
 
 Read and write graphs in the PENMAN notation.
@@ -88,6 +90,7 @@ optional arguments:
   -q, --quiet           suppress output on <stdout> and <stderr>
   --model FILE          JSON model file describing the semantic model
   --amr                 use the AMR model
+  --check               check graphs for compliance with the model
 
 formatting options:
   --indent N            indent N spaces per level ("no" for no newlines)

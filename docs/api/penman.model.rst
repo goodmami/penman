@@ -9,6 +9,7 @@ penman.model
       .. automethod:: from_dict
 
       .. automethod:: has_role
+      .. automethod:: check
 
       .. automethod:: is_role_inverted
       .. automethod:: invert_role
