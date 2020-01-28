@@ -5,6 +5,16 @@
 (no unreleased changes yet)
 
 
+## [v0.11.0][]
+
+**Release date: 2020-01-28**
+
+### Added
+
+* `penman.model.Model.check()` ([#55][])
+* `--check` command-line option ([#55][])
+
+
 ## [v0.10.0][]
 
 **Release date: 2020-01-22**
@@ -563,6 +573,7 @@ First release with very basic functionality.
 [v0.9.0]: ../../releases/tag/v0.9.0
 [v0.9.1]: ../../releases/tag/v0.9.1
 [v0.10.0]: ../../releases/tag/v0.10.0
+[v0.11.0]: ../../releases/tag/v0.11.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
@@ -599,3 +610,4 @@ First release with very basic functionality.
 [#50]: https://github.com/goodmami/penman/issues/50
 [#52]: https://github.com/goodmami/penman/issues/52
 [#53]: https://github.com/goodmami/penman/issues/53
+[#55]: https://github.com/goodmami/penman/issues/55
