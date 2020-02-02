@@ -2,7 +2,9 @@
 
 ## [Unreleased][unreleased]
 
-(no unreleased changes yet)
+### Fixed
+
+* Avoid another source of concepts becoming nodes ([#61][])
 
 
 ## [v0.11.0][]
@@ -611,3 +613,4 @@ First release with very basic functionality.
 [#52]: https://github.com/goodmami/penman/issues/52
 [#53]: https://github.com/goodmami/penman/issues/53
 [#55]: https://github.com/goodmami/penman/issues/55
+[#61]: https://github.com/goodmami/penman/issues/61

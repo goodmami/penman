@@ -386,6 +386,14 @@ class TestPENMANCodec(object):
         g = penman.Graph([('one', 'instance', '"a string"')])
         assert encode(g) == '(one / "a string")'
 
+    def test_encode_issue_61(self):
+        # https://github.com/goodmami/penman/issues/61
+        g = penman.Graph([('i2', ':instance', 'i'),
+                          ('i', ':instance', 'i'),
+                          ('i2', ':ARG0', 'i')],
+                         top='i2')
+        assert encode(g, indent=None) == '(i2 / i :ARG0 (i / i))'
+
     def test_parse_triples(self):
         assert codec.parse_triples('role(a,b)') == [
             ('a', 'role', 'b')]
