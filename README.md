@@ -121,7 +121,15 @@ $ penman <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
 
 ### Demo
 
-(coming soon)
+For a demonstration of the API usage, see the included [Jupyter](https://jupyter.org/) notebook at [docs/api-demo.ipynb](docs/api-demo.ipynb). To run it interactively, ensure Penman is installed and run it with `jupyter-notebook`. For example, check out this repository and run the following from the project's root directory:
+
+```shell
+$ python3 -m venv demo
+$ source demo/bin/activate
+(demo) $ pip install . jupyter
+(demo) $ jupyter-notebook demo/api-demo.ipynb
+```
+
 
 ### PENMAN Notation
 
