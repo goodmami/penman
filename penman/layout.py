@@ -422,6 +422,7 @@ def _get_or_establish_site(var, nodemap):
                     edge = list(edges[i])
                     edge[1] = node
                     edges[i] = tuple(edge)
+                    break
         else:
             pass  # otherwise the node already exists so we're good
         return True

@@ -5,6 +5,7 @@
 ### Fixed
 
 * Avoid another source of concepts becoming nodes ([#61][])
+* Only configure one tree branch for new triples ([#67][])
 
 
 ## [v0.11.0][]
@@ -614,3 +615,4 @@ First release with very basic functionality.
 [#53]: https://github.com/goodmami/penman/issues/53
 [#55]: https://github.com/goodmami/penman/issues/55
 [#61]: https://github.com/goodmami/penman/issues/61
+[#67]: https://github.com/goodmami/penman/issues/67
