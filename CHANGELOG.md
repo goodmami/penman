@@ -2,6 +2,13 @@
 
 ## [Unreleased][unreleased]
 
+(no unreleased changes yet)
+
+
+## [v0.11.1][]
+
+**Release date: 2020-02-06**
+
 ### Fixed
 
 * Avoid another source of concepts becoming nodes ([#61][])
@@ -577,6 +584,7 @@ First release with very basic functionality.
 [v0.9.1]: ../../releases/tag/v0.9.1
 [v0.10.0]: ../../releases/tag/v0.10.0
 [v0.11.0]: ../../releases/tag/v0.11.0
+[v0.11.1]: ../../releases/tag/v0.11.1
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
