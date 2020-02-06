@@ -304,18 +304,19 @@ def _preconfigure(g, strict):
         push, pops = None, []
         for epi in epidata.get(triple, []):
             if isinstance(epi, Push):
-                if push is not None or epi.variable in pushed:
+                pvar = epi.variable
+                if push is not None or pvar in pushed:
                     if strict:
                         raise LayoutError(
-                            f"multiple node contexts for '{epi.variable}'")
+                            f"multiple node contexts for '{pvar}'")
                     pass  # change to 'continue' to disallow multiple contexts
-                if epi.variable not in (triple[0], triple[2]):
+                if pvar not in (triple[0], triple[2]) or role == CONCEPT_ROLE:
                     if strict:
                         raise LayoutError(
-                            f"node context '{epi.variable}' "
+                            f"node context '{pvar}' "
                             f"invalid for triple: {triple!r}")
                     continue
-                pushed.add(epi.variable)
+                pushed.add(pvar)
                 push = epi
             elif epi is POP:
                 pops.append(epi)
@@ -367,6 +368,7 @@ def _configure_node(var, data, nodemap, model):
                 continue  # prefer (a) over (a /) when concept is missing
             role = '/'
             index = 0
+            push = None  # never push on concept roles
         else:
             index = len(edges)
 
@@ -374,7 +376,7 @@ def _configure_node(var, data, nodemap, model):
             nodemap[push.variable] = (push.variable, [])
             target = _configure_node(
                 push.variable, data, nodemap, model)
-        elif target in nodemap and nodemap[target] is None:
+        elif role != '/' and target in nodemap and nodemap[target] is None:
             # site of potential node context
             nodemap[target] = node
 
@@ -416,10 +418,11 @@ def _get_or_establish_site(var, nodemap):
             nodemap[var] = node
             for i in range(len(edges)):
                 # replace the variable in the tree with the new node
-                if edges[i][1] == var:
+                if edges[i][1] == var and edges[i][0] != '/':
                     edge = list(edges[i])
                     edge[1] = node
                     edges[i] = tuple(edge)
+                    break
         else:
             pass  # otherwise the node already exists so we're good
         return True

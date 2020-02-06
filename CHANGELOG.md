@@ -5,6 +5,16 @@
 (no unreleased changes yet)
 
 
+## [v0.11.1][]
+
+**Release date: 2020-02-06**
+
+### Fixed
+
+* Avoid another source of concepts becoming nodes ([#61][])
+* Only configure one tree branch for new triples ([#67][])
+
+
 ## [v0.11.0][]
 
 **Release date: 2020-01-28**
@@ -574,6 +584,7 @@ First release with very basic functionality.
 [v0.9.1]: ../../releases/tag/v0.9.1
 [v0.10.0]: ../../releases/tag/v0.10.0
 [v0.11.0]: ../../releases/tag/v0.11.0
+[v0.11.1]: ../../releases/tag/v0.11.1
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
@@ -611,3 +622,5 @@ First release with very basic functionality.
 [#52]: https://github.com/goodmami/penman/issues/52
 [#53]: https://github.com/goodmami/penman/issues/53
 [#55]: https://github.com/goodmami/penman/issues/55
+[#61]: https://github.com/goodmami/penman/issues/61
+[#67]: https://github.com/goodmami/penman/issues/67
