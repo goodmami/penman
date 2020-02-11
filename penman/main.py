@@ -80,9 +80,8 @@ def process(f,
                 indent=bool(format_options.get('indent', True)))
         else:
             s = codec.encode(g, **format_options)
-        err.flush()
+
         print(s, file=out)
-        out.flush()
 
 
 def main():

@@ -4,6 +4,10 @@
 
 (no unreleased changes yet)
 
+### Fixed
+
+* Don't flush standard streams in `penman` command ([#60][])
+
 
 ## [v0.11.1][]
 
@@ -622,5 +626,6 @@ First release with very basic functionality.
 [#52]: https://github.com/goodmami/penman/issues/52
 [#53]: https://github.com/goodmami/penman/issues/53
 [#55]: https://github.com/goodmami/penman/issues/55
+[#60]: https://github.com/goodmami/penman/issues/60
 [#61]: https://github.com/goodmami/penman/issues/61
 [#67]: https://github.com/goodmami/penman/issues/67
