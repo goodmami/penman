@@ -4,6 +4,14 @@
 
 (no unreleased changes yet)
 
+### Added
+
+* `penman.model.Model.errors()` replaces `Model.check()` ([#65][])
+
+### Removed
+
+* `penman.model.Model.check()` replaced by `Model.errors()` ([#65][])
+
 ### Fixed
 
 * Don't flush standard streams in `penman` command ([#60][])
@@ -633,4 +641,5 @@ First release with very basic functionality.
 [#60]: https://github.com/goodmami/penman/issues/60
 [#61]: https://github.com/goodmami/penman/issues/61
 [#63]: https://github.com/goodmami/penman/issues/63
+[#65]: https://github.com/goodmami/penman/issues/65
 [#67]: https://github.com/goodmami/penman/issues/67
