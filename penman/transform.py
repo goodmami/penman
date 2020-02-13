@@ -134,7 +134,7 @@ def dereify_edges(g: Graph, model: Model) -> Graph:
         ...   '(c / chapter'
         ...   '   :ARG1-of (_ / have-mod-91'
         ...   '               :ARG2 7))')
-        >>> g = dereify_edges(g)
+        >>> g = dereify_edges(g, model)
         >>> print(codec.encode(g))
         (c / chapter
            :mod 7)

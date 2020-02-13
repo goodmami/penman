@@ -466,18 +466,19 @@ def rearrange(t: Tree,
     is the node label it will stay in place after the sort.
 
     Example:
-
         >>> from penman import layout
         >>> from penman.model import Model
         >>> from penman.codec import PENMANCodec
         >>> c = PENMANCodec()
-        >>> t = c.parse('(s / see-01 :ARG0 (d / dog) :ARG1 (c / cat))')
-        >>> layout.rearrange(t, key=Model().random_order)
+        >>> t = c.parse(
+        ...   '(s / see-01'
+        ...   '   :ARG1 (c / cat)'
+        ...   '   :ARG0 (d / dog))')
+        >>> layout.rearrange(t, key=Model().canonical_order)
         >>> print(c.format(t))
         (s / see-01
-           :ARG1 (c / cat)
-           :ARG0 (d / dog))
-
+           :ARG0 (d / dog)
+           :ARG1 (c / cat))
     """
     if key is None:
         key = _default_model.original_order
@@ -587,7 +588,7 @@ def node_contexts(g: Graph) -> List[Union[Variable, None]]:
         ...      :attr val
         ...      :ARG0 (b / beta :ARG0 (g / gamma))
         ...      :ARG0-of g)''')
-        >>> for ctx, trp in zip(layout.node_contexts(g), trp):
+        >>> for ctx, trp in zip(layout.node_contexts(g), g.triples):
         ...     print(ctx, ':', trp)
         ...
         a : ('a', ':instance', 'alpha')

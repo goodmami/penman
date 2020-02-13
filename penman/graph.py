@@ -85,9 +85,11 @@ class Graph(object):
         epidata: a mapping of triples to epigraphical markers
         metadata: a mapping of metadata types to descriptions
     Example:
+        >>> from penman.graph import Graph
         >>> Graph([('b', ':instance', 'bark-01'),
         ...        ('d', ':instance', 'dog'),
         ...        ('b', ':ARG0', 'd')])
+        <Graph object (top=b) at ...>
     """
 
     def __init__(self,

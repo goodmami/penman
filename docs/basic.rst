@@ -101,7 +101,7 @@ For example:
    >>> codec = PENMANCodec()
    >>> g = codec.decode('(b / bark-01 :ARG0 (d / dog))')
    >>> g.instances()
-   [Attribute(source='b', role=':instance', target='bark-01'), Attribute(source='d', role=':instance', target='dog')]
+   [Instance(source='b', role=':instance', target='bark-01'), Instance(source='d', role=':instance', target='dog')]
    >>> g.edges()
    [Edge(source='b', role=':ARG0', target='d')]
    >>> g.variables()

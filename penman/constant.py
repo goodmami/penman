@@ -134,7 +134,7 @@ def quote(constant: Constant) -> str:
         >>> constant.quote('foo')
         '"foo"'
         >>> constant.quote('"foo"')
-        '"\\"foo\\""'
+        '"\\\\"foo\\\\""'
         >>> constant.quote(1)
         '"1"'
         >>> constant.quote(1.5)

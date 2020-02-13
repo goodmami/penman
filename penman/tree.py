@@ -157,11 +157,12 @@ def is_atomic(x) -> bool:
     Return ``True`` if *x* is a valid atomic value.
 
     Examples:
+        >>> from penman.tree import is_atomic
         >>> is_atomic('a')
         True
         >>> is_atomic(None)
         True
-        >>> is_atomic(3.14
+        >>> is_atomic(3.14)
         True
         >>> is_atomic(('a', [('/', 'alpha')]))
         False
