@@ -8,6 +8,10 @@
 
 * Don't flush standard streams in `penman` command ([#60][])
 
+### Changed
+
+* Return exit code of 1 when `penman --check` finds errors ([#63][])
+
 
 ## [v0.11.1][]
 
@@ -628,4 +632,5 @@ First release with very basic functionality.
 [#55]: https://github.com/goodmami/penman/issues/55
 [#60]: https://github.com/goodmami/penman/issues/60
 [#61]: https://github.com/goodmami/penman/issues/61
+[#63]: https://github.com/goodmami/penman/issues/63
 [#67]: https://github.com/goodmami/penman/issues/67

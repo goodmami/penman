@@ -23,6 +23,8 @@ def process(f,
             triples):
     """Read graphs from *f* and write to *out*."""
 
+    exitcode = 0
+
     def _process(t):
         """Encode tree *t* and return the string."""
         # tree transformations
@@ -72,7 +74,18 @@ def process(f,
 
         g = _process(t)
         if check:
-            model.check(g)
+            i = 1
+            errors = model.errors(g)
+            if errors:
+                exitcode = 1
+                for triple, errors in errors.items():
+                    if triple:
+                        context = '({}) '.format(' '.join(map(str, triple)))
+                    else:
+                        context = ''
+                    for error in errors:
+                        g.metadata[f'error-{i}'] = context + error
+                    i += 1
 
         if triples:
             s = codec.format_triples(
@@ -82,6 +95,8 @@ def process(f,
             s = codec.encode(g, **format_options)
 
         print(s, file=out)
+
+    return exitcode
 
 
 def main():
@@ -198,11 +213,15 @@ def main():
     if args.FILE:
         for file in args.FILE:
             with open(file) as f:
-                process(f, model, sys.stdout, sys.stderr, args.check,
-                        normalize_options, format_options, args.triples)
+                exitcode = process(
+                    f, model, sys.stdout, sys.stderr, args.check,
+                    normalize_options, format_options, args.triples)
     else:
-        process(sys.stdin, model, sys.stdout, sys.stderr, args.check,
-                normalize_options, format_options, args.triples)
+        exitcode = process(
+            sys.stdin, model, sys.stdout, sys.stderr, args.check,
+            normalize_options, format_options, args.triples)
+
+    sys.exit(exitcode)
 
 
 if __name__ == '__main__':
