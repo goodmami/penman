@@ -35,6 +35,9 @@ penman.graph
       .. autoattribute:: role
       .. autoattribute:: target
 
+   .. autoclass:: Instance
+      :show-inheritance:
+
    .. autoclass:: Edge
       :show-inheritance:
 
