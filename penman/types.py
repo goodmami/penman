@@ -8,10 +8,10 @@ from pathlib import Path
 
 
 Variable = str
-Constant = Union[str, float, int]
+Constant = Union[str, float, int, None]  # None for missing values
 Role = str  # '' for anonymous relations
 
-Target = Union[Variable, Constant, None]  # None for untyped nodes
+Target = Union[Variable, Constant]
 BasicTriple = Tuple[Variable, Role, Target]
 Triples = Iterable[BasicTriple]
 

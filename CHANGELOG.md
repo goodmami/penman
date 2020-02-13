@@ -7,6 +7,7 @@
 ### Added
 
 * `penman.model.Model.errors()` replaces `Model.check()` ([#65][])
+* `penman.constant` module for constant values ([#69][])
 
 ### Removed
 
@@ -643,3 +644,4 @@ First release with very basic functionality.
 [#63]: https://github.com/goodmami/penman/issues/63
 [#65]: https://github.com/goodmami/penman/issues/65
 [#67]: https://github.com/goodmami/penman/issues/67
+[#69]: https://github.com/goodmami/penman/issues/69

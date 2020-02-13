@@ -44,6 +44,7 @@ models if they need more control.
 
    api/penman
    api/penman.codec
+   api/penman.constant
    api/penman.epigraph
    api/penman.exceptions
    api/penman.graph
