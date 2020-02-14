@@ -26,5 +26,6 @@ penman.model
       .. automethod:: dereify
 
       .. automethod:: original_order
+      .. automethod:: alphanumeric_order
       .. automethod:: canonical_order
       .. automethod:: random_order
