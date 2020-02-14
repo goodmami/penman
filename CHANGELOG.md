@@ -10,6 +10,7 @@
 * `penman.constant` module for constant values ([#69][])
 * `penman.graph.Instance` subtype of `Triple` ([#66][])
 * `penman.model.Model.alphanumeric_order()` ([#72][])
+* `penman.layout.rearrange()`: `attributes_first` parameter ([#62][])
 
 ### Removed
 
@@ -647,6 +648,7 @@ First release with very basic functionality.
 [#55]: https://github.com/goodmami/penman/issues/55
 [#60]: https://github.com/goodmami/penman/issues/60
 [#61]: https://github.com/goodmami/penman/issues/61
+[#62]: https://github.com/goodmami/penman/issues/62
 [#63]: https://github.com/goodmami/penman/issues/63
 [#65]: https://github.com/goodmami/penman/issues/65
 [#66]: https://github.com/goodmami/penman/issues/66

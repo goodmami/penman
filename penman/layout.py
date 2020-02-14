@@ -456,14 +456,19 @@ def reconfigure(g: Graph,
 
 
 def rearrange(t: Tree,
-              key: Callable[[Role], Any] = None) -> None:
+              key: Callable[[Role], Any] = None,
+              attributes_first: bool = False) -> None:
     """
     Sort the branches at each node in tree *t* according to *key*.
 
     Each node in a tree contains a list of branches. This function
     sorts those lists in-place using the *key* function, which accepts
-    a branch and returns some sortable criterion. If the first branch
-    is the node label it will stay in place after the sort.
+    a role and returns some sortable criterion.
+
+    If the *attributes_first* argument is ``True``, attribute branches
+    are appear before any edges.
+
+    Instance branches (``/``) always appear before any other branches.
 
     Example:
         >>> from penman import layout
@@ -480,12 +485,24 @@ def rearrange(t: Tree,
            :ARG0 (d / dog)
            :ARG1 (c / cat))
     """
-    if key is None:
-        key = _default_model.original_order
-    _rearrange(t.node, key=key)
+    if attributes_first:
+        variables = {node[0] for node in t.nodes()}
+    else:
+        variables = set()
+
+    def sort_key(branch: Branch):
+        role, target = branch
+        if is_atomic(target):
+            criterion1 = target in variables
+        else:
+            criterion1 = target[0] in variables
+        criterion2 = True if key is None else key(role)
+        return (criterion1, criterion2)
+
+    _rearrange(t.node, sort_key)
 
 
-def _rearrange(node: Node, key: Callable[[Role], Any]) -> None:
+def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
     _, branches = node
     if branches and branches[0][0] == '/':
         first = branches[0:1]
@@ -496,7 +513,7 @@ def _rearrange(node: Node, key: Callable[[Role], Any]) -> None:
     for _, target in rest:
         if not is_atomic(target):
             _rearrange(target, key=key)
-    branches[:] = first + sorted(rest, key=lambda branch: key(branch[0]))
+    branches[:] = first + sorted(rest, key=key)
 
 
 def has_valid_layout(g: Graph,
