@@ -43,25 +43,13 @@ def process(f,
 
     exitcode = 0
 
-    def _process(t):
+    def _process_in(t):
         """Encode tree *t* and return the string."""
         # tree transformations
-        if normalize_options['make_variables']:
-            t.reset_variables(normalize_options['make_variables'])
         if normalize_options['canonicalize_roles']:
             t = transform.canonicalize_roles(t, model)
-        if normalize_options['rearrange']:
-            key, kwargs = normalize_options['rearrange']
-            layout.rearrange(t, key=key, **kwargs)
 
         g = layout.interpret(t, model)
-
-        # reconfiguration (by round-tripping; a bit inefficient, but
-        # oh well)
-        if normalize_options['reconfigure']:
-            key, kwargs = normalize_options['reconfigure']
-            t = layout.reconfigure(g, key=key, **kwargs)
-            g = layout.interpret(t, model)
 
         # graph transformations
         if normalize_options['reify_edges']:
@@ -75,6 +63,21 @@ def process(f,
 
         return g
 
+    def _process_out(g):
+        if normalize_options['reconfigure']:
+            key, kwargs = normalize_options['reconfigure']
+            t = layout.reconfigure(g, key=key, **kwargs)
+            g = layout.interpret(t, model)
+        else:
+            t = layout.configure(g, model=model)
+        if normalize_options['rearrange']:
+            key, kwargs = normalize_options['rearrange']
+            layout.rearrange(t, key=key, **kwargs)
+        if normalize_options['make_variables']:
+            t.reset_variables(normalize_options['make_variables'])
+
+        return t
+
     codec = PENMANCodec(model=model)
     trees = codec.iterparse(f)
 
@@ -85,7 +88,7 @@ def process(f,
         else:
             print(file=out)
 
-        g = _process(t)
+        g = _process_in(t)
         if check:
             i = 1
             errors = model.errors(g)
@@ -105,7 +108,8 @@ def process(f,
                 g.triples,
                 indent=bool(format_options.get('indent', True)))
         else:
-            s = codec.encode(g, **format_options)
+            t = _process_out(g)
+            s = codec.format(t, **format_options)
 
         print(s, file=out)
 

@@ -29,6 +29,8 @@
   calling `is_role_inverted()` and `alphanumeric_order()` ([#72][])
 * `--rearrange` and `--reconfigure` can now take multiple ordered
   sorting criteria ([#70][])
+* The order of operations for processing inputs has changed so users
+  can do more with shorter pipelines ([#71][])
 
 
 ## [v0.11.1][]
@@ -657,4 +659,5 @@ First release with very basic functionality.
 [#67]: https://github.com/goodmami/penman/issues/67
 [#69]: https://github.com/goodmami/penman/issues/69
 [#70]: https://github.com/goodmami/penman/issues/70
+[#71]: https://github.com/goodmami/penman/issues/71
 [#72]: https://github.com/goodmami/penman/issues/72
