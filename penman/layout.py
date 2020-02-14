@@ -55,10 +55,10 @@ import copy
 import logging
 
 from penman.exceptions import LayoutError
-from penman.types import Variable, Role, BasicTriple
+from penman.types import (Variable, Role, BasicTriple, Branch, Node)
 from penman.epigraph import Epidatum
 from penman.surface import (Alignment, RoleAlignment)
-from penman.tree import (Tree, Node, is_atomic)
+from penman.tree import (Tree, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
 

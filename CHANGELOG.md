@@ -21,6 +21,8 @@
 ### Changed
 
 * Return exit code of 1 when `penman --check` finds errors ([#63][])
+* Moved the `Branch` and `Node` types from `penman.tree` to
+  `penman.types`
 
 
 ## [v0.11.1][]
