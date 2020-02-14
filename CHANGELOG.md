@@ -9,6 +9,7 @@
 * `penman.model.Model.errors()` replaces `Model.check()` ([#65][])
 * `penman.constant` module for constant values ([#69][])
 * `penman.graph.Instance` subtype of `Triple` ([#66][])
+* `penman.model.Model.alphanumeric_order()` ([#72][])
 
 ### Removed
 
@@ -23,6 +24,8 @@
 * Return exit code of 1 when `penman --check` finds errors ([#63][])
 * Moved the `Branch` and `Node` types from `penman.tree` to
   `penman.types`
+* `penman.model.Model.canonical_order()` is now just a shortcut for
+  calling `is_role_inverted()` and `alphanumeric_order()` ([#72][])
 
 
 ## [v0.11.1][]
@@ -649,3 +652,4 @@ First release with very basic functionality.
 [#66]: https://github.com/goodmami/penman/issues/66
 [#67]: https://github.com/goodmami/penman/issues/67
 [#69]: https://github.com/goodmami/penman/issues/69
+[#72]: https://github.com/goodmami/penman/issues/72

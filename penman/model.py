@@ -283,15 +283,19 @@ class Model(object):
         """Role sorting key that does not change the order."""
         return True
 
-    def canonical_order(self, role: Role):
-        """Role sorting key that finds a canonical order."""
+    def alphanumeric_order(self, role: Role):
+        """Role sorting key for alphanumeric order."""
         m = re.match(r'(.*\D)(\d+)$', role)
         if m:
             rolename = m.group(1)
             roleno = int(m.group(2))
         else:
             rolename, roleno = role, 0
-        return (self.is_role_inverted(role), rolename, roleno)
+        return rolename, roleno
+
+    def canonical_order(self, role: Role):
+        """Role sorting key that finds a canonical order."""
+        return (self.is_role_inverted(role), self.alphanumeric_order(role))
 
     def random_order(self, role: Role):
         """Role sorting key that randomizes the order."""
