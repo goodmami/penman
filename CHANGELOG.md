@@ -4,6 +4,17 @@
 
 (no unreleased changes yet)
 
+## [v0.12.0][]
+
+**Release date: 2020-02-14**
+
+This release improves the amount and behavior of functions for
+processing inputs from the `penman` command. It also replaces the
+previous release's `Model.check()` with `Model.errors()`, which is
+generally more useful. Finally, the new `penman.constant` module is
+introduced for dealing with constant values in their interpreted
+datatypes.
+
 ### Added
 
 * `penman.model.Model.errors()` replaces `Model.check()` ([#65][])
@@ -613,6 +624,7 @@ First release with very basic functionality.
 [v0.10.0]: ../../releases/tag/v0.10.0
 [v0.11.0]: ../../releases/tag/v0.11.0
 [v0.11.1]: ../../releases/tag/v0.11.1
+[v0.12.0]: ../../releases/tag/v0.12.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
