@@ -27,6 +27,8 @@
   `penman.types`
 * `penman.model.Model.canonical_order()` is now just a shortcut for
   calling `is_role_inverted()` and `alphanumeric_order()` ([#72][])
+* `--rearrange` and `--reconfigure` can now take multiple ordered
+  sorting criteria ([#70][])
 
 
 ## [v0.11.1][]
@@ -654,4 +656,5 @@ First release with very basic functionality.
 [#66]: https://github.com/goodmami/penman/issues/66
 [#67]: https://github.com/goodmami/penman/issues/67
 [#69]: https://github.com/goodmami/penman/issues/69
+[#70]: https://github.com/goodmami/penman/issues/70
 [#72]: https://github.com/goodmami/penman/issues/72

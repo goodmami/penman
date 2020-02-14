@@ -13,6 +13,24 @@ from penman.codec import PENMANCodec
 from penman import transform
 
 
+# Names of functions allowed for ordering triples/branches; we cannot
+# resolve them to the actual functions until the model is loaded.  If
+# the value of the key is not a method of the model, the value is
+# passed as a keyword argument with the value `True`.
+REARRANGE_KEYS = {
+    'random': 'random_order',
+    'canonical': 'canonical_order',
+    'alphanumeric': 'alphanumeric_order',
+    'inverted-last': 'is_role_inverted',
+    'attributes-first': 'attributes_first',
+}
+RECONFIGURE_KEYS = {
+    'original': 'original_order',
+    'random': 'random_order',
+    'canonical': 'canonical_order',
+}
+
+
 def process(f,
             model,
             out,
@@ -32,22 +50,17 @@ def process(f,
             t.reset_variables(normalize_options['make_variables'])
         if normalize_options['canonicalize_roles']:
             t = transform.canonicalize_roles(t, model)
-        if normalize_options['rearrange'] == 'canonical':
-            layout.rearrange(t, key=model.canonical_order)
-        elif normalize_options['rearrange'] == 'random':
-            layout.rearrange(t, key=model.random_order)
+        if normalize_options['rearrange']:
+            key, kwargs = normalize_options['rearrange']
+            layout.rearrange(t, key=key, **kwargs)
 
         g = layout.interpret(t, model)
 
         # reconfiguration (by round-tripping; a bit inefficient, but
         # oh well)
         if normalize_options['reconfigure']:
-            key = model.original_order
-            if normalize_options['reconfigure'] == 'canonical':
-                key = model.canonical_order
-            elif normalize_options['reconfigure'] == 'random':
-                key = model.random_order
-            t = layout.reconfigure(g, key=key)
+            key, kwargs = normalize_options['reconfigure']
+            t = layout.reconfigure(g, key=key, **kwargs)
             g = layout.interpret(t, model)
 
         # graph transformations
@@ -99,6 +112,37 @@ def process(f,
     return exitcode
 
 
+def _order_funcs(KEY_FUNCS):
+
+    def split_arg(arg):
+        values = arg.split(',')
+        for value in values:
+            if value not in KEY_FUNCS:
+                raise argparse.ArgumentTypeError(
+                    'invalid choice: {!r} (choose from {})'
+                    .format(value, ', '.join(map(repr, KEY_FUNCS))))
+        return values
+
+    return split_arg
+
+
+def _make_sort_key(keys, model, KEY_FUNCS):
+    kwargs = {}
+    funcs = []
+    for key in keys:
+        name = KEY_FUNCS[key]
+        func = getattr(model, name, None)
+        if func is None:
+            kwargs[name] = True
+        else:
+            funcs.append(func)
+
+    def sort_key(role, funcs=funcs):
+        return [func(role) for func in funcs]
+
+    return sort_key, kwargs
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Read and write graphs in the PENMAN notation.',
@@ -141,11 +185,12 @@ def main():
         '--make-variables', metavar='FMT',
         help="recreate node variables with FMT (e.g.: '{prefix}{j}')")
     norm.add_argument(
-        '--rearrange', metavar='KEY', choices=('random', 'canonical'),
+        '--rearrange', metavar='KEY',
+        type=_order_funcs(REARRANGE_KEYS),
         help='reorder the branches of the tree')
     norm.add_argument(
         '--reconfigure', metavar='KEY',
-        choices=('original', 'random', 'canonical'),
+        type=_order_funcs(RECONFIGURE_KEYS),
         help='reconfigure the graph layout with reordered triples')
     norm.add_argument(
         '--canonicalize-roles', action='store_true',
@@ -181,6 +226,14 @@ def main():
         model = Model(**json.load(args.model))
     else:
         model = Model()
+
+    if args.rearrange:
+        args.rearrange = _make_sort_key(
+            args.rearrange, model, REARRANGE_KEYS)
+
+    if args.reconfigure:
+        args.reconfigure = _make_sort_key(
+            args.reconfigure, model, RECONFIGURE_KEYS)
 
     indent = -1
     if args.indent:
