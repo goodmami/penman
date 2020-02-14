@@ -4,11 +4,11 @@
 Semantic models for interpreting graphs.
 """
 
-from typing import (cast, Tuple, List, Dict, Set, Iterable, Mapping, Any)
+from typing import (
+    cast, Optional, Tuple, List, Dict, Set, Iterable, Mapping, Any)
 import re
 from collections import defaultdict
 import random
-import logging
 
 from penman.exceptions import ModelError
 from penman.types import (
@@ -19,9 +19,6 @@ from penman.types import (
     BasicTriple
 )
 from penman.graph import CONCEPT_ROLE, Graph
-
-
-logger = logging.getLogger(__name__)
 
 
 _ReificationSpec = Tuple[Role, Constant, Role, Role]
@@ -286,25 +283,31 @@ class Model(object):
         """Role sorting key that does not change the order."""
         return True
 
-    def canonical_order(self, role: Role):
-        """Role sorting key that finds a canonical order."""
+    def alphanumeric_order(self, role: Role):
+        """Role sorting key for alphanumeric order."""
         m = re.match(r'(.*\D)(\d+)$', role)
         if m:
             rolename = m.group(1)
             roleno = int(m.group(2))
         else:
             rolename, roleno = role, 0
-        return (self.is_role_inverted(role), rolename, roleno)
+        return rolename, roleno
+
+    def canonical_order(self, role: Role):
+        """Role sorting key that finds a canonical order."""
+        return (self.is_role_inverted(role), self.alphanumeric_order(role))
 
     def random_order(self, role: Role):
         """Role sorting key that randomizes the order."""
         return random.random()
 
-    def check(self, graph: Graph) -> bool:
+    def errors(self, graph: Graph) -> Dict[Optional[BasicTriple], List[str]]:
         """
-        Return ``True`` if *graph* conforms to the model.
+        Return a description of model errors detected in *graph*.
 
-        Errors with the graph are logged at the WARNING level.
+        The description is a dictionary mapping a context to a list of
+        errors. A context is a triple if the error is relevant for the
+        triple, or ``None`` for general graph errors.
 
         Example:
 
@@ -313,36 +316,35 @@ class Model(object):
             >>> g = Graph([('a', ':instance', 'alpha'),
             ...            ('a', ':foo', 'bar'),
             ...            ('b', ':instance', 'beta')])
-            >>> model.check(g)
-            WARNING:penman.model:invalid role: :foo
-            WARNING:penman.model:graph is disconnected; unreachable nodes: b
-            False
+            >>> for context, errors in model.errors(g).items():
+            ...     print(context, errors)
+            ...
+            ('a', ':foo', 'bar') ['invalid role']
+            ('b', ':instance', 'beta') ['unreachable']
         """
-        success = True
+        err: Dict[Optional[BasicTriple], List[str]] = defaultdict(list)
         if len(graph.triples) == 0:
-            logger.warning('graph is empty')
+            err[None].append('graph is empty')
         else:
             g: Dict[Variable, List[BasicTriple]] = {}
             for triple in graph.triples:
                 var, role, tgt = triple
                 if not self.has_role(role):
-                    logger.warning('invalid role: %s', role)
-                    success = False
+                    err[triple].append(f'invalid role')
                 if var not in g:
                     g[var] = []
                 g[var].append(triple)
-            if graph.top not in g:
-                logger.warning('top is not set to a variable in the graph')
-                success = False
+            if not graph.top:
+                err[None].append(f'top is not set')
+            elif graph.top not in g:
+                err[None].append(f'top is not a variable in the graph')
             else:
                 reachable = _dfs(g, graph.top)
                 unreachable = set(g).difference(reachable)
-                if unreachable:
-                    logger.warning(
-                        'graph is disconnected; unreachable nodes: %s',
-                        ', '.join(unreachable))
-                    success = False
-        return success
+                for uvar in sorted(unreachable):
+                    for triple in g[uvar]:
+                        err[triple].append(f'unreachable')
+        return dict(err)
 
 
 def _dfs(g, top):

@@ -27,6 +27,7 @@ Data Structures
 Serialization
 '''''''''''''
 
+- :doc:`penman.constant` -- For working with constant values
 - :doc:`penman.codec` -- Codec class for reading and writing PENMAN data
 - :doc:`penman.layout` -- Conversion between trees and graphs
 - :doc:`penman.lexer` -- Low-level parsing of PENMAN data

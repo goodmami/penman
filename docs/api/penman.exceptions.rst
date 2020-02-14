@@ -7,6 +7,10 @@ penman.exceptions
    .. autoexception:: PenmanError
       :members:
 
+   .. autoexception:: ConstantError
+      :show-inheritance:
+      :members:
+
    .. autoexception:: GraphError
       :show-inheritance:
       :members:

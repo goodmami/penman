@@ -264,22 +264,22 @@ class TestModel:
         with pytest.raises(ModelError):
             m.dereify(t1b, t2, t3)
 
-    def test_check(self, mini_amr):
+    def test_errors(self, mini_amr):
         m = Model()
         a = Model.from_dict(mini_amr)
         # basic roles
         g = Graph([('a', ':instance', 'alpha')])
-        assert m.check(g)
+        assert m.errors(g) == {}
         g = Graph([('a', ':instance', 'alpha'), ('a', ':mod', '1')])
-        assert not m.check(g)
-        assert a.check(g)
+        assert m.errors(g) == {('a', ':mod', '1'): ['invalid role']}
+        assert a.errors(g) == {}
         # regex role names
         g = Graph([('n', ':instance', 'name'),
                    ('n', ':op1', 'Foo'),
                    ('n', ':op2', 'Bar')])
-        assert a.check(g)
+        assert a.errors(g) == {}
         # disconnected graph
         g = Graph([('a', ':instance', 'alpha'),
                    ('b', ':instance', 'beta')])
-        assert not m.check(g)
-        assert not a.check(g)
+        assert m.errors(g) == {('b', ':instance', 'beta'): ['unreachable']}
+        assert a.errors(g) == {('b', ':instance', 'beta'): ['unreachable']}

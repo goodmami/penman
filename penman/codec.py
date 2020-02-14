@@ -46,6 +46,7 @@ class PENMANCodec(object):
         Returns:
             The :class:`~penman.graph.Graph` object described by *s*.
         Example:
+            >>> from penman.codec import PENMANCodec
             >>> codec = PENMANCodec()
             >>> codec.decode('(b / bark-01 :ARG0 (d / dog))')
             <Graph object (top=b) at ...>
@@ -90,9 +91,10 @@ class PENMANCodec(object):
         Returns:
             The tree structure described by *s*.
         Example:
+            >>> from penman.codec import PENMANCodec
             >>> codec = PENMANCodec()
             >>> codec.parse('(b / bark-01 :ARG0 (d / dog))')  # noqa
-            Tree(('b', [('/', 'bark-01'), ('ARG0', ('d', [('/', 'dog')]))]))
+            Tree(('b', [('/', 'bark-01'), (':ARG0', ('d', [('/', 'dog')]))]))
         """
         tokens = lex(s, pattern=PENMAN_RE)
         return self._parse(tokens)
@@ -261,10 +263,11 @@ class PENMANCodec(object):
         Returns:
             the PENMAN-serialized string of the Graph *g*
         Example:
-
+            >>> from penman.graph import Graph
+            >>> from penman.codec import PENMANCodec
             >>> codec = PENMANCodec()
             >>> codec.encode(Graph([('h', 'instance', 'hi')]))
-            (h / hi)
+            '(h / hi)'
 
         """
         tree = layout.configure(g, top=top, model=self.model)
@@ -359,6 +362,7 @@ class PENMANCodec(object):
         Returns:
             the serialized triple conjunction of *triples*
         Example:
+            >>> from penman.codec import PENMANCodec
             >>> codec = PENMANCodec()
             >>> codec.format_triples([('a', ':instance', 'alpha'),
             ...                       ('a', ':ARG0', 'b'),

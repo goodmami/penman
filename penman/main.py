@@ -13,6 +13,24 @@ from penman.codec import PENMANCodec
 from penman import transform
 
 
+# Names of functions allowed for ordering triples/branches; we cannot
+# resolve them to the actual functions until the model is loaded.  If
+# the value of the key is not a method of the model, the value is
+# passed as a keyword argument with the value `True`.
+REARRANGE_KEYS = {
+    'random': 'random_order',
+    'canonical': 'canonical_order',
+    'alphanumeric': 'alphanumeric_order',
+    'inverted-last': 'is_role_inverted',
+    'attributes-first': 'attributes_first',
+}
+RECONFIGURE_KEYS = {
+    'original': 'original_order',
+    'random': 'random_order',
+    'canonical': 'canonical_order',
+}
+
+
 def process(f,
             model,
             out,
@@ -23,30 +41,15 @@ def process(f,
             triples):
     """Read graphs from *f* and write to *out*."""
 
-    def _process(t):
+    exitcode = 0
+
+    def _process_in(t):
         """Encode tree *t* and return the string."""
         # tree transformations
-        if normalize_options['make_variables']:
-            t.reset_variables(normalize_options['make_variables'])
         if normalize_options['canonicalize_roles']:
             t = transform.canonicalize_roles(t, model)
-        if normalize_options['rearrange'] == 'canonical':
-            layout.rearrange(t, key=model.canonical_order)
-        elif normalize_options['rearrange'] == 'random':
-            layout.rearrange(t, key=model.random_order)
 
         g = layout.interpret(t, model)
-
-        # reconfiguration (by round-tripping; a bit inefficient, but
-        # oh well)
-        if normalize_options['reconfigure']:
-            key = model.original_order
-            if normalize_options['reconfigure'] == 'canonical':
-                key = model.canonical_order
-            elif normalize_options['reconfigure'] == 'random':
-                key = model.random_order
-            t = layout.reconfigure(g, key=key)
-            g = layout.interpret(t, model)
 
         # graph transformations
         if normalize_options['reify_edges']:
@@ -60,6 +63,21 @@ def process(f,
 
         return g
 
+    def _process_out(g):
+        if normalize_options['reconfigure']:
+            key, kwargs = normalize_options['reconfigure']
+            t = layout.reconfigure(g, key=key, **kwargs)
+            g = layout.interpret(t, model)
+        else:
+            t = layout.configure(g, model=model)
+        if normalize_options['rearrange']:
+            key, kwargs = normalize_options['rearrange']
+            layout.rearrange(t, key=key, **kwargs)
+        if normalize_options['make_variables']:
+            t.reset_variables(normalize_options['make_variables'])
+
+        return t
+
     codec = PENMANCodec(model=model)
     trees = codec.iterparse(f)
 
@@ -70,19 +88,63 @@ def process(f,
         else:
             print(file=out)
 
-        g = _process(t)
+        g = _process_in(t)
         if check:
-            model.check(g)
+            i = 1
+            errors = model.errors(g)
+            if errors:
+                exitcode = 1
+                for triple, errors in errors.items():
+                    if triple:
+                        context = '({}) '.format(' '.join(map(str, triple)))
+                    else:
+                        context = ''
+                    for error in errors:
+                        g.metadata[f'error-{i}'] = context + error
+                    i += 1
 
         if triples:
             s = codec.format_triples(
                 g.triples,
                 indent=bool(format_options.get('indent', True)))
         else:
-            s = codec.encode(g, **format_options)
-        err.flush()
+            t = _process_out(g)
+            s = codec.format(t, **format_options)
+
         print(s, file=out)
-        out.flush()
+
+    return exitcode
+
+
+def _order_funcs(KEY_FUNCS):
+
+    def split_arg(arg):
+        values = arg.split(',')
+        for value in values:
+            if value not in KEY_FUNCS:
+                raise argparse.ArgumentTypeError(
+                    'invalid choice: {!r} (choose from {})'
+                    .format(value, ', '.join(map(repr, KEY_FUNCS))))
+        return values
+
+    return split_arg
+
+
+def _make_sort_key(keys, model, KEY_FUNCS):
+    kwargs = {}
+    funcs = []
+    for key in keys:
+        name = KEY_FUNCS[key]
+        func = getattr(model, name, None)
+        if func is None:
+            kwargs[name] = True
+        else:
+            funcs.append(func)
+
+    def sort_key(role, funcs=funcs):
+        return [func(role) for func in funcs]
+
+    return sort_key, kwargs
 
 
 def main():
@@ -127,11 +189,12 @@ def main():
         '--make-variables', metavar='FMT',
         help="recreate node variables with FMT (e.g.: '{prefix}{j}')")
     norm.add_argument(
-        '--rearrange', metavar='KEY', choices=('random', 'canonical'),
+        '--rearrange', metavar='KEY',
+        type=_order_funcs(REARRANGE_KEYS),
         help='reorder the branches of the tree')
     norm.add_argument(
         '--reconfigure', metavar='KEY',
-        choices=('original', 'random', 'canonical'),
+        type=_order_funcs(RECONFIGURE_KEYS),
         help='reconfigure the graph layout with reordered triples')
     norm.add_argument(
         '--canonicalize-roles', action='store_true',
@@ -168,6 +231,14 @@ def main():
     else:
         model = Model()
 
+    if args.rearrange:
+        args.rearrange = _make_sort_key(
+            args.rearrange, model, REARRANGE_KEYS)
+
+    if args.reconfigure:
+        args.reconfigure = _make_sort_key(
+            args.reconfigure, model, RECONFIGURE_KEYS)
+
     indent = -1
     if args.indent:
         if args.indent.lower() in ("no", "none", "false"):
@@ -199,11 +270,15 @@ def main():
     if args.FILE:
         for file in args.FILE:
             with open(file) as f:
-                process(f, model, sys.stdout, sys.stderr, args.check,
-                        normalize_options, format_options, args.triples)
+                exitcode = process(
+                    f, model, sys.stdout, sys.stderr, args.check,
+                    normalize_options, format_options, args.triples)
     else:
-        process(sys.stdin, model, sys.stdout, sys.stderr, args.check,
-                normalize_options, format_options, args.triples)
+        exitcode = process(
+            sys.stdin, model, sys.stdout, sys.stderr, args.check,
+            normalize_options, format_options, args.triples)
+
+    sys.exit(exitcode)
 
 
 if __name__ == '__main__':

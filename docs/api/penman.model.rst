@@ -9,7 +9,7 @@ penman.model
       .. automethod:: from_dict
 
       .. automethod:: has_role
-      .. automethod:: check
+      .. automethod:: errors
 
       .. automethod:: is_role_inverted
       .. automethod:: invert_role
@@ -26,5 +26,6 @@ penman.model
       .. automethod:: dereify
 
       .. automethod:: original_order
+      .. automethod:: alphanumeric_order
       .. automethod:: canonical_order
       .. automethod:: random_order

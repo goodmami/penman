@@ -43,6 +43,13 @@ class Triple(NamedTuple):
     """The target variable or constant."""
 
 
+class Instance(Triple):
+    """A relation indicating the concept of a node."""
+
+    target: Constant
+    """The node concept."""
+
+
 class Edge(Triple):
     """A relation between nodes."""
 
@@ -66,8 +73,9 @@ class Graph(object):
     are variables (node identifiers), and a list of node attributes
     where only the source is a variable and the target is a
     constant. The raw triples are available via the :attr:`triples`
-    attribute, while the :meth:`edges` and :meth:`attributes` methods
-    return only those that are edges between nodes or between a node
+    attribute, while the :meth:`instances`, :meth:`edges` and
+    :meth:`attributes` methods return only those that are concept
+    relations, relations between nodes, or relations between a node
     and a constant, respectively.
 
     Args:
@@ -77,9 +85,11 @@ class Graph(object):
         epidata: a mapping of triples to epigraphical markers
         metadata: a mapping of metadata types to descriptions
     Example:
+        >>> from penman.graph import Graph
         >>> Graph([('b', ':instance', 'bark-01'),
         ...        ('d', ':instance', 'dog'),
         ...        ('b', ':ARG0', 'd')])
+        <Graph object (top=b) at ...>
     """
 
     def __init__(self,
@@ -188,11 +198,11 @@ class Graph(object):
             vs.add(self._top)
         return vs
 
-    def instances(self) -> List[Attribute]:
+    def instances(self) -> List[Instance]:
         """
         Return instances (concept triples).
         """
-        return [Attribute(*t)
+        return [Instance(*t)
                 for t in self._filter_triples(None, CONCEPT_ROLE, None)]
 
     def edges(self,

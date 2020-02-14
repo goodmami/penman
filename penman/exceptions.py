@@ -5,8 +5,12 @@ class PenmanError(Exception):
     """Base class for errors in the Penman package."""
 
 
+class ConstantError(PenmanError):
+    """Raised when working with invalid constant values."""
+
+
 class GraphError(PenmanError):
-    """Raises on invalid graph structures or operations."""
+    """Raised on invalid graph structures or operations."""
 
 
 class LayoutError(PenmanError):

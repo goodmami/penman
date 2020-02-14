@@ -23,7 +23,7 @@ def decode(s: str,
     Returns:
         the Graph object described by *s*
     Example:
-
+        >>> from penman.interface import decode
         >>> decode('(b / bark-01 :ARG0 (d / dog))')
         <Graph object (top=b) at ...>
 
@@ -49,9 +49,10 @@ def encode(g: Graph,
     Returns:
         the PENMAN-serialized string of the Graph *g*
     Example:
-
+        >>> from penman.interface import encode
+        >>> from penman.graph import Graph
         >>> encode(Graph([('h', 'instance', 'hi')]))
-        (h / hi)
+        '(h / hi)'
 
     """
     codec = PENMANCodec(model=model)

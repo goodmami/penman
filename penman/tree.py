@@ -3,13 +3,9 @@
 Definitions of tree structures.
 """
 
-from typing import Tuple, List, Dict, Set, Mapping, Any
+from typing import Dict, List, Set, Mapping, Any
 
-from penman.types import (Variable, Role)
-
-# Tree types
-Branch = Tuple[Role, Any]
-Node = Tuple[Variable, List[Branch]]
+from penman.types import (Variable, Branch, Node)
 
 
 class Tree:
@@ -41,7 +37,7 @@ class Tree:
         s = _format(self.node, 2)
         return f'Tree(\n  {s})'
 
-    def nodes(self):
+    def nodes(self) -> List[Node]:
         """
         Return the nodes in the tree as a flat list.
         """
@@ -59,9 +55,9 @@ class Tree:
         """
         varmap: Dict[Variable, Variable] = {}
         used: Set[Variable] = set()
-        for var, edges in self.nodes():
+        for var, branches in self.nodes():
             if var not in varmap:
-                concept = next((tgt for role, tgt in edges if role == '/'),
+                concept = next((tgt for role, tgt in branches if role == '/'),
                                None)
                 pre = _default_variable_prefix(concept)
                 i = 0
@@ -78,16 +74,18 @@ class Tree:
         self.node = _map_vars(self.node, varmap)
 
 
-def _format(node, level):
-    var, edges = node
+def _format(node: Node, level: int) -> str:
+    var, branches = node
     next_level = level + 2
     indent = '\n' + ' ' * next_level
-    edges = [_format_edge(edge, next_level) for edge in edges]
-    return '({!r}, [{}{}])'.format(var, indent, (',' + indent).join(edges))
+    branch_strings = [_format_branch(branch, next_level)
+                      for branch in branches]
+    return '({!r}, [{}{}])'.format(
+        var, indent, (',' + indent).join(branch_strings))
 
 
-def _format_edge(edge, level):
-    role, target = edge
+def _format_branch(branch: Branch, level: int) -> str:
+    role, target = branch
     if is_atomic(target):
         target = repr(target)
     else:
@@ -95,10 +93,10 @@ def _format_edge(edge, level):
     return f'({role!r}, {target})'
 
 
-def _nodes(node):
-    var, edges = node
+def _nodes(node: Node) -> List[Node]:
+    var, branches = node
     ns = [] if var is None else [node]
-    for _, target in edges:
+    for _, target in branches:
         # if target is not atomic, assume it's a valid tree node
         if not is_atomic(target):
             ns.extend(_nodes(target))
@@ -139,17 +137,17 @@ def _default_variable_prefix(concept: Any) -> Variable:
 
 
 def _map_vars(node, varmap):
-    var, edges = node
+    var, branches = node
 
-    newedges = []
-    for role, tgt in edges:
+    newbranches: List[Branch] = []
+    for role, tgt in branches:
         if not is_atomic(tgt):
             tgt = _map_vars(tgt, varmap)
         elif role != '/' and tgt in varmap:
             tgt = varmap[tgt]
-        newedges.append((role, tgt))
+        newbranches.append((role, tgt))
 
-    return (varmap[var], newedges)
+    return (varmap[var], newbranches)
 
 
 def is_atomic(x) -> bool:
@@ -157,11 +155,12 @@ def is_atomic(x) -> bool:
     Return ``True`` if *x* is a valid atomic value.
 
     Examples:
+        >>> from penman.tree import is_atomic
         >>> is_atomic('a')
         True
         >>> is_atomic(None)
         True
-        >>> is_atomic(3.14
+        >>> is_atomic(3.14)
         True
         >>> is_atomic(('a', [('/', 'alpha')]))
         False

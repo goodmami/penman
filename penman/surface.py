@@ -30,6 +30,7 @@ class AlignmentMarker(Epidatum):
         Instantiate the alignment marker from its string *s*.
 
         Examples:
+            >>> from penman import surface
             >>> surface.Alignment.from_string('1')
             Alignment((1,))
             >>> surface.RoleAlignment.from_string('e.2,3')
@@ -99,6 +100,17 @@ def alignments(g: Graph) -> _Alignments:
     Returns:
         A :class:`dict` mapping :class:`~penman.graph.Triple` objects
         to their corresponding :class:`Alignment` objects, if any.
+    Example:
+        >>> from penman.interface import decode
+        >>> from penman import surface
+        >>> g = decode(
+        ...   '(c / chase-01~4'
+        ...   '   :ARG0~5 (d / dog~7)'
+        ...   '   :ARG0~3 (c / cat~2))')
+        >>> surface.alignments(g)  # doctest: +NORMALIZE_WHITESPACE
+        {('c', ':instance', 'chase-01'): Alignment((4,)),
+         ('d', ':instance', 'dog'): Alignment((7,)),
+         ('c', ':instance', 'cat'): Alignment((2,))}
     """
     return _get_alignments(g, Alignment)
 
@@ -113,6 +125,16 @@ def role_alignments(g: Graph) -> _Alignments:
     Returns:
         A :class:`dict` mapping :class:`~penman.graph.Triple` objects
         to their corresponding :class:`RoleAlignment` objects, if any.
+    Example:
+        >>> from penman.interface import decode
+        >>> from penman import surface
+        >>> g = decode(
+        ...   '(c / chase-01~4'
+        ...   '   :ARG0~5 (d / dog~7)'
+        ...   '   :ARG0~3 (c / cat~2))')
+        >>> surface.role_alignments(g)  # doctest: +NORMALIZE_WHITESPACE
+        {('c', ':ARG0', 'd'): RoleAlignment((5,)),
+         ('c', ':ARG0', 'c'): RoleAlignment((3,))}
     """
     return _get_alignments(g, RoleAlignment)
 

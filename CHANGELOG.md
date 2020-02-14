@@ -4,6 +4,45 @@
 
 (no unreleased changes yet)
 
+## [v0.12.0][]
+
+**Release date: 2020-02-14**
+
+This release improves the amount and behavior of functions for
+processing inputs from the `penman` command. It also replaces the
+previous release's `Model.check()` with `Model.errors()`, which is
+generally more useful. Finally, the new `penman.constant` module is
+introduced for dealing with constant values in their interpreted
+datatypes.
+
+### Added
+
+* `penman.model.Model.errors()` replaces `Model.check()` ([#65][])
+* `penman.constant` module for constant values ([#69][])
+* `penman.graph.Instance` subtype of `Triple` ([#66][])
+* `penman.model.Model.alphanumeric_order()` ([#72][])
+* `penman.layout.rearrange()`: `attributes_first` parameter ([#62][])
+
+### Removed
+
+* `penman.model.Model.check()` replaced by `Model.errors()` ([#65][])
+
+### Fixed
+
+* Don't flush standard streams in `penman` command ([#60][])
+
+### Changed
+
+* Return exit code of 1 when `penman --check` finds errors ([#63][])
+* Moved the `Branch` and `Node` types from `penman.tree` to
+  `penman.types`
+* `penman.model.Model.canonical_order()` is now just a shortcut for
+  calling `is_role_inverted()` and `alphanumeric_order()` ([#72][])
+* `--rearrange` and `--reconfigure` can now take multiple ordered
+  sorting criteria ([#70][])
+* The order of operations for processing inputs has changed so users
+  can do more with shorter pipelines ([#71][])
+
 
 ## [v0.11.1][]
 
@@ -585,6 +624,7 @@ First release with very basic functionality.
 [v0.10.0]: ../../releases/tag/v0.10.0
 [v0.11.0]: ../../releases/tag/v0.11.0
 [v0.11.1]: ../../releases/tag/v0.11.1
+[v0.12.0]: ../../releases/tag/v0.12.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
@@ -622,5 +662,14 @@ First release with very basic functionality.
 [#52]: https://github.com/goodmami/penman/issues/52
 [#53]: https://github.com/goodmami/penman/issues/53
 [#55]: https://github.com/goodmami/penman/issues/55
+[#60]: https://github.com/goodmami/penman/issues/60
 [#61]: https://github.com/goodmami/penman/issues/61
+[#62]: https://github.com/goodmami/penman/issues/62
+[#63]: https://github.com/goodmami/penman/issues/63
+[#65]: https://github.com/goodmami/penman/issues/65
+[#66]: https://github.com/goodmami/penman/issues/66
 [#67]: https://github.com/goodmami/penman/issues/67
+[#69]: https://github.com/goodmami/penman/issues/69
+[#70]: https://github.com/goodmami/penman/issues/70
+[#71]: https://github.com/goodmami/penman/issues/71
+[#72]: https://github.com/goodmami/penman/issues/72

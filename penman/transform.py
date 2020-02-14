@@ -6,11 +6,11 @@ Tree and graph transformations.
 from typing import Union, Dict, Set, List, Tuple
 import logging
 
-from penman.types import Variable, Target, BasicTriple
+from penman.types import (Variable, Target, BasicTriple, Node)
 from penman.exceptions import ModelError
 from penman.epigraph import (Epidatum, Epidata)
 from penman.surface import (Alignment, RoleAlignment, alignments)
-from penman.tree import (Tree, Node, is_atomic)
+from penman.tree import (Tree, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
 from penman.layout import (Push, POP, appears_inverted, get_pushed_variable)
@@ -134,7 +134,7 @@ def dereify_edges(g: Graph, model: Model) -> Graph:
         ...   '(c / chapter'
         ...   '   :ARG1-of (_ / have-mod-91'
         ...   '               :ARG2 7))')
-        >>> g = dereify_edges(g)
+        >>> g = dereify_edges(g, model)
         >>> print(codec.encode(g))
         (c / chapter
            :mod 7)
