@@ -55,6 +55,20 @@ class TestTree:
                              ('b', [('/', 'beta')]),
                              ('g', [('/', 'gamma'), (':ARG0', 'b')])]
 
+    def test_positions(self, one_arg_node, reentrant):
+        t = tree.Tree(one_arg_node)
+        assert t.positions() == ['1', '1.1']
+        assert t.positions(0) == ['0', '0.0']
+
+        t = tree.Tree(reentrant)
+        assert t.positions() == ['1', '1.1', '1.2']
+        assert t.positions(0) == ['0', '0.0', '0.1']
+
+        t = tree.Tree(('a', [('/', 'alpha'),
+                             (':polarity', '-'),
+                             (':ARG0', ('b', [('/', 'beta')]))]))
+        assert t.positions() == ['1', '1.2']
+
     def test_reset_variables(self, one_arg_node, reentrant, var_instance):
 
         def _vars(t):

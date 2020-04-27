@@ -2,7 +2,10 @@
 
 ## [Unreleased][unreleased]
 
-(no unreleased changes yet)
+### Added
+
+* `penman.tree.Tree.positions()` ([#74])
+
 
 ## [v0.12.0][]
 
@@ -673,3 +676,4 @@ First release with very basic functionality.
 [#70]: https://github.com/goodmami/penman/issues/70
 [#71]: https://github.com/goodmami/penman/issues/71
 [#72]: https://github.com/goodmami/penman/issues/72
+[#74]: https://github.com/goodmami/penman/issues/74

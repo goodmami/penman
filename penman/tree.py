@@ -43,6 +43,27 @@ class Tree:
         """
         return _nodes(self.node)
 
+    def positions(self, start: int = 1) -> List[str]:
+        """
+        Return the positions of nodes in the tree.
+
+        Positions are paths of dot-separated indices starting from
+        *start*. For example, using the default *start* value of `1`,
+        the position of the first node is `'1'` and that of its
+        branches are `'1.1'`, `'1.2'`, `'1.3'`, etc.
+
+        Only positions for node branches are returned, and not for
+        attribute branches. This is so the output of :meth:`positions`
+        can be zipped with :meth:`nodes`. The position, however,
+        increments for all branches, so it is possible to have "gaps"
+        in the positions (e.g., `'1.1'` followed by `'1.3'`).
+        """
+        node = self.node
+        if node[0] is None:
+            return []
+        else:
+            return _positions(self.node, str(start), start)
+
     def reset_variables(self, fmt='{prefix}{j}') -> None:
         """
         Recreate node variables formatted using *fmt*.
@@ -101,6 +122,19 @@ def _nodes(node: Node) -> List[Node]:
         if not is_atomic(target):
             ns.extend(_nodes(target))
     return ns
+
+
+def _positions(node: Node, path: str, start: int) -> List[str]:
+    var, branches = node
+    pos = [path]
+    i = start
+    for role, target in branches:
+        if role == '/':
+            continue
+        if not is_atomic(target):
+            pos.extend(_positions(target, f'{path}.{i!s}', start))
+        i += 1
+    return pos
 
 
 def _default_variable_prefix(concept: Any) -> Variable:
