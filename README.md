@@ -58,8 +58,9 @@ or as a [script](#script-usage).
 >>> print(penman.encode(g, top='d', indent=6))
 (d / dog
       :ARG0-of (b / bark-01))
->>> print(penman.encode(g, indent=False))
+>>> print(penman.encode(g, indent=None))
 (b / bark-01 :ARG0 (d / dog))
+
 ```
 
 ([more information][as-library])
