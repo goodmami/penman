@@ -11,6 +11,7 @@ __all__ = [
     '__version_info__',
     'PenmanError',
     'DecodeError',
+    'Tree',
     'Triple',
     'Graph',
     'PENMANCodec',
@@ -36,6 +37,7 @@ from penman.exceptions import (
     PenmanError,
     DecodeError,
 )
+from penman.tree import Tree
 from penman.graph import (
     Triple,
     Graph,

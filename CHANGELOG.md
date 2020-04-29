@@ -12,6 +12,8 @@
   available at the top-level module ([#75])
 * Move the implementations of `parse()` and `format()` to separate
   modules from PENMANCodec ([#76])
+* Make `penman.tree.Tree` available at the top-level module
+
 
 ## [v0.12.0][]
 

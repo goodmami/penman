@@ -59,6 +59,10 @@ Classes
 
    Alias of :exc:`penman.graph.Triple`.
 
+.. class:: Tree
+
+   Alias of :exc:`penman.tree.Tree`.
+
 .. class:: Graph
 
    Alias of :exc:`penman.graph.Graph`.
