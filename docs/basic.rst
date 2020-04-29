@@ -104,8 +104,8 @@ For example:
    [Instance(source='b', role=':instance', target='bark-01'), Instance(source='d', role=':instance', target='dog')]
    >>> g.edges()
    [Edge(source='b', role=':ARG0', target='d')]
-   >>> g.variables()
-   {'d', 'b'}
+   >>> sorted(g.variables())
+   ['b', 'd']
    >>> print(codec.encode(g, top='d'))
    (d / dog
       :ARG0-of (b / bark-01))

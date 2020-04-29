@@ -1,4 +1,5 @@
 
+from penman.tree import Tree
 from penman.interface import (
     decode,
     loads,

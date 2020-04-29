@@ -5,8 +5,8 @@ penman
 .. automodule:: penman
 
 For basic usage, and to retain some backward compatibility with early
-versions, some functionality is available from the top-level
-:mod:`penman` module. For the rest, please use the standard API
+versions, common functionality is available from the top-level
+:mod:`penman` module. For more advanced usage, please use the full API
 available via the submodules.
 
 .. _submodules:
@@ -71,29 +71,29 @@ Classes
 Module Functions
 ----------------
 
-.. function:: decode
+.. autofunction:: parse
 
-   Alias of :exc:`penman.interface.decode`.
+.. function:: interpret(t, model=None)
 
-.. function:: loads
+   Alias of :func:`penman.layout.interpret`
 
-   Alias of :exc:`penman.interface.loads`.
+.. autofunction:: decode
 
-.. function:: load
+.. autofunction:: loads
 
-   Alias of :exc:`penman.interface.load`.
+.. autofunction:: load
 
-.. function:: encode
+.. autofunction:: format
 
-   Alias of :exc:`penman.interface.encode`.
+.. function:: configure(g, top=None, model=None, strict=False)
 
-.. function:: dumps
+   Alias of :func:`penman.layout.configure`
 
-   Alias of :exc:`penman.interface.dumps`.
+.. autofunction:: encode
 
-.. function:: dump
+.. autofunction:: dumps
 
-   Alias of :exc:`penman.interface.dump`.
+.. autofunction:: dump
 
 
 Exceptions

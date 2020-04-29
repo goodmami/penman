@@ -6,6 +6,12 @@
 
 * `penman.tree.Tree.positions()` ([#74])
 
+### Changed
+
+* Make `parse()`, `format()`, `interpret()`, and `configure()`
+  available at the top-level module ([#75])
+* Move the implementations of `parse()` and `format()` to separate
+  modules from PENMANCodec ([#76])
 
 ## [v0.12.0][]
 
@@ -677,3 +683,5 @@ First release with very basic functionality.
 [#71]: https://github.com/goodmami/penman/issues/71
 [#72]: https://github.com/goodmami/penman/issues/72
 [#74]: https://github.com/goodmami/penman/issues/74
+[#75]: https://github.com/goodmami/penman/issues/75
+[#76]: https://github.com/goodmami/penman/issues/76

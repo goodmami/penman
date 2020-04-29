@@ -14,6 +14,10 @@ __all__ = [
     'Triple',
     'Graph',
     'PENMANCodec',
+    'parse',
+    'format',
+    'interpret',
+    'configure',
     'decode',
     'encode',
     'load',
@@ -36,6 +40,12 @@ from penman.graph import (
     Triple,
     Graph,
 )
+from penman.layout import (
+    interpret,
+    configure,
+)
+from penman._parse import parse
+from penman._format import format
 from penman.codec import PENMANCodec
 from penman.interface import (
     decode,
