@@ -6,6 +6,10 @@
 
 * `penman.tree.Tree.positions()` ([#74])
 
+### Removed
+
+* `penman.lexer` is now non-public ([#77])
+
 ### Changed
 
 * Make `parse()`, `format()`, `interpret()`, and `configure()`
@@ -687,3 +691,4 @@ First release with very basic functionality.
 [#74]: https://github.com/goodmami/penman/issues/74
 [#75]: https://github.com/goodmami/penman/issues/75
 [#76]: https://github.com/goodmami/penman/issues/76
+[#77]: https://github.com/goodmami/penman/issues/77

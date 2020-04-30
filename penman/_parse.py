@@ -7,7 +7,7 @@ from penman.types import (
     BasicTriple,
 )
 from penman.tree import Tree
-from penman.lexer import (
+from penman._lexer import (
     PENMAN_RE,
     TRIPLE_RE,
     lex,

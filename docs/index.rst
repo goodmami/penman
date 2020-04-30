@@ -50,7 +50,6 @@ models if they need more control.
    api/penman.graph
    api/penman.interface
    api/penman.layout
-   api/penman.lexer
    api/penman.model
    api/penman.models
    api/penman.surface
