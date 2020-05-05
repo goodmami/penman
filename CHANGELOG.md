@@ -25,6 +25,8 @@
 * Move the implementations of `parse()` and `format()` to separate
   modules from PENMANCodec ([#76])
 * Make `penman.tree.Tree` available at the top-level module
+* Rename `penman.main` to `penman.__main__` so `python -m penman`
+  works as expected ([#79])
 
 
 ## [v0.12.0][]
@@ -701,4 +703,5 @@ First release with very basic functionality.
 [#76]: https://github.com/goodmami/penman/issues/76
 [#77]: https://github.com/goodmami/penman/issues/77
 [#78]: https://github.com/goodmami/penman/issues/78
+[#79]: https://github.com/goodmami/penman/issues/79
 [#80]: https://github.com/goodmami/penman/issues/80

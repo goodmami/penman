@@ -149,6 +149,7 @@ def _make_sort_key(keys, model, KEY_FUNCS):
 
 def main():
     parser = argparse.ArgumentParser(
+        prog='penman',
         description='Read and write graphs in the PENMAN notation.',
     )
     parser.add_argument(
