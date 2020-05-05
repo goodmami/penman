@@ -146,19 +146,19 @@ def _default_variable_prefix(concept: Any) -> Variable:
     Otherwise the prefix is ``'_'``.
 
     Examples:
-        >>> default_variable_prefix('Alphabet')
+        >>> _default_variable_prefix('Alphabet')
         'a'
-        >>> default_variable_prefix('chase-01')
+        >>> _default_variable_prefix('chase-01')
         'c'
-        >>> default_variable_prefix('"string"')
+        >>> _default_variable_prefix('"string"')
         's'
-        >>> default_variable_prefix('_predicate_n_1"')
+        >>> _default_variable_prefix('_predicate_n_1"')
         'p'
-        >>> default_variable_prefix(1)
+        >>> _default_variable_prefix(1)
         '_'
-        >>> default_variable_prefix(None)
+        >>> _default_variable_prefix(None)
         '_'
-        >>> default_variable_prefix('')
+        >>> _default_variable_prefix('')
         '_'
     """
     prefix = '_'

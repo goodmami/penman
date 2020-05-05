@@ -6,4 +6,4 @@ python:
   - "3.7"
   - "3.8"
 install: "python setup.py -q install"
-script: py.test
+script: py.test --doctest-glob=\*.rst --doctest-modules --ignore-glob=penman/interface.py
