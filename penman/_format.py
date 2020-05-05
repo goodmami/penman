@@ -19,8 +19,9 @@ def format(tree: Tree,
         the PENMAN-serialized string of the Tree *t*
     Example:
         >>> import penman
-        >>> penman.format(('b', [('/', 'bark-01'),
-        ...                      (':ARG0', ('d', [('/', 'dog')]))]))
+        >>> print(penman.format(
+        ...     ('b', [('/', 'bark-01'),
+        ...            (':ARG0', ('d', [('/', 'dog')]))])))
         (b / bark-01
            :ARG0 (d / dog))
     """
@@ -42,6 +43,14 @@ def format_triples(triples: Iterable[BasicTriple], indent: bool = True) -> str:
         indent: how to indent formatted strings
     Returns:
         the serialized triple conjunction of *triples*
+    Example:
+        >>> import penman
+        >>> g = penman.decode('(b / bark-01 :ARG0 (d / dog))')
+        >>> print(penman.format_triples(g.triples))
+        instance(b, bark-01) ^
+        ARG0(b, d) ^
+        instance(d, dog)
+
     """
     delim = ' ^\n' if indent else ' ^ '
     # need to remove initial : on roles for triples

@@ -101,7 +101,7 @@ def alignments(g: Graph) -> _Alignments:
         A :class:`dict` mapping :class:`~penman.graph.Triple` objects
         to their corresponding :class:`Alignment` objects, if any.
     Example:
-        >>> from penman.interface import decode
+        >>> from penman import decode
         >>> from penman import surface
         >>> g = decode(
         ...   '(c / chase-01~4'
@@ -126,7 +126,7 @@ def role_alignments(g: Graph) -> _Alignments:
         A :class:`dict` mapping :class:`~penman.graph.Triple` objects
         to their corresponding :class:`RoleAlignment` objects, if any.
     Example:
-        >>> from penman.interface import decode
+        >>> from penman import decode
         >>> from penman import surface
         >>> g = decode(
         ...   '(c / chase-01~4'

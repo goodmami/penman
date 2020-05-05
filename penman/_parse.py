@@ -44,6 +44,14 @@ def iterparse(lines: Union[Iterable[str], str]) -> Iterator[Tree]:
         lines: a string or open file with PENMAN-serialized graphs
     Returns:
         The :class:`~penman.tree.Tree` object described in *lines*.
+    Example:
+        >>> import penman
+        >>> for t in penman.iterparse('(a / alpha) (b / beta)'):
+        ...     print(repr(t))
+        ...
+        Tree(('a', [('/', 'alpha')]))
+        Tree(('b', [('/', 'beta')]))
+
     """
     tokens = lex(lines, pattern=PENMAN_RE)
     while tokens and tokens.peek().type in ('COMMENT', 'LPAREN'):
@@ -51,7 +59,21 @@ def iterparse(lines: Union[Iterable[str], str]) -> Iterator[Tree]:
 
 
 def parse_triples(s: str) -> List[BasicTriple]:
-    """ Parse a triple conjunction from *s*."""
+    """
+    Parse a triple conjunction from *s*.
+
+    Example:
+        >>> import penman
+        >>> for triple in penman.parse_triples('''
+        ...         instance(b, bark) ^
+        ...         ARG0(b, d) ^
+        ...         instance(d, dog)'''):
+        ...     print(triple)
+        ('b', ':instance', 'bark')
+        ('b', ':ARG0', 'd')
+        ('d', ':instance', 'dog')
+
+        """
     tokens = lex(s, pattern=TRIPLE_RE)
     return _parse_triples(tokens)
 
