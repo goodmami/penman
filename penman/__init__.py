@@ -16,10 +16,14 @@ __all__ = [
     'Graph',
     'PENMANCodec',
     'parse',
+    'iterparse',
+    'parse_triples',
     'format',
+    'format_triples',
     'interpret',
     'configure',
     'decode',
+    'iterdecode',
     'encode',
     'load',
     'loads',
@@ -46,16 +50,24 @@ from penman.layout import (
     interpret,
     configure,
 )
-from penman._parse import parse
-from penman._format import format
-from penman.codec import PENMANCodec
-from penman.interface import (
-    decode,
-    encode,
-    load,
-    loads,
-    dump,
-    dumps,
+from penman._parse import (
+    parse,
+    iterparse,
+    parse_triples,
+)
+from penman._format import (
+    format,
+    format_triples,
+)
+from penman.codec import (
+    PENMANCodec,
+    _decode as decode,
+    _iterdecode as iterdecode,
+    _encode as encode,
+    _load as load,
+    _loads as loads,
+    _dump as dump,
+    _dumps as dumps,
 )
 
 logging.basicConfig()

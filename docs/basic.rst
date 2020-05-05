@@ -15,11 +15,10 @@ And here's an example of its library usage:
 
 .. code-block:: python
 
-   >>> from penman import PENMANCodec
-   >>> codec = PENMANCodec()
-   >>> g = codec.decode('(s / sleep-01 :polarity - :ARG0 (i / i))')
+   >>> import penman
+   >>> g = penman.decode('(s / sleep-01 :polarity - :ARG0 (i / i))')
    >>> g.triples.remove(('s', ':polarity', '-'))
-   >>> print(PENMANCodec().encode(g))
+   >>> print(penman.encode(g))
    (s / sleep-01
       :ARG0 (i / i))
 
@@ -97,20 +96,19 @@ For example:
 
 .. code-block:: python
 
-   >>> from penman import PENMANCodec
-   >>> codec = PENMANCodec()
-   >>> g = codec.decode('(b / bark-01 :ARG0 (d / dog))')
+   >>> import penman
+   >>> g = penman.decode('(b / bark-01 :ARG0 (d / dog))')
    >>> g.instances()
    [Instance(source='b', role=':instance', target='bark-01'), Instance(source='d', role=':instance', target='dog')]
    >>> g.edges()
    [Edge(source='b', role=':ARG0', target='d')]
    >>> sorted(g.variables())
    ['b', 'd']
-   >>> print(codec.encode(g, top='d'))
+   >>> print(penman.encode(g, top='d'))
    (d / dog
       :ARG0-of (b / bark-01))
    >>> g.triples.append(('b', ':polarity', '-'))
-   >>> print(codec.encode(g))
+   >>> print(penman.encode(g))
    (b / bark-01
       :ARG0 (d / dog)
       :polarity -)

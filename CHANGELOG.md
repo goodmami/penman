@@ -9,11 +9,15 @@
 ### Removed
 
 * `penman.lexer` is now non-public ([#77])
+* `penman.interface` is removed from the public API but remains
+  temporarily for backward compatibility ([#78])
 
 ### Changed
 
 * Make `parse()`, `format()`, `interpret()`, and `configure()`
   available at the top-level module ([#75])
+* Make `iterparse()`, `iterdecode()`, `parse_triples()`, and
+  `format_triples()` available at the top-level module ([#78])
 * Move the implementations of `parse()` and `format()` to separate
   modules from PENMANCodec ([#76])
 * Make `penman.tree.Tree` available at the top-level module
@@ -692,3 +696,4 @@ First release with very basic functionality.
 [#75]: https://github.com/goodmami/penman/issues/75
 [#76]: https://github.com/goodmami/penman/issues/76
 [#77]: https://github.com/goodmami/penman/issues/77
+[#78]: https://github.com/goodmami/penman/issues/78

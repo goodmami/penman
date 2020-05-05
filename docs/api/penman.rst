@@ -35,7 +35,6 @@ Other
 '''''
 
 - :doc:`penman.exceptions` -- Exception classes
-- :doc:`penman.interface` -- Functional interface to a codec
 - :doc:`penman.transform` -- Graph and tree transformation functions
 
 
@@ -74,29 +73,53 @@ Classes
 Module Functions
 ----------------
 
+Trees
+'''''
+
 .. autofunction:: parse
+
+.. autofunction:: iterparse
+
+.. autofunction:: format
 
 .. function:: interpret(t, model=None)
 
+   Interpret a graph from the :class:`Tree` *t*.
+
    Alias of :func:`penman.layout.interpret`
 
+Graphs
+''''''
+
 .. autofunction:: decode
+
+.. autofunction:: iterdecode
+
+.. autofunction:: encode
+
+.. function:: configure(g, top=None, model=None, strict=False)
+
+   Configure a tree from the :class:`Graph` *g*.
+
+   Alias of :func:`penman.layout.configure`
+
+Corpus Files
+''''''''''''
 
 .. autofunction:: loads
 
 .. autofunction:: load
 
-.. autofunction:: format
-
-.. function:: configure(g, top=None, model=None, strict=False)
-
-   Alias of :func:`penman.layout.configure`
-
-.. autofunction:: encode
-
 .. autofunction:: dumps
 
 .. autofunction:: dump
+
+Triple Conjunctions
+'''''''''''''''''''
+
+.. autofunction:: parse_triples
+
+.. autofunction:: format_triples
 
 
 Exceptions

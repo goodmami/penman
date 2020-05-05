@@ -10,6 +10,19 @@ def format(tree: Tree,
            compact: bool = False) -> str:
     """
     Format *tree* into a PENMAN string.
+
+    Args:
+        tree: a Tree object
+        indent: how to indent formatted strings
+        compact: if ``True``, put initial attributes on the first line
+    Returns:
+        the PENMAN-serialized string of the Tree *t*
+    Example:
+        >>> import penman
+        >>> penman.format(('b', [('/', 'bark-01'),
+        ...                      (':ARG0', ('d', [('/', 'dog')]))]))
+        (b / bark-01
+           :ARG0 (d / dog))
     """
     if not isinstance(tree, Tree):
         tree = Tree(tree)

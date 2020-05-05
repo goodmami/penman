@@ -48,7 +48,6 @@ models if they need more control.
    api/penman.epigraph
    api/penman.exceptions
    api/penman.graph
-   api/penman.interface
    api/penman.layout
    api/penman.model
    api/penman.models
