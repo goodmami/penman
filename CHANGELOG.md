@@ -12,6 +12,10 @@
 * `penman.interface` is removed from the public API but remains
   temporarily for backward compatibility ([#78])
 
+### Fixed
+
+* `parse_triples()` now prepends a colon to roles ([#80])
+
 ### Changed
 
 * Make `parse()`, `format()`, `interpret()`, and `configure()`
@@ -697,3 +701,4 @@ First release with very basic functionality.
 [#76]: https://github.com/goodmami/penman/issues/76
 [#77]: https://github.com/goodmami/penman/issues/77
 [#78]: https://github.com/goodmami/penman/issues/78
+[#80]: https://github.com/goodmami/penman/issues/80

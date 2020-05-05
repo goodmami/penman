@@ -18,7 +18,7 @@ class TestPENMANCodec(object):
         assert codec.parse('(a / alpha)') == ('a', [('/', 'alpha')])
 
     def test_parse_triples(self):
-        assert codec.parse_triples('role(a, b)') == [('a', 'role', 'b')]
+        assert codec.parse_triples('role(a, b)') == [('a', ':role', 'b')]
 
     def test_format(self):
         assert codec.format(('a', [('/', 'alpha')])) == '(a / alpha)'

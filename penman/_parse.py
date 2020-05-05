@@ -155,6 +155,8 @@ def _parse_triples(tokens: TokenIterator) -> List[BasicTriple]:
         role = tokens.expect('SYMBOL').text
         if strip_caret and role.startswith('^'):
             role = role[1:]
+        if not role.startswith(':'):
+            role = ':' + role
         tokens.expect('LPAREN')
         # SYMBOL may contain commas, so handle it here. If there
         # is no space between the comma and the next SYMBOL, they
