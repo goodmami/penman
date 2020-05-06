@@ -4,7 +4,7 @@
 
 ### Added
 
-* `penman.tree.Tree.positions()` ([#74])
+* `penman.tree.Tree.walk()` ([#74])
 
 ### Removed
 

@@ -3,9 +3,12 @@
 Definitions of tree structures.
 """
 
-from typing import Dict, List, Set, Mapping, Any
+from typing import Dict, List, Tuple, Set, Mapping, Any, Iterator
 
 from penman.types import (Variable, Branch, Node)
+
+
+_Step = Tuple[Tuple[int, ...], Branch]  # see Tree.walk()
 
 
 class Tree:
@@ -43,26 +46,26 @@ class Tree:
         """
         return _nodes(self.node)
 
-    def positions(self, start: int = 1) -> List[str]:
+    def walk(self) -> Iterator[_Step]:
         """
-        Return the positions of nodes in the tree.
+        Iterate over branches in the tree.
 
-        Positions are paths of dot-separated indices starting from
-        *start*. For example, using the default *start* value of `1`,
-        the position of the first node is `'1'` and that of its
-        branches are `'1.1'`, `'1.2'`, `'1.3'`, etc.
+        This function yields pairs of (*path*, *branch*) where each
+        *path* is a tuple of 0-based indices of branches to get to
+        *branch*. For example, the path (2, 0) is the concept branch
+        `('/', 'bark-01')` in the tree for the following PENMAN
+        string, traversing first to the third (index 2) branch of the
+        top node, then to the first (index 0) branch of that node.
 
-        Only positions for node branches are returned, and not for
-        attribute branches. This is so the output of :meth:`positions`
-        can be zipped with :meth:`nodes`. The position, however,
-        increments for all branches, so it is possible to have "gaps"
-        in the positions (e.g., `'1.1'` followed by `'1.3'`).
+            (t / try-01
+               :ARG0 (d / dog)
+               :ARG1 (b / bark-01
+                        :ARG0 d))
+
+        The (*path*, *branch*) pairs are yielded in depth-first order
+        of the tree traversal.
         """
-        node = self.node
-        if node[0] is None:
-            return []
-        else:
-            return _positions(self.node, str(start), start)
+        yield from _walk(self.node, ())
 
     def reset_variables(self, fmt='{prefix}{j}') -> None:
         """
@@ -124,17 +127,14 @@ def _nodes(node: Node) -> List[Node]:
     return ns
 
 
-def _positions(node: Node, path: str, start: int) -> List[str]:
+def _walk(node: Node, path: Tuple[int, ...]) -> Iterator[_Step]:
     var, branches = node
-    pos = [path]
-    i = start
-    for role, target in branches:
-        if role == '/':
-            continue
+    for i, branch in enumerate(branches):
+        curpath = path + (i,)
+        yield (curpath, branch)
+        _, target = branch
         if not is_atomic(target):
-            pos.extend(_positions(target, f'{path}.{i!s}', start))
-        i += 1
-    return pos
+            yield from _walk(target, curpath)
 
 
 def _default_variable_prefix(concept: Any) -> Variable:
