@@ -216,6 +216,19 @@ class TestPENMANCodec(object):
         # with pytest.raises(penman.DecodeError):
         #     decode('(1 / one)')
 
+    def test_decode_recursion_limit(self):
+        # Create a graph with n levels of nesting. Inefficient
+        # recursive-descent parsers will hit a RecursionError and be
+        # unable to parse some graphs. n should be some reasonable
+        # minimum.
+        n = 200
+        s = (''.join(f'(a{i} / A :ARG0 ' for i in range(n-1))
+             + f'(a{n} / A)'
+             + ')' * (n-1))
+        g = decode(s)  # hopefully no RecursionError
+        assert len(g.triples) == (n         # n :instance triples
+                                  + n - 1)  # n - 1 :ARG0 triples
+
     def test_encode(self, x1):
         # empty graph
         g = penman.Graph([])
