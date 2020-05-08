@@ -15,6 +15,8 @@
 ### Fixed
 
 * `parse_triples()` now prepends a colon to roles ([#80])
+* `Graph.edges()` no longer returns instances whose concepts are also
+  variables ([#81])
 
 ### Changed
 
@@ -705,3 +707,4 @@ First release with very basic functionality.
 [#78]: https://github.com/goodmami/penman/issues/78
 [#79]: https://github.com/goodmami/penman/issues/79
 [#80]: https://github.com/goodmami/penman/issues/80
+[#81]: https://github.com/goodmami/penman/issues/81

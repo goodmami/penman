@@ -147,6 +147,18 @@ class TestGraph(object):
             ('_1', ':RSTR', 'x1')
         ]
 
+    def test_edges_issue_81(self, x1):
+        g = Graph([('s', ':instance', 'sleep-01'),
+                   ('s', ':ARG0', 'i'),
+                   ('i', ':instance', 'i')])
+        assert g.edges() == [
+            ('s', ':ARG0', 'i')
+        ]
+        assert g.instances() == [
+            ('s', ':instance', 'sleep-01'),
+            ('i', ':instance', 'i')
+        ]
+
     def test_attributes(self, x1):
         g = Graph(x1[1])
         assert g.attributes() == [

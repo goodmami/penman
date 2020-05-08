@@ -217,7 +217,7 @@ class Graph(object):
         variables = self.variables()
         return [Edge(*t)
                 for t in self._filter_triples(source, role, target)
-                if t[2] in variables]
+                if t[1] != CONCEPT_ROLE and t[2] in variables]
 
     def attributes(self,
                    source: Optional[Variable] = None,
