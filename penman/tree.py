@@ -55,7 +55,7 @@ class Tree:
         *branch*. For example, the path (2, 0) is the concept branch
         `('/', 'bark-01')` in the tree for the following PENMAN
         string, traversing first to the third (index 2) branch of the
-        top node, then to the first (index 0) branch of that node.
+        top node, then to the first (index 0) branch of that node::
 
             (t / try-01
                :ARG0 (d / dog)

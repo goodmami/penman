@@ -30,10 +30,11 @@ models if they need more control.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Guides
 
    setup
-   basic
+   command
+   library
    notation
    structures
    serialization
