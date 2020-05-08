@@ -11,6 +11,7 @@
 * `penman.lexer` is now non-public ([#77])
 * `penman.interface` is removed from the public API but remains
   temporarily for backward compatibility ([#78])
+* `penman.layout.has_valid_layout()`; it was unused
 
 ### Fixed
 

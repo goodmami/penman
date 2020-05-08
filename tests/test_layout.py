@@ -11,7 +11,6 @@ from penman.layout import (
     rearrange,
     configure,
     reconfigure,
-    has_valid_layout,
     get_pushed_variable,
     appears_inverted,
     node_contexts,
