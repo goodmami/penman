@@ -42,42 +42,6 @@ def process(f,
     """Read graphs from *f* and write to *out*."""
 
     exitcode = 0
-
-    def _process_in(t):
-        """Encode tree *t* and return the string."""
-        # tree transformations
-        if normalize_options['canonicalize_roles']:
-            t = transform.canonicalize_roles(t, model)
-
-        g = layout.interpret(t, model)
-
-        # graph transformations
-        if normalize_options['reify_edges']:
-            g = transform.reify_edges(g, model)
-        if normalize_options['dereify_edges']:
-            g = transform.dereify_edges(g, model)
-        if normalize_options['reify_attributes']:
-            g = transform.reify_attributes(g)
-        if normalize_options['indicate_branches']:
-            g = transform.indicate_branches(g, model)
-
-        return g
-
-    def _process_out(g):
-        if normalize_options['reconfigure']:
-            key, kwargs = normalize_options['reconfigure']
-            t = layout.reconfigure(g, key=key, **kwargs)
-            g = layout.interpret(t, model)
-        else:
-            t = layout.configure(g, model=model)
-        if normalize_options['rearrange']:
-            key, kwargs = normalize_options['rearrange']
-            layout.rearrange(t, key=key, **kwargs)
-        if normalize_options['make_variables']:
-            t.reset_variables(normalize_options['make_variables'])
-
-        return t
-
     codec = PENMANCodec(model=model)
     trees = codec.iterparse(f)
 
@@ -88,32 +52,74 @@ def process(f,
         else:
             print(file=out)
 
-        g = _process_in(t)
+        g = _process_in(t, model, normalize_options)
         if check:
-            i = 1
-            errors = model.errors(g)
-            if errors:
-                exitcode = 1
-                for triple, errors in errors.items():
-                    if triple:
-                        context = '({}) '.format(' '.join(map(str, triple)))
-                    else:
-                        context = ''
-                    for error in errors:
-                        g.metadata[f'error-{i}'] = context + error
-                    i += 1
-
+            exitcode = _check(g, model)
         if triples:
             s = codec.format_triples(
                 g.triples,
                 indent=bool(format_options.get('indent', True)))
         else:
-            t = _process_out(g)
+            t = _process_out(g, model, normalize_options)
             s = codec.format(t, **format_options)
 
         print(s, file=out)
 
     return exitcode
+
+
+def _process_in(t, model, normalize_options):
+    """Encode tree *t* and return the string."""
+    # tree transformations
+    if normalize_options['canonicalize_roles']:
+        t = transform.canonicalize_roles(t, model)
+
+    g = layout.interpret(t, model)
+
+    # graph transformations
+    if normalize_options['reify_edges']:
+        g = transform.reify_edges(g, model)
+    if normalize_options['dereify_edges']:
+        g = transform.dereify_edges(g, model)
+    if normalize_options['reify_attributes']:
+        g = transform.reify_attributes(g)
+    if normalize_options['indicate_branches']:
+        g = transform.indicate_branches(g, model)
+
+    return g
+
+
+def _process_out(g, model, normalize_options):
+    if normalize_options['reconfigure']:
+        key, kwargs = normalize_options['reconfigure']
+        t = layout.reconfigure(g, key=key, **kwargs)
+        g = layout.interpret(t, model)
+    else:
+        t = layout.configure(g, model=model)
+    if normalize_options['rearrange']:
+        key, kwargs = normalize_options['rearrange']
+        layout.rearrange(t, key=key, **kwargs)
+    if normalize_options['make_variables']:
+        t.reset_variables(normalize_options['make_variables'])
+
+    return t
+
+
+def _check(g, model):
+    i = 1
+    errors = model.errors(g)
+    if errors:
+        for triple, errors in errors.items():
+            if triple:
+                context = '({}) '.format(' '.join(map(str, triple)))
+            else:
+                context = ''
+            for error in errors:
+                g.metadata[f'error-{i}'] = context + error
+            i += 1
+        return 1
+    else:
+        return 0
 
 
 def _order_funcs(KEY_FUNCS):
