@@ -231,12 +231,7 @@ def main():
     logger = logging.getLogger('penman')
     logger.setLevel(logging.ERROR - (args.verbosity * 10))
 
-    if args.amr:
-        from penman.models.amr import model
-    elif args.model:
-        model = Model(**json.load(args.model))
-    else:
-        model = Model()
+    model = _get_model(args.amr, args.model)
 
     if args.rearrange:
         args.rearrange = _make_sort_key(
@@ -246,18 +241,7 @@ def main():
         args.reconfigure = _make_sort_key(
             args.reconfigure, model, RECONFIGURE_KEYS)
 
-    indent = -1
-    if args.indent:
-        if args.indent.lower() in ("no", "none", "false"):
-            indent = None
-        else:
-            try:
-                indent = int(args.indent)
-                if indent < -1:
-                    raise ValueError
-            except ValueError:
-                sys.exit('error: --indent value must be "no" or an '
-                         'integer >= -1')
+    indent = _indent(args.indent)
 
     normalize_options = {
         'make_variables': args.make_variables,
@@ -286,6 +270,33 @@ def main():
             normalize_options, format_options, args.triples)
 
     sys.exit(exitcode)
+
+
+def _get_model(amr, model_file):
+    if amr:
+        from penman.models.amr import model
+    elif model_file:
+        model = Model(**json.load(model_file))
+    else:
+        model = Model()
+    return model
+
+
+def _indent(indent):
+    if indent:
+        if indent.lower() in ("no", "none", "false"):
+            indent = None
+        else:
+            try:
+                indent = int(indent)
+                if indent < -1:
+                    raise ValueError
+            except ValueError:
+                sys.exit('error: --indent value must be "no" or an '
+                         'integer >= -1')
+    else:
+        indent = -1
+    return indent
 
 
 if __name__ == '__main__':
