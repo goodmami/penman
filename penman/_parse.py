@@ -180,31 +180,8 @@ def _parse_triples(tokens: TokenIterator) -> List[BasicTriple]:
         if not role.startswith(':'):
             role = ':' + role
         tokens.expect('LPAREN')
-        # SYMBOL may contain commas, so handle it here. If there
-        # is no space between the comma and the next SYMBOL, they
-        # will be grouped as one.
         symbol = tokens.expect('SYMBOL')
-        source, comma, rest = symbol.text.partition(',')
-        target = None
-        if rest:  # role(a,b)
-            target = rest
-        else:
-            if comma:  # role(a, b) OR role(a,)
-                _next = tokens.accept('SYMBOL')
-                if _next:
-                    target = _next.text
-            else:  # role(a , b) OR role(a ,b) OR role(a ,) OR role(a)
-                _next = tokens.accept('SYMBOL')
-                if not _next:  # role(a)
-                    pass
-                elif _next.text == ',':  # role(a , b) OR role(a ,)
-                    _next = tokens.accept('SYMBOL')
-                    if _next:  # role(a , b)
-                        target = _next.text
-                elif _next.text.startswith(','):  # role(a ,b)
-                    target = _next.text[1:]
-                else:  # role(a b)
-                    tokens.error("Expected: ','", token=_next)
+        source, target = _parse_triple(symbol, tokens)
         tokens.expect('RPAREN')
 
         if target is None:
@@ -225,3 +202,31 @@ def _parse_triples(tokens: TokenIterator) -> List[BasicTriple]:
         else:
             break
     return triples
+
+
+def _parse_triple(symbol, tokens):
+    # SYMBOL may contain commas, so handle it here. If there
+    # is no space between the comma and the next SYMBOL, they
+    # will be grouped as one.
+    source, comma, rest = symbol.text.partition(',')
+    target = None
+    if rest:  # role(a,b)
+        target = rest
+    else:
+        if comma:  # role(a, b) OR role(a,)
+            _next = tokens.accept('SYMBOL')
+            if _next:
+                target = _next.text
+        else:  # role(a , b) OR role(a ,b) OR role(a ,) OR role(a)
+            _next = tokens.accept('SYMBOL')
+            if not _next:  # role(a)
+                pass
+            elif _next.text == ',':  # role(a , b) OR role(a ,)
+                _next = tokens.accept('SYMBOL')
+                if _next:  # role(a , b)
+                    target = _next.text
+            elif _next.text.startswith(','):  # role(a ,b)
+                target = _next.text[1:]
+            else:  # role(a b)
+                tokens.error("Expected: ','", token=_next)
+    return source, target
