@@ -1,5 +1,6 @@
 
 import pytest
+import random
 
 from penman.exceptions import LayoutError
 from penman.model import Model
@@ -16,6 +17,8 @@ from penman.layout import (
     node_contexts,
 )
 
+
+random.seed(1)
 
 codec = PENMANCodec()
 model = Model()
@@ -61,7 +64,6 @@ def test_rearrange():
         '   :ARG0-of d\n'
         '   :ARG1 (e / epsilon))')
 
-    import random; random.seed(1)
     rearrange(t, model.random_order)
     assert codec.format(t) == (
         '(a / alpha\n'

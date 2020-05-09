@@ -152,27 +152,14 @@ def _interpret_node(t: Node, variables: Set[Variable], model: Model):
     for role, target in edges:
         epis: List[Epidatum] = []
 
-        if role == '/':
-            role = CONCEPT_ROLE
-            has_concept = True
-        elif '~' in role:
-            role, _, alignment = role.partition('~')
-            epis.append(RoleAlignment.from_string(alignment))
+        role, role_epis = _process_role(role)
+        epis.extend(role_epis)
+        has_concept |= role == CONCEPT_ROLE
 
         # atomic targets
         if is_atomic(target):
-            # remove any alignments
-            if target and '~' in target:
-                if target.startswith('"'):
-                    # need to handle alignments on strings differently
-                    # because strings may contain ~ inside the quotes
-                    pivot = target.rindex('"') + 1
-                    if pivot < len(target):
-                        epis.append(Alignment.from_string(target[pivot:]))
-                        target = target[:pivot]
-                else:
-                    target, _, alignment = target.partition('~')
-                    epis.append(Alignment.from_string(alignment))
+            target, target_epis = _process_atomic(target)
+            epis.extend(target_epis)
             triple = (var, role, target)
             if model.is_role_inverted(role):
                 if target in variables:
@@ -200,6 +187,33 @@ def _interpret_node(t: Node, variables: Set[Variable], model: Model):
         epidata[instance] = []
 
     return var, triples, epidata
+
+
+def _process_role(role):
+    epis = ()
+    if role == '/':
+        role = CONCEPT_ROLE
+    elif '~' in role:
+        role, _, alignment = role.partition('~')
+        epis = (RoleAlignment.from_string(alignment),)
+    return role, epis
+
+
+def _process_atomic(target):
+    epis = ()
+    # remove any alignments
+    if target and '~' in target:
+        if target.startswith('"'):
+            # need to handle alignments on strings differently
+            # because strings may contain ~ inside the quotes (e.g., URIs)
+            pivot = target.rindex('"') + 1
+            if pivot < len(target):
+                epis = (Alignment.from_string(target[pivot:]),)
+                target = target[:pivot]
+        else:
+            target, _, alignment = target.partition('~')
+            epis = (Alignment.from_string(alignment),)
+    return target, epis
 
 
 # Graph to tree configuration #################################################
@@ -310,7 +324,7 @@ def _preconfigure(g, strict):
                         raise LayoutError(
                             f"multiple node contexts for '{pvar}'")
                     pass  # change to 'continue' to disallow multiple contexts
-                if pvar not in (triple[0], triple[2]) or role == CONCEPT_ROLE:
+                if pvar not in (var, target) or role == CONCEPT_ROLE:
                     if strict:
                         raise LayoutError(
                             f"node context '{pvar}' "

@@ -26,6 +26,7 @@ def test_type():
     assert type('1.5') == FLOAT
     assert type('1e-3') == FLOAT
 
+
 def test_evaluate():
     assert evaluate(None) is None
     assert evaluate('') is None
@@ -57,10 +58,11 @@ def test_evaluate():
     with pytest.raises(ConstantError):
         evaluate('[1]')
 
-def quote():
+
+def test_quote():
     assert quote(None) == '""'
     assert quote('') == '""'
     assert quote('a') == '"a"'
-    assert quote('"a"') == '"\"a\""'
+    assert quote('"a"') == r'"\"a\""'
     assert quote(1) == '"1"'
     assert quote(1.5) == '"1.5"'
