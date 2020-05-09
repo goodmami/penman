@@ -12,6 +12,8 @@
 * `penman.interface` is removed from the public API but remains
   temporarily for backward compatibility ([#78])
 * `penman.layout.has_valid_layout()`; it was unused
+* `strict` parameter on `configure()` and `reconfigure()` in
+  `penman.layout`
 
 ### Fixed
 

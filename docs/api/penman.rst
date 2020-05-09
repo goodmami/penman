@@ -108,7 +108,7 @@ Graphs
 
 .. autofunction:: encode
 
-.. function:: configure(g, top=None, model=None, strict=False)
+.. function:: configure(g, top=None, model=None)
 
    Configure a tree from the :class:`Graph` *g*.
 

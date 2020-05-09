@@ -220,8 +220,7 @@ def _process_atomic(target):
 
 def configure(g: Graph,
               top: Variable = None,
-              model: Model = None,
-              strict: bool = False) -> Tree:
+              model: Model = None) -> Tree:
     """
     Create a tree from a graph by making as few decisions as possible.
 
@@ -241,8 +240,6 @@ def configure(g: Graph,
             the top of *g* will be used
         model: the :class:`~penman.model.Model` used to configure the
             tree
-        strict: if ``True``, raise :exc:`~penman.exceptions.LayoutError`
-            if decisions must be made about the configuration
     Returns:
         The configured :class:`~penman.tree.Tree`.
     Example:
@@ -262,7 +259,7 @@ def configure(g: Graph,
     """
     if model is None:
         model = _default_model
-    node, data, nodemap = _configure(g, top, model, strict)
+    node, data, nodemap = _configure(g, top, model)
     # remove any superfluous POPs at the end (maybe from dereification)
     while data and data[-1] is POP:
         data.pop()
@@ -284,7 +281,7 @@ def configure(g: Graph,
     return tree
 
 
-def _configure(g, top, model, strict):
+def _configure(g, top, model):
     """
     Create the tree that can be created without any improvising.
     """
@@ -298,13 +295,13 @@ def _configure(g, top, model, strict):
         raise LayoutError(f'top is not a variable: {top!r}')
     nodemap[top] = (top, [])
 
-    data = list(reversed(_preconfigure(g, strict)))
+    data = list(reversed(_preconfigure(g)))
     node = _configure_node(top, data, nodemap, model)
 
     return node, data, nodemap
 
 
-def _preconfigure(g, strict):
+def _preconfigure(g):
     """
     Arrange the triples and epidata for ordered traversal.
 
@@ -314,41 +311,45 @@ def _preconfigure(g, strict):
     epidata = g.epidata
     pushed = set()
     for triple in g.triples:
-        var, role, target = triple
-        push, pops = None, []
-        for epi in epidata.get(triple, []):
-            if isinstance(epi, Push):
-                pvar = epi.variable
-                if push is not None or pvar in pushed:
-                    if strict:
-                        raise LayoutError(
-                            f"multiple node contexts for '{pvar}'")
-                    pass  # change to 'continue' to disallow multiple contexts
-                if pvar not in (var, target) or role == CONCEPT_ROLE:
-                    if strict:
-                        raise LayoutError(
-                            f"node context '{pvar}' "
-                            f"invalid for triple: {triple!r}")
-                    continue
-                pushed.add(pvar)
-                push = epi
-            elif epi is POP:
-                pops.append(epi)
-            elif epi.mode == 1:  # role epidata
-                role = f'{role!s}{epi!s}'
-            elif target and epi.mode == 2:  # target epidata
-                target = f'{target!s}{epi!s}'
-            else:
-                logging.warning('epigraphical marker lost: %r', epi)
-
-        if strict and push and pops:
-            raise LayoutError(
-                f'incompatible node context changes on triple: {triple!r}')
-
-        data.append(((var, role, target), push))
+        triple, push, pops = _preconfigure_triple(triple, pushed, epidata)
+        data.append((triple, push))
         data.extend(pops)
-
     return data
+
+
+def _preconfigure_triple(triple, pushed, epidata):
+    """
+    Validate layout by markers and format other markers onto role or target.
+    """
+    var, role, target = triple
+    push, pops = None, []
+
+    for epi in epidata.get(triple, []):
+        if isinstance(epi, Push):
+            pvar = epi.variable
+            if push is not None or pvar in pushed:
+                logger.warning(
+                    f"ignoring secondary node contexts for '{pvar}'")
+                continue  # change to 'pass' to allow multiple contexts
+            if pvar not in (var, target) or role == CONCEPT_ROLE:
+                logger.warning(
+                    f"node context '{pvar}' invalid for triple: {triple!r}")
+                continue
+            pushed.add(pvar)
+            push = epi
+        elif epi is POP:
+            pops.append(epi)
+        elif epi.mode == 1:  # role epidata
+            role = f'{role!s}{epi!s}'
+        elif target and epi.mode == 2:  # target epidata
+            target = f'{target!s}{epi!s}'
+        else:
+            logging.warning('epigraphical marker ignored: %r', epi)
+
+    if push and pops:
+        logger.warning(
+            f'incompatible node context changes on triple: {triple!r}')
+    return (var, role, target), push, pops
 
 
 def _configure_node(var, data, nodemap, model):
@@ -447,8 +448,7 @@ def _get_or_establish_site(var, nodemap):
 def reconfigure(g: Graph,
                 top: Variable = None,
                 model: Model = None,
-                key: Callable[[Role], Any] = None,
-                strict: bool = False) -> Tree:
+                key: Callable[[Role], Any] = None) -> Tree:
     """
     Create a tree from a graph after any discarding layout markers.
 
@@ -466,7 +466,7 @@ def reconfigure(g: Graph,
 
         p.triples.sort(key=_key)
 
-    return configure(p, top=top, model=model, strict=strict)
+    return configure(p, top=top, model=model)
 
 
 def rearrange(t: Tree,
