@@ -2,6 +2,22 @@
 
 ## [Unreleased][unreleased]
 
+(no unreleased changes)
+
+## [v1.0.0]
+
+**Release date: 2020-05-10**
+
+This 1.0 release is not a huge difference from the previous version,
+but it represents a commitment to support the API or announce any
+changes, as required by [semantic versioning](https://semver.org/).
+For this reason, some unused or unnecessary components have been
+removed from the public API, and several functions that are expected
+to be commonly used, such as `parse()` and `format()` for tree
+operations, have been given aliases in the top-level `penman`
+module. Consequently, there's less emphasis for creating a
+`PENMANCodec` object for most decoding or encoding tasks.
+
 ### Added
 
 * `penman.tree.Tree.walk()` ([#74])

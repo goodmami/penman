@@ -87,13 +87,15 @@ $ echo "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))" | penman --make-va
 ### Demo
 
 For a demonstration of the API usage, see the included
-[Jupyter](https://jupyter.org/) notebook at
-[docs/api-demo.ipynb](docs/api-demo.ipynb). You can view the notebook
-in GitHub by clicking the link, or you can run it interactively here
-(I suggest clearing the output before using it interactively: *Cell* >
-*All Output* > *Clear*):
+[Jupyter](https://jupyter.org/) notebook:
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/goodmami/penman/master?filepath=docs%2Fapi-demo.ipynb)
+- View it on GitHub: [docs/api-demo.ipynb](docs/api-demo.ipynb)
+- Run it on [mybinder.org](https://mybinder.org/):
+  [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/goodmami/penman/master?filepath=docs%2Fapi-demo.ipynb)
+
+  (Note: clear the output before running: *Cell* > *All Output* >
+  *Clear*):
+
 
 ### PENMAN Notation
 
