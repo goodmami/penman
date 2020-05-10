@@ -50,7 +50,7 @@ module. Consequently, there's less emphasis for creating a
   works as expected ([#79])
 
 
-## [v0.12.0][]
+## [v0.12.0]
 
 **Release date: 2020-02-14**
 
@@ -63,54 +63,54 @@ datatypes.
 
 ### Added
 
-* `penman.model.Model.errors()` replaces `Model.check()` ([#65][])
-* `penman.constant` module for constant values ([#69][])
-* `penman.graph.Instance` subtype of `Triple` ([#66][])
-* `penman.model.Model.alphanumeric_order()` ([#72][])
-* `penman.layout.rearrange()`: `attributes_first` parameter ([#62][])
+* `penman.model.Model.errors()` replaces `Model.check()` ([#65])
+* `penman.constant` module for constant values ([#69])
+* `penman.graph.Instance` subtype of `Triple` ([#66])
+* `penman.model.Model.alphanumeric_order()` ([#72])
+* `penman.layout.rearrange()`: `attributes_first` parameter ([#62])
 
 ### Removed
 
-* `penman.model.Model.check()` replaced by `Model.errors()` ([#65][])
+* `penman.model.Model.check()` replaced by `Model.errors()` ([#65])
 
 ### Fixed
 
-* Don't flush standard streams in `penman` command ([#60][])
+* Don't flush standard streams in `penman` command ([#60])
 
 ### Changed
 
-* Return exit code of 1 when `penman --check` finds errors ([#63][])
+* Return exit code of 1 when `penman --check` finds errors ([#63])
 * Moved the `Branch` and `Node` types from `penman.tree` to
   `penman.types`
 * `penman.model.Model.canonical_order()` is now just a shortcut for
-  calling `is_role_inverted()` and `alphanumeric_order()` ([#72][])
+  calling `is_role_inverted()` and `alphanumeric_order()` ([#72])
 * `--rearrange` and `--reconfigure` can now take multiple ordered
-  sorting criteria ([#70][])
+  sorting criteria ([#70])
 * The order of operations for processing inputs has changed so users
-  can do more with shorter pipelines ([#71][])
+  can do more with shorter pipelines ([#71])
 
 
-## [v0.11.1][]
+## [v0.11.1]
 
 **Release date: 2020-02-06**
 
 ### Fixed
 
-* Avoid another source of concepts becoming nodes ([#61][])
-* Only configure one tree branch for new triples ([#67][])
+* Avoid another source of concepts becoming nodes ([#61])
+* Only configure one tree branch for new triples ([#67])
 
 
-## [v0.11.0][]
+## [v0.11.0]
 
 **Release date: 2020-01-28**
 
 ### Added
 
-* `penman.model.Model.check()` ([#55][])
-* `--check` command-line option ([#55][])
+* `penman.model.Model.check()` ([#55])
+* `--check` command-line option ([#55])
 
 
-## [v0.10.0][]
+## [v0.10.0]
 
 **Release date: 2020-01-22**
 
@@ -119,20 +119,20 @@ available at the command line.
 
 ### Added
 
-* `penman.layout.reconfigure()` now has a `key` parameter ([#52][])
-* `--reconfigure` command-line option ([#52][])
+* `penman.layout.reconfigure()` now has a `key` parameter ([#52])
+* `--reconfigure` command-line option ([#52])
 
 ### Changed
 
 * `penman.model.Model.original_order()` takes a `Role` instead of a
-  `Branch` argument ([#53][])
+  `Branch` argument ([#53])
 * `penman.model.Model.canonical_order()` takes a `Role` instead of a
-  `Branch` argument ([#53][])
+  `Branch` argument ([#53])
 * `penman.model.Model.random_order()` takes a `Role` instead of a
-  `Branch` argument ([#53][])
+  `Branch` argument ([#53])
 
 
-## [v0.9.1][]
+## [v0.9.1]
 
 **Release date: 2020-01-16**
 
@@ -143,18 +143,18 @@ characters.
 ### Added
 
 * `ALIGNMENT` production in `penman.lexer.PATTERNS` (this reverts a
-  change in v0.9.0) ([#50][])
+  change in v0.9.0) ([#50])
 
 ### Changed
 
 * Disallow tildes in the `ROLE` and `SYMBOL` patterns (this reverts a
-  change in v0.9.0) ([#50][])
+  change in v0.9.0) ([#50])
 * `ALIGNMENT` tokens are joined to their previous `ROLE`, `SYMBOL`, or
   `STRING`, which means they can now be separated with a space (for
   example, `(a / alpha ~1)`)
 
 
-## [v0.9.0][]
+## [v0.9.0]
 
 **Release date: 2020-01-07**
 
@@ -163,26 +163,26 @@ optimized parsing time by simplifying the work done during parsing.
 
 ### Added
 
-* `penman.tree.Tree.reset_variables()` ([#41][])
-* `--make-variables=FMT` command-line option ([#41][])
-* `penman.surface.AlignmentMarker.from_string()` ([#45][])
+* `penman.tree.Tree.reset_variables()` ([#41])
+* `--make-variables=FMT` command-line option ([#41])
+* `penman.surface.AlignmentMarker.from_string()` ([#45])
 * `penman.model.Model.is_role_reifiable()` (was `is_reifiable()`)
-* `penman.model.Model.is_concept_dereifiable()` ([#40][])
-* `penman.model.Model.dereify()` ([#40][])
-* `penman.layout.get_pushed_variable()` ([#39][])
+* `penman.model.Model.is_concept_dereifiable()` ([#40])
+* `penman.model.Model.dereify()` ([#40])
+* `penman.layout.get_pushed_variable()` ([#39])
 * `penman.layout.node_contexts()`
-* `penman.transform.dereify_edges()` ([#40][])
-* `--dereify-edges` command-line option ([#40][])
-* `penman.graph.Graph.instances()` ([#48][])
+* `penman.transform.dereify_edges()` ([#40])
+* `--dereify-edges` command-line option ([#40])
+* `penman.graph.Graph.instances()` ([#48])
 
 ### Removed
 
-* `penman.lexer.Token.value` property ([#44][])
-* `FLOAT` and `INTEGER` productions in `penman.lexer.PATTERNS` ([#44][])
-* `penman.codec.PENMANCodec.ATOMS` ([#44][])
-* `penman.codec.PENMANCodec.IDENTIFIERS` ([#44][])
-* `COMMA` and `CARET` productions in `penman.lexer.PATTERNS` ([#43][])
-* `triples` parameter for the following ([#42][]):
+* `penman.lexer.Token.value` property ([#44])
+* `FLOAT` and `INTEGER` productions in `penman.lexer.PATTERNS` ([#44])
+* `penman.codec.PENMANCodec.ATOMS` ([#44])
+* `penman.codec.PENMANCodec.IDENTIFIERS` ([#44])
+* `COMMA` and `CARET` productions in `penman.lexer.PATTERNS` ([#43])
+* `triples` parameter for the following ([#42]):
   - `penman.interface.decode()`
   - `penman.interface.loads()`
   - `penman.interface.load()`
@@ -191,19 +191,19 @@ optimized parsing time by simplifying the work done during parsing.
   - `penman.interface.dump()`
   - `penman.codec.encode()`
   - `penman.codec.decode()`
-* `ALIGNMENT` production in `penman.lexer.PATTERNS` ([#45][])
+* `ALIGNMENT` production in `penman.lexer.PATTERNS` ([#45])
 * `penman.model.Model.is_reifiable()` (now `is_role_reifiable()`)
 
 ### Changed
 
-* Remove support for numeric data detection and casting ([#44][])
-* Allow commas and carets in the `SYMBOL` pattern ([#43][])
-* Allow tildes in the `ROLE` and `SYMBOL` patterns ([#45][])
+* Remove support for numeric data detection and casting ([#44])
+* Allow commas and carets in the `SYMBOL` pattern ([#43])
+* Allow tildes in the `ROLE` and `SYMBOL` patterns ([#45])
 * Surface alignments are extracted and formatted in `penman.layout`,
-  not `penman.lexer` or `penman.codec` ([#45][])
-* Tree branches are simple 2-tuples: `(role, target)` ([#45][])
+  not `penman.lexer` or `penman.codec` ([#45])
+* Tree branches are simple 2-tuples: `(role, target)` ([#45])
 * `penman.layout.appears_inverted()` better detects inverted triples
-  when the target in the serialization was just a variable ([#47][])
+  when the target in the serialization was just a variable ([#47])
 * Nodes without concepts get a default concept of `None` (again); this
   means that `(b :ARG0-of (a))` is 3 triples instead of 1, but it will
   help distinguish node attributes from true edges.
@@ -212,10 +212,10 @@ optimized parsing time by simplifying the work done during parsing.
   as variables); this requires looking at the variables of tree nodes
   to determine which are attributes.
 * `penman.graph.Graph.attributes()` no longer returns `:instance`
-  triples ([#48][])
+  triples ([#48])
 
 
-## [v0.8.0][]
+## [v0.8.0]
 
 **Release date: 2019-12-12**
 
@@ -224,16 +224,16 @@ documentation.
 
 ### Added
 
-* `penman.layout.appears_inverted()` ([#37][])
-* Tree branch sorting functions ([#31][])
+* `penman.layout.appears_inverted()` ([#37])
+* Tree branch sorting functions ([#31])
   - `penman.model.Model.original_order()`
   - `penman.model.Model.canonical_order()`
   - `penman.model.Model.random_order()`
-* `penman.layout.rearrange()` ([#31][])
+* `penman.layout.rearrange()` ([#31])
 * `--rearrange=(canonical|random)` command-line option
 
 
-## [v0.7.2][]
+## [v0.7.2]
 
 **Release date: 2019-11-25**
 
@@ -247,16 +247,16 @@ documentation.
 ### Fixed
 
 * Remove superfluous `POP` layout markers when graphs have duplicated
-  triples ([#34][])
+  triples ([#34])
 * Avoid `KeyError` on edge and attribute reification when graphs have
-  duplicated triples ([#35][])
+  duplicated triples ([#35])
 
 ### Changed
 
 * `Model.reify()` no longer inverts the incoming triple
 
 
-## [v0.7.1][]
+## [v0.7.1]
 
 **Release date: 2019-11-21**
 
@@ -272,7 +272,7 @@ installs. This release fixes that.
   culprit for faulty documentation builds.)
 
 
-## [v0.7.0][]
+## [v0.7.0]
 
 **Release date: 2019-11-21**
 
@@ -358,7 +358,7 @@ modules.
 * `penman.models.amr.normalizations`
 * `penman.models.amr.reifications`
 * `penman.models.amr.model`
-* `penman.surface` ([#19][])
+* `penman.surface` ([#19])
 * `penman.surface.AlignmentMarker`
 * `penman.surface.Alignment`
 * `penman.surface.RoleAlignment`
@@ -366,16 +366,16 @@ modules.
 * `penman.surface.role_alignments()`
 * `penman.transform`
 * `penman.transform.canonicalize_roles()`
-* `penman.transform.reify_edges()` ([#27][])
+* `penman.transform.reify_edges()` ([#27])
 * `penman.transform.reify_attributes()`
 * `penman.transform.indicate_branches()`
-* `penman.tree` ([#16][])
+* `penman.tree` ([#16])
 * `penman.tree.Tree`
 * `penman.tree.is_atomic()`
 
 ### Removed
 
-* [docopt](https://github.com/docopt/docopt) dependency ([#20][])
+* [docopt](https://github.com/docopt/docopt) dependency ([#20])
 * `penman.EncodeError`
 * `penman.AMRCodec`
 * `penman.Triple.inverted`
@@ -389,11 +389,11 @@ modules.
 
 ### Fixed
 
-* Graphs can no longer be encoded with attributes as the top ([#15][])
+* Graphs can no longer be encoded with attributes as the top ([#15])
 * For AMR, both `:mod` and `:domain` are for non-inverted relations,
-  although their inverses can be canonicalized to the other ([#26][])
+  although their inverses can be canonicalized to the other ([#26])
 * Epigraphical layout markers allow the tree structure to be preserved
-  without modifying the pure graph's triples ([#25][])
+  without modifying the pure graph's triples ([#25])
 
 ### Changed
 
@@ -408,10 +408,10 @@ modules.
   parameters
 * `penman.PENMANCodec.encode()` now takes `indent` and `compact`
   parameters
-* `penman.PENMANCodec.iterdecode()` works on streams ([#21][])
-* `penman.PENMANCodec` now reads comments with metadata ([#23][])
-* `penman.PENMANCodec` no longer accepts non-symbol variables ([#13][])
-* `penman.dump()` now writes iteratively to a stream ([#22][])
+* `penman.PENMANCodec.iterdecode()` works on streams ([#21])
+* `penman.PENMANCodec` now reads comments with metadata ([#23])
+* `penman.PENMANCodec` no longer accepts non-symbol variables ([#13])
+* `penman.dump()` now writes iteratively to a stream ([#22])
 * The following no longer take the `cls` parameter for a codec class,
   nor `**kwargs` to configure that class, but instead a `model`
   parameter for the semantic model:
@@ -427,26 +427,26 @@ modules.
   - `penman.dumps()`
   - `penman.dump()`
 * `penman.Graph.triples` is now a member variable instead of a method
-* `penman.Graph` class is mutable ([#32][])
+* `penman.Graph` class is mutable ([#32])
 * Concepts (node labels) in `penman.Graph` now have a special role
   known to the `penman.graph` module, which can help avoid some
-  reentrancy issues ([#29][])
+  reentrancy issues ([#29])
 
 
-## [v0.6.2][]
+## [v0.6.2]
 
 **Release date: 2017-10-04**
 
 ### Fixed
 
-* Value-cast patterns terminated with `$` to invalid casts ([#9][])
-* Raise EncodeError when attempting to encode empty graphs ([#14][])
-* Redefine NODETYPE_RE for AMRCodec ([#17][])
+* Value-cast patterns terminated with `$` to invalid casts ([#9])
+* Raise EncodeError when attempting to encode empty graphs ([#14])
+* Redefine NODETYPE_RE for AMRCodec ([#17])
 * Remove specific float and int parsing in variables/nodetypes for the
-  default parser (the numeric values are still parses as atoms) ([#17][])
+  default parser (the numeric values are still parses as atoms) ([#17])
 
 
-## [v0.6.1][]
+## [v0.6.1]
 
 **Release date: 2017-03-14**
 
@@ -466,7 +466,7 @@ modules.
   vice versa)
 
 
-## [v0.6.0][]
+## [v0.6.0]
 
 **Release date: 2017-03-04**
 
@@ -507,7 +507,7 @@ modules.
 * Updated the PEG definition in `README.md`, and accompanying prose.
 
 
-## [v0.5.1][]
+## [v0.5.1]
 
 **Release date: 2017-02-20**
 
@@ -521,7 +521,7 @@ modules.
 * Updated documentation
 
 
-## [v0.5.0][]
+## [v0.5.0]
 
 **Release date: 2017-01-13**
 
@@ -558,7 +558,7 @@ modules.
 * PENMAN serialization now sorts relations like `sort -V`
 
 
-## [v0.4.0][]
+## [v0.4.0]
 
 **Release date: 2017-01-01**
 
@@ -595,7 +595,7 @@ subclassed to customize behavior.
   are passed to its constructor.
 
 
-## [v0.3.0][]
+## [v0.3.0]
 
 **Release date: 2017-01-01**
 
@@ -622,7 +622,7 @@ subclassed to customize behavior.
   parameter (default: False); if True, read/write as triples
 
 
-## [v0.2.0][]
+## [v0.2.0]
 
 **Release date: 2016-11-09**
 
@@ -637,7 +637,7 @@ subclassed to customize behavior.
   instance-of(d, dog)`).
 
 
-## [v0.1.0][]
+## [v0.1.0]
 
 **Release date: 2016-11-08**
 
@@ -671,6 +671,7 @@ First release with very basic functionality.
 [v0.11.0]: ../../releases/tag/v0.11.0
 [v0.11.1]: ../../releases/tag/v0.11.1
 [v0.12.0]: ../../releases/tag/v0.12.0
+[v1.0.0]: ../../releases/tag/v1.0.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
