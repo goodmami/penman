@@ -52,100 +52,62 @@ or as a [script](#script-usage).
 >>> g = penman.decode('(b / bark-01 :ARG0 (d / dog))')
 >>> g.triples
 [('b', ':instance', 'bark-01'), ('b', ':ARG0', 'd'), ('d', ':instance', 'dog')]
->>> print(penman.encode(g))
+>>> g.edges()
+[Edge(source='b', role=':ARG0', target='d')]
+>>> print(penman.encode(g, indent=3))
 (b / bark-01
    :ARG0 (d / dog))
->>> print(penman.encode(g, top='d', indent=6))
-(d / dog
-      :ARG0-of (b / bark-01))
 >>> print(penman.encode(g, indent=None))
 (b / bark-01 :ARG0 (d / dog))
 
 ```
 
-([more information][as-library])
-
-[as-library]: https://penman.readthedocs.io/en/latest/basic.html#using-penman-as-a-library
+([more information](https://penman.readthedocs.io/en/latest/library.html))
 
 
 ### Script Usage
 
 ```console
-$ penman --help
-usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr] [--check]
-              [--indent N] [--compact] [--triples] [--make-variables FMT]
-              [--rearrange KEY] [--reconfigure KEY] [--canonicalize-roles]
-              [--reify-edges] [--dereify-edges] [--reify-attributes]
-              [--indicate-branches]
-              [FILE [FILE ...]]
-
-Read and write graphs in the PENMAN notation.
-
-positional arguments:
-  FILE                  read graphs from FILEs instead of stdin
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -V, --version         show program's version number and exit
-  -v, --verbose         increase verbosity
-  -q, --quiet           suppress output on <stdout> and <stderr>
-  --model FILE          JSON model file describing the semantic model
-  --amr                 use the AMR model
-  --check               check graphs for compliance with the model
-
-formatting options:
-  --indent N            indent N spaces per level ("no" for no newlines)
-  --compact             compactly print node attributes on one line
-  --triples             print graphs as triple conjunctions
-
-normalization options:
-  --make-variables FMT  recreate node variables with FMT (e.g.: '{prefix}{j}')
-  --rearrange KEY       reorder the branches of the tree
-  --reconfigure KEY     reconfigure the graph layout with reordered triples
-  --canonicalize-roles  canonicalize role forms
-  --reify-edges         reify all eligible edges
-  --dereify-edges       dereify all eligible edges
-  --reify-attributes    reify all attributes
-  --indicate-branches   insert triples to indicate tree structure
-
-$ penman <<< "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))"
+$ echo "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))" | penman
 (w / want-01
    :ARG0 (b / boy)
    :ARG1 (g / go
             :ARG0 b))
+$ echo "(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))" | penman --make-variables="a{i}"
+(a0 / want-01
+    :ARG0 (a1 / boy)
+    :ARG1 (a2 / go
+              :ARG0 a1))
+
 ```
 
-([more information][as-tool])
-
-[as-tool]: https://penman.readthedocs.io/en/latest/basic.html#using-penman-as-a-tool
+([more information](https://penman.readthedocs.io/en/latest/command.html))
 
 
 ### Demo
 
-For a demonstration of the API usage, see the included [Jupyter](https://jupyter.org/) notebook at [docs/api-demo.ipynb](docs/api-demo.ipynb). To run it interactively, ensure Penman is installed and run it with `jupyter-notebook`. For example, check out this repository and run the following from the project's root directory:
+For a demonstration of the API usage, see the included
+[Jupyter](https://jupyter.org/) notebook at
+[docs/api-demo.ipynb](docs/api-demo.ipynb). You can view the notebook
+in GitHub by clicking the link, or you can run it interactively here
+(I suggest clearing the output before using it interactively: *Cell* >
+*All Output* > *Clear*):
 
-```shell
-$ python3 -m venv demo
-$ source demo/bin/activate
-(demo) $ pip install . jupyter
-(demo) $ jupyter-notebook demo/api-demo.ipynb
-```
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/goodmami/penman/master?filepath=docs%2Fapi-demo.ipynb)
 
 ### PENMAN Notation
 
 A description of the PENMAN notation can be found in the
 [documentation](https://penman.readthedocs.io/en/latest/notation.html).
-See also [Nathan Schneider's PEG for
-AMR](https://github.com/nschneid/amr-hackathon/blob/master/src/amr.peg).
-
-This module expands the notation slightly to allow for untyped nodes
-(e.g., `(x)`) and anonymous relations (e.g., `(x : (y))`). It also
-accommodates slightly malformed graphs as well as surface alignments.
+This module expands the original notation slightly to allow for
+untyped nodes (e.g., `(x)`) and anonymous relations (e.g., `(x :
+(y))`). It also accommodates slightly malformed graphs as well as
+surface alignments.
 
 ### Citation
 
-There is not (yet) a canonical citation for the Penman library, so
+The canonical citation for the Penman library will soon be a system
+demo paper for [ACL 2020]. Until the proceedings are published, simply
 putting https://github.com/goodmami/penman in a footnote is
 sufficient. If you are referring to the graph
 transformation/normalization work or prefer an academic citation,
@@ -161,6 +123,8 @@ please use the following:
   address   = "Hakodate"
 }
 ```
+
+[ACL 2020]: https://acl2020.org/
 
 ### Disclaimer
 

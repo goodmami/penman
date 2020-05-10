@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-copyright = '2019, Michael Wayne Goodman'
+copyright = '2020, Michael Wayne Goodman'
 
 from penman.__about__ import (
     __version_info__ as ver,
