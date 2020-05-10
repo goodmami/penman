@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import pytest
-
 import penman
 
 Graph = penman.Graph
@@ -42,8 +40,8 @@ class TestGraph(object):
         q = Graph([('a', ':instance', 'alpha')])
         g = p | q
         assert g.triples == [('a', ':instance', 'alpha')]
-        assert g.top is 'a'
-        assert g is not q is not p
+        assert g.top == 'a'
+        assert g is not q is not p  # noqa: E714  <-- pycodestyle bug fixed upstream
 
         r = Graph([('a', ':ARG', 'b'), ('b', ':instance', 'beta')], top='b')
         g = q | r
@@ -63,7 +61,7 @@ class TestGraph(object):
         p = Graph([('a', ':instance', 'alpha')])
         g |= p
         assert g.triples == [('a', ':instance', 'alpha')]
-        assert g.top is 'a'
+        assert g.top == 'a'
         assert g is original
 
     def test__sub__(self):
@@ -77,7 +75,7 @@ class TestGraph(object):
         g = q - p
         assert g.triples == [('a', ':instance', 'alpha')]
         assert g.top == 'a'
-        assert g is not q is not p
+        assert g is not q is not p  # noqa: E714  <-- pycodestyle bug fixed upstream
 
         g = p - q
         assert g.triples == []
@@ -145,6 +143,18 @@ class TestGraph(object):
         ]
         assert g.edges(role=':RSTR') == [
             ('_1', ':RSTR', 'x1')
+        ]
+
+    def test_edges_issue_81(self, x1):
+        g = Graph([('s', ':instance', 'sleep-01'),
+                   ('s', ':ARG0', 'i'),
+                   ('i', ':instance', 'i')])
+        assert g.edges() == [
+            ('s', ':ARG0', 'i')
+        ]
+        assert g.instances() == [
+            ('s', ':instance', 'sleep-01'),
+            ('i', ':instance', 'i')
         ]
 
     def test_attributes(self, x1):

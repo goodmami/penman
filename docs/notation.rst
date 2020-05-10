@@ -29,10 +29,12 @@ The following diagram explains what each part of the graph above is:
 .. code-block:: lisp
 
    ;    ┌────────────────────────── Variable (this one is the graph's top)
-   ;    │ ┌──────────────────────── Indicates the node's concept
-   ;    │ │    ┌─────────────────── Concept (node label)
-   ;    ┴ ┴ ───┴────
+   ;    │     ┌──────────────────── Instance relation
+   ;    ┴ ────┴─────
        (d / drive-01
+   ;      ┬ ───┬────
+   ;      |    └─────────────────── Concept (node label)
+   ;      └──────────────────────── Indicates the node's concept
    ;            ┌────────────────── Edge relation
    ;      ──────┴───────
           :ARG0 (h / he)

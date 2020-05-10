@@ -20,7 +20,7 @@ def mini_amr():
         },
         'reifications': [
             (':accompanier', 'accompany-01', ':ARG0', ':ARG1'),
-	    (':mod', 'have-mod-91', ':ARG1', ':ARG2')
+            (':mod', 'have-mod-91', ':ARG1', ':ARG2')
         ]
     }
 

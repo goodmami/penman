@@ -76,7 +76,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'penman=penman.main:main'
+            'penman=penman.__main__:main'
         ]
     }
 )

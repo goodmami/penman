@@ -16,111 +16,127 @@ def_codec = PENMANCodec(model=def_model)
 amr_codec = PENMANCodec(model=amr_model)
 
 
+def make_norm(func, model):
+
+    def norm(x):
+        return func(x, model)
+
+    return norm
+
+
+def make_form(func):
+
+    def form(x):
+        return func(x, indent=None)
+
+    return form
+
+
 def test_canonicalize_roles_default_codec():
     parse = def_codec.parse
-    norm = lambda t: canonicalize_roles(t, def_model)
-    format = lambda t: def_codec.format(t, indent=None)
+    norm = make_norm(canonicalize_roles, def_model)
+    form = make_form(def_codec.format)
 
     t = norm(parse('(a / alpha :ARG1 (b / beta))'))
-    assert format(t) == '(a / alpha :ARG1 (b / beta))'
+    assert form(t) == '(a / alpha :ARG1 (b / beta))'
 
     t = norm(parse('(a / alpha :ARG1-of-of (b / beta))'))
-    assert format(t) == '(a / alpha :ARG1 (b / beta))'
+    assert form(t) == '(a / alpha :ARG1 (b / beta))'
 
     t = norm(parse('(a / alpha :mod-of (b / beta))'))
-    assert format(t) == '(a / alpha :mod-of (b / beta))'
+    assert form(t) == '(a / alpha :mod-of (b / beta))'
 
 
 def test_canonicalize_roles_amr_codec():
     parse = amr_codec.parse
-    norm = lambda t: canonicalize_roles(t, amr_model)
-    format = lambda t: amr_codec.format(t, indent=None)
+    norm = make_norm(canonicalize_roles, amr_model)
+    form = make_form(amr_codec.format)
 
     t = norm(parse('(a / alpha :ARG1 (b / beta))'))
-    assert format(t) == '(a / alpha :ARG1 (b / beta))'
+    assert form(t) == '(a / alpha :ARG1 (b / beta))'
 
     t = norm(parse('(a / alpha :ARG1-of-of (b / beta))'))
-    assert format(t) == '(a / alpha :ARG1 (b / beta))'
+    assert form(t) == '(a / alpha :ARG1 (b / beta))'
 
     t = norm(parse('(a / alpha :mod-of (b / beta))'))
-    assert format(t) == '(a / alpha :domain (b / beta))'
+    assert form(t) == '(a / alpha :domain (b / beta))'
 
     t = norm(parse('(a / alpha :mod-of~1 (b / beta))'))
-    assert format(t) == '(a / alpha :domain~1 (b / beta))'
+    assert form(t) == '(a / alpha :domain~1 (b / beta))'
 
 
 def test_reify_edges_default_codec():
     decode = def_codec.decode
-    norm = lambda g: reify_edges(g, def_model)
-    encode = lambda g: def_codec.encode(g, indent=None)
+    norm = make_norm(reify_edges, def_model)
+    form = make_form(def_codec.encode)
 
     g = norm(decode('(a / alpha :mod 5)'))
-    assert encode(g) == '(a / alpha :mod 5)'
+    assert form(g) == '(a / alpha :mod 5)'
 
     g = norm(decode('(a / alpha :mod-of (b / beta))'))
-    assert encode(g) == '(a / alpha :mod-of (b / beta))'
+    assert form(g) == '(a / alpha :mod-of (b / beta))'
 
 
 def test_reify_edges_amr_codec():
     decode = amr_codec.decode
-    norm = lambda g: reify_edges(g, amr_model)
-    encode = lambda g: amr_codec.encode(g, indent=None)
+    norm = make_norm(reify_edges, amr_model)
+    form = make_form(amr_codec.encode)
 
     g = norm(decode('(a / alpha :mod 5)'))
-    assert encode(g) == '(a / alpha :ARG1-of (_ / have-mod-91 :ARG2 5))'
+    assert form(g) == '(a / alpha :ARG1-of (_ / have-mod-91 :ARG2 5))'
 
     g = norm(decode('(a / alpha :mod-of (b / beta))'))
-    assert encode(g) == '(a / alpha :ARG2-of (_ / have-mod-91 :ARG1 (b / beta)))'
+    assert form(g) == '(a / alpha :ARG2-of (_ / have-mod-91 :ARG1 (b / beta)))'
 
     g = norm(decode('(a / alpha :mod-of (b / beta :polarity -))'))
-    assert encode(g) == (
+    assert form(g) == (
         '(a / alpha :ARG2-of (_ / have-mod-91 '
         ':ARG1 (b / beta :ARG1-of (_2 / have-polarity-91 :ARG2 -))))')
 
     g = norm(decode('(a / alpha :mod-of~1 (b / beta~2 :polarity -))'))
-    assert encode(g) == (
+    assert form(g) == (
         '(a / alpha :ARG2-of (_ / have-mod-91~1 '
         ':ARG1 (b / beta~2 :ARG1-of (_2 / have-polarity-91 :ARG2 -))))')
 
 
 def test_dereify_edges_default_codec():
     decode = def_codec.decode
-    norm = lambda g: dereify_edges(g, def_model)
-    encode = lambda g: def_codec.encode(g, indent=None)
+    norm = make_norm(dereify_edges, def_model)
+    form = make_form(def_codec.encode)
 
     g = norm(decode('(a / alpha :ARG1-of (_ / have-mod-91'
                     '                       :ARG2 (b / beta)))'))
-    assert encode(g) == (
+    assert form(g) == (
         '(a / alpha :ARG1-of (_ / have-mod-91 :ARG2 (b / beta)))')
 
     g = norm(decode('(a / alpha :ARG2-of (_ / have-mod-91'
                     '                       :ARG1 (b / beta)))'))
-    assert encode(g) == (
+    assert form(g) == (
         '(a / alpha :ARG2-of (_ / have-mod-91 :ARG1 (b / beta)))')
 
 
 def test_dereify_edges_amr_codec():
     decode = amr_codec.decode
-    norm = lambda g: dereify_edges(g, amr_model)
-    encode = lambda g: amr_codec.encode(g, indent=None)
+    norm = make_norm(dereify_edges, amr_model)
+    form = make_form(amr_codec.encode)
 
     g = norm(decode('(a / alpha :ARG1-of~1 (_ / have-mod-91~2'
                     '                         :ARG2~3 7~4))'))
-    assert encode(g) == '(a / alpha :mod~2 7~4)'
+    assert form(g) == '(a / alpha :mod~2 7~4)'
 
     g = norm(decode('(a / alpha :ARG1-of~1 (_ / have-mod-91~2'
                     '                       :ARG2~3 (b / beta~4)))'))
-    assert encode(g) == '(a / alpha :mod~2 (b / beta~4))'
+    assert form(g) == '(a / alpha :mod~2 (b / beta~4))'
 
     g = norm(decode('(a / alpha :ARG2-of (_ / have-mod-91'
                     '                       :ARG1 (b / beta)))'))
-    assert encode(g) == '(a / alpha :mod-of (b / beta))'
+    assert form(g) == '(a / alpha :mod-of (b / beta))'
 
     # dereification is blocked because node has additional relations
     g = norm(decode('(a / alpha :ARG1-of (_ / have-mod-91'
                     '                       :ARG2 (b / beta)'
                     '                       :polarity -))'))
-    assert encode(g) == (
+    assert form(g) == (
         '(a / alpha :ARG1-of (_ / have-mod-91 :ARG2 (b / beta) :polarity -))')
 
     g = norm(decode('''
@@ -129,8 +145,8 @@ def test_dereify_edges_amr_codec():
                         :ARG0 p)
             :ARG1-of (g / gamma
                         :ARG0-of (_ / own-01
-       	                            :ARG1 (p / pi))))'''))
-    assert encode(g) == (
+                                    :ARG1 (p / pi))))'''))
+    assert form(g) == (
         '(a / alpha :ARG1-of (b / beta :ARG0 p)'
         ' :ARG1-of (g / gamma :poss (p / pi)))')
 
@@ -145,33 +161,33 @@ def test_dereify_edges_amr_codec():
     #                              :ARG2 4)
     #                  :ARG2-of (_2 / have-part-91
     #                               :ARG1 b))))'''))
-    # assert encode(g) == (
+    # assert form(g) == (
     #     '(a / alpha :ARG0 (b / beta)'
     #     ' :ARG1 (g / gamma :quant 4 :part-of b))')
 
 
 def test_reify_attributes():
     decode = def_codec.decode
-    norm = lambda g: reify_attributes(g)
-    encode = lambda g: def_codec.encode(g, indent=None)
+    norm = reify_attributes
+    form = make_form(def_codec.encode)
 
     g = norm(decode('(a / alpha :mod 5)'))
-    assert encode(g) == '(a / alpha :mod (_ / 5))'
+    assert form(g) == '(a / alpha :mod (_ / 5))'
 
     g = norm(decode('(a / alpha :mod~1 5~2)'))
-    assert encode(g) == '(a / alpha :mod~1 (_ / 5~2))'
+    assert form(g) == '(a / alpha :mod~1 (_ / 5~2))'
 
 
-def indicate_branches():
+def test_indicate_branches():
     decode = def_codec.decode
-    norm = lambda g: indicate_branches(g, def_model)
-    encode = lambda g: def_codec.encode(g, indent=None)
+    norm = make_norm(indicate_branches, def_model)
+    form = make_form(def_codec.encode)
 
     g = norm(decode('(a / alpha :mod 5)'))
-    assert encode(g) == '(a / alpha :mod 5)'
+    assert form(g) == '(a / alpha :mod 5)'
 
     g = norm(decode('(a / alpha :mod-of (b / beta))'))
-    assert encode(g) == '(a / alpha :TOP b :mod-of (b / beta))'
+    assert form(g) == '(a / alpha :TOP b :mod-of (b / beta))'
 
 
 def test_issue_35():

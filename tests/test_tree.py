@@ -27,6 +27,7 @@ def reentrant():
                   (':ARG1', ('g', [('/', 'gamma'),
                                    (':ARG0', 'b')]))])
 
+
 @pytest.fixture
 def var_instance():
     return ('a', [('/', 'alpha'),
@@ -55,6 +56,35 @@ class TestTree:
                              ('b', [('/', 'beta')]),
                              ('g', [('/', 'gamma'), (':ARG0', 'b')])]
 
+    def test_walk(self, one_arg_node, reentrant):
+        t = tree.Tree(one_arg_node)
+        assert list(t.walk()) == [
+            ((0,), ('/', 'alpha')),
+            ((1,), (':ARG0', ('b', [('/', 'beta')]))),
+            ((1, 0), ('/', 'beta')),
+        ]
+
+        t = tree.Tree(reentrant)
+        assert list(t.walk()) == [
+            ((0,), ('/', 'alpha')),
+            ((1,), (':ARG0', ('b', [('/', 'beta')]))),
+            ((1, 0), ('/', 'beta')),
+            ((2,), (':ARG1', ('g', [('/', 'gamma'),
+                                    (':ARG0', 'b')]))),
+            ((2, 0), ('/', 'gamma')),
+            ((2, 1), (':ARG0', 'b')),
+        ]
+
+        t = tree.Tree(('a', [('/', 'alpha'),
+                             (':polarity', '-'),
+                             (':ARG0', ('b', [('/', 'beta')]))]))
+        assert list(t.walk()) == [
+            ((0,), ('/', 'alpha')),
+            ((1,), (':polarity', '-')),
+            ((2,), (':ARG0', ('b', [('/', 'beta')]))),
+            ((2, 0), ('/', 'beta')),
+        ]
+
     def test_reset_variables(self, one_arg_node, reentrant, var_instance):
 
         def _vars(t):
@@ -81,7 +111,7 @@ class TestTree:
             'a0', [('/', 'alpha'),
                    (':ARG0', ('a1', [('/', 'beta')])),
                    (':ARG1', ('a2', [('/', 'gamma'),
-                                   (':ARG0', 'a1')]))])
+                                     (':ARG0', 'a1')]))])
 
         t.reset_variables()
         assert _vars(t) == ['a', 'b', 'g']

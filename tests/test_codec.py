@@ -15,121 +15,13 @@ encode = codec.encode
 
 class TestPENMANCodec(object):
     def test_parse(self):
-        assert codec.parse('()') == (
-            None, [])
-        assert codec.parse('(a)') == (
-            'a', [])
-        assert codec.parse('(a / )') == (
-            'a', [('/', None)])
-        assert codec.parse('(a / alpha)') == (
-            'a', [('/', 'alpha')])
-        assert codec.parse('(a : b)') == (
-            'a', [(':', 'b')])
-        assert codec.parse('(a : ())') == (
-            'a', [(':', (None, []))])
-        assert codec.parse('(a : (b))') == (
-            'a', [(':', ('b', []))])
-        assert codec.parse('(a / alpha :ARG (b / beta))') == (
-            'a', [('/', 'alpha'),
-                  (':ARG', ('b', [('/', 'beta')]))])
-        assert codec.parse('(a :ARG-of b)') == (
-            'a', [(':ARG-of', 'b')])
-        assert codec.parse('(a :ARG~1 b~2)') == (
-            'a', [(':ARG~1', 'b~2')])
-        # https://github.com/goodmami/penman/issues/50
-        assert codec.parse('(a :ARG "str~ing")') == (
-            'a', [(':ARG', '"str~ing"')])
-        assert codec.parse('(a :ARG "str~ing"~1)') == (
-            'a', [(':ARG', '"str~ing"~1')])
+        assert codec.parse('(a / alpha)') == ('a', [('/', 'alpha')])
+
+    def test_parse_triples(self):
+        assert codec.parse_triples('role(a, b)') == [('a', ':role', 'b')]
 
     def test_format(self):
-        assert codec.format(
-            (None, [])
-        ) == '()'
-        assert codec.format(
-            ('a', [])
-        ) == '(a)'
-        assert codec.format(
-            ('a', [('/', None)])
-        ) == '(a /)'
-        assert codec.format(
-            ('a', [('/', '')])
-        ) == '(a /)'
-        assert codec.format(
-            ('a', [('/', 'alpha')])
-        ) == '(a / alpha)'
-        assert codec.format(
-            ('a', [('', 'b')])
-        ) == '(a : b)'
-        assert codec.format(
-            ('a', [(':', 'b')])
-        ) == '(a : b)'
-        assert codec.format(
-            ('a', [(':', (None, []))])
-        ) == '(a : ())'
-        assert codec.format(
-            ('a', [('', ('b', []))])
-        ) == '(a : (b))'
-        assert codec.format(
-            ('a', [('/', 'alpha'),
-                   ('ARG', ('b', [('/', 'beta')]))]),
-            indent=None
-        ) == '(a / alpha :ARG (b / beta))'
-        assert codec.format(
-            ('a', [('ARG-of', 'b')])
-        ) == '(a :ARG-of b)'
-        assert codec.format(
-            ('a', [(':ARG-of', 'b')])
-        ) == '(a :ARG-of b)'
-        assert codec.format(
-            ('a', [('ARG~1', 'b~2')])
-        ) == '(a :ARG~1 b~2)'
-
-    def test_format_with_parameters(self):
-        # no indent
-        assert codec.format(
-            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
-            indent=None
-        ) == '(a / alpha :ARG (b / beta))'
-        # default (adaptive) indent
-        assert codec.format(
-            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
-            indent=-1
-        ) == ('(a / alpha\n'
-              '   :ARG (b / beta))')
-        # fixed indent
-        assert codec.format(
-            ('a', [('/', 'alpha'), ('ARG', ('b', [('/', 'beta')]))]),
-            indent=6
-        ) == ('(a / alpha\n'
-              '      :ARG (b / beta))')
-        # default compactness of attributes
-        assert codec.format(
-            ('a', [('/', 'alpha'),
-                   ('polarity', '-'),
-                   ('ARG', ('b', [('/', 'beta')]))]),
-            compact=False
-        ) == ('(a / alpha\n'
-              '   :polarity -\n'
-              '   :ARG (b / beta))')
-        # compact of attributes
-        assert codec.format(
-            ('a', [('/', 'alpha'),
-                   ('polarity', '-'),
-                   ('ARG', ('b', [('/', 'beta')]))]),
-            compact=True
-        ) == ('(a / alpha :polarity -\n'
-              '   :ARG (b / beta))')
-        # compact of attributes (only initial)
-        assert codec.format(
-            ('a', [('/', 'alpha'),
-                   ('polarity', '-'),
-                   ('ARG', ('b', [('/', 'beta')])),
-                   ('mode', 'expressive')]),
-            compact=True
-        ) == ('(a / alpha :polarity -\n'
-              '   :ARG (b / beta)\n'
-              '   :mode expressive)')
+        assert codec.format(('a', [('/', 'alpha')])) == '(a / alpha)'
 
     def test_decode(self, x1):
         # unlabeled single node
@@ -324,6 +216,19 @@ class TestPENMANCodec(object):
         # with pytest.raises(penman.DecodeError):
         #     decode('(1 / one)')
 
+    def test_decode_recursion_limit(self):
+        # Create a graph with n levels of nesting. Inefficient
+        # recursive-descent parsers will hit a RecursionError and be
+        # unable to parse some graphs. n should be some reasonable
+        # minimum.
+        n = 200
+        s = (''.join(f'(a{i} / A :ARG0 ' for i in range(n-1))
+             + f'(a{n} / A)'
+             + ')' * (n-1))
+        g = decode(s)  # hopefully no RecursionError
+        assert len(g.triples) == (n         # n :instance triples
+                                  + n - 1)  # n - 1 :ARG0 triples
+
     def test_encode(self, x1):
         # empty graph
         g = penman.Graph([])
@@ -408,39 +313,3 @@ class TestPENMANCodec(object):
             '(h / have-org-role-91\n'
             '   :ARG0 (a / activist)\n'
             '   :ARG2 a)')
-
-    def test_parse_triples(self):
-        assert codec.parse_triples('role(a,b)') == [
-            ('a', 'role', 'b')]
-        assert codec.parse_triples('role(a, b)') == [
-            ('a', 'role', 'b')]
-        assert codec.parse_triples('role(a ,b)') == [
-            ('a', 'role', 'b')]
-        assert codec.parse_triples('role(a , b)') == [
-            ('a', 'role', 'b')]
-        assert codec.parse_triples('role(a,)') == [
-            ('a', 'role', None)]
-        assert codec.parse_triples('role(a ,)') == [
-            ('a', 'role', None)]
-        assert codec.parse_triples('role(a,b)^role(b,c)') == [
-            ('a', 'role', 'b'), ('b', 'role', 'c')]
-        assert codec.parse_triples('role(a, b) ^role(b, c)') == [
-            ('a', 'role', 'b'), ('b', 'role', 'c')]
-        assert codec.parse_triples('role(a, b) ^ role(b, c)') == [
-            ('a', 'role', 'b'), ('b', 'role', 'c')]
-        with pytest.raises(penman.DecodeError):
-            decode('role')
-        with pytest.raises(penman.DecodeError):
-            decode('role(')
-        with pytest.raises(penman.DecodeError):
-            decode('role(a')
-        with pytest.raises(penman.DecodeError):
-            decode('role()')
-        with pytest.raises(penman.DecodeError):
-            decode('role(a,')
-        with pytest.raises(penman.DecodeError):
-            decode('role(a ^')
-        with pytest.raises(penman.DecodeError):
-            decode('role(a b')
-        with pytest.raises(penman.DecodeError):
-            decode('role(a b)')

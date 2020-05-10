@@ -3,9 +3,12 @@
 Definitions of tree structures.
 """
 
-from typing import Dict, List, Set, Mapping, Any
+from typing import Dict, List, Tuple, Set, Mapping, Any, Iterator
 
 from penman.types import (Variable, Branch, Node)
+
+
+_Step = Tuple[Tuple[int, ...], Branch]  # see Tree.walk()
 
 
 class Tree:
@@ -42,6 +45,27 @@ class Tree:
         Return the nodes in the tree as a flat list.
         """
         return _nodes(self.node)
+
+    def walk(self) -> Iterator[_Step]:
+        """
+        Iterate over branches in the tree.
+
+        This function yields pairs of (*path*, *branch*) where each
+        *path* is a tuple of 0-based indices of branches to get to
+        *branch*. For example, the path (2, 0) is the concept branch
+        `('/', 'bark-01')` in the tree for the following PENMAN
+        string, traversing first to the third (index 2) branch of the
+        top node, then to the first (index 0) branch of that node::
+
+            (t / try-01
+               :ARG0 (d / dog)
+               :ARG1 (b / bark-01
+                        :ARG0 d))
+
+        The (*path*, *branch*) pairs are yielded in depth-first order
+        of the tree traversal.
+        """
+        yield from _walk(self.node, ())
 
     def reset_variables(self, fmt='{prefix}{j}') -> None:
         """
@@ -103,6 +127,16 @@ def _nodes(node: Node) -> List[Node]:
     return ns
 
 
+def _walk(node: Node, path: Tuple[int, ...]) -> Iterator[_Step]:
+    var, branches = node
+    for i, branch in enumerate(branches):
+        curpath = path + (i,)
+        yield (curpath, branch)
+        _, target = branch
+        if not is_atomic(target):
+            yield from _walk(target, curpath)
+
+
 def _default_variable_prefix(concept: Any) -> Variable:
     """
     Return the variable prefix for *concept*.
@@ -112,19 +146,19 @@ def _default_variable_prefix(concept: Any) -> Variable:
     Otherwise the prefix is ``'_'``.
 
     Examples:
-        >>> default_variable_prefix('Alphabet')
+        >>> _default_variable_prefix('Alphabet')
         'a'
-        >>> default_variable_prefix('chase-01')
+        >>> _default_variable_prefix('chase-01')
         'c'
-        >>> default_variable_prefix('"string"')
+        >>> _default_variable_prefix('"string"')
         's'
-        >>> default_variable_prefix('_predicate_n_1"')
+        >>> _default_variable_prefix('_predicate_n_1"')
         'p'
-        >>> default_variable_prefix(1)
+        >>> _default_variable_prefix(1)
         '_'
-        >>> default_variable_prefix(None)
+        >>> _default_variable_prefix(None)
         '_'
-        >>> default_variable_prefix('')
+        >>> _default_variable_prefix('')
         '_'
     """
     prefix = '_'

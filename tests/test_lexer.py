@@ -1,5 +1,6 @@
 
-from penman import lexer
+from penman import _lexer as lexer
+
 
 def test_lex_penman():
     def _lex(s):

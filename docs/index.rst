@@ -30,10 +30,11 @@ models if they need more control.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Guides
 
    setup
-   basic
+   command
+   library
    notation
    structures
    serialization
@@ -48,9 +49,7 @@ models if they need more control.
    api/penman.epigraph
    api/penman.exceptions
    api/penman.graph
-   api/penman.interface
    api/penman.layout
-   api/penman.lexer
    api/penman.model
    api/penman.models
    api/penman.surface

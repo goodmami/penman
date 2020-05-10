@@ -3,8 +3,7 @@
 Basic types used by various Penman modules.
 """
 
-from typing import (Union, Iterable, Tuple, List, IO, Any)
-from pathlib import Path
+from typing import (Union, Iterable, Tuple, List, Any)
 
 
 Variable = str
@@ -19,8 +18,3 @@ Node = Tuple[Variable, List[Branch]]
 Target = Union[Variable, Constant]
 BasicTriple = Tuple[Variable, Role, Target]
 Triples = Iterable[BasicTriple]
-
-
-# "Utility" types; not Penman-specific
-
-file_or_filename = Union[str, Path, IO[str]]

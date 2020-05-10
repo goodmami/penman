@@ -66,133 +66,132 @@ class TestModel:
 
     def test_invert_role(self, mini_amr):
         m = Model()
-        assert m.invert_role(':ARG0')       == ':ARG0-of'
-        assert m.invert_role(':ARG0-of')    == ':ARG0'
+        assert m.invert_role(':ARG0') == ':ARG0-of'
+        assert m.invert_role(':ARG0-of') == ':ARG0'
         assert m.invert_role(':consist-of') == ':consist'
-        assert m.invert_role(':mod')        == ':mod-of'
-        assert m.invert_role(':domain')     == ':domain-of'
+        assert m.invert_role(':mod') == ':mod-of'
+        assert m.invert_role(':domain') == ':domain-of'
         # # without :
-        # assert m.invert_role('ARG0')       == 'ARG0-of'
-        # assert m.invert_role('ARG0-of')    == 'ARG0'
+        # assert m.invert_role('ARG0') == 'ARG0-of'
+        # assert m.invert_role('ARG0-of') == 'ARG0'
 
         m = Model.from_dict(mini_amr)
-        assert m.invert_role(':ARG0')       == ':ARG0-of'
-        assert m.invert_role(':ARG0-of')    == ':ARG0'
+        assert m.invert_role(':ARG0') == ':ARG0-of'
+        assert m.invert_role(':ARG0-of') == ':ARG0'
         assert m.invert_role(':consist-of') == ':consist-of-of'
-        assert m.invert_role(':mod')        == ':mod-of'
-        assert m.invert_role(':domain')     == ':domain-of'
+        assert m.invert_role(':mod') == ':mod-of'
+        assert m.invert_role(':domain') == ':domain-of'
         # # without :
-        # assert m.invert_role('mod')        == 'domain'
-        # assert m.invert_role('domain')     == 'mod'
+        # assert m.invert_role('mod') == 'domain'
+        # assert m.invert_role('domain') == 'mod'
 
     def test_invert(self, mini_amr):
         m = Model()
-        assert m.invert(('a', ':ARG0', 'b'))       == ('b', ':ARG0-of', 'a')
-        assert m.invert(('a', ':ARG0-of', 'b'))    == ('b', ':ARG0', 'a')
+        assert m.invert(('a', ':ARG0', 'b')) == ('b', ':ARG0-of', 'a')
+        assert m.invert(('a', ':ARG0-of', 'b')) == ('b', ':ARG0', 'a')
         assert m.invert(('a', ':consist-of', 'b')) == ('b', ':consist', 'a')
-        assert m.invert(('a', ':mod', 'b'))        == ('b', ':mod-of', 'a')
-        assert m.invert(('a', ':domain', 'b'))     == ('b', ':domain-of', 'a')
+        assert m.invert(('a', ':mod', 'b')) == ('b', ':mod-of', 'a')
+        assert m.invert(('a', ':domain', 'b')) == ('b', ':domain-of', 'a')
         # # without :
-        # assert m.invert(('a', 'ARG0', 'b'))        == ('b', 'ARG0-of', 'a')
-        # assert m.invert(('a', 'ARG0-of', 'b'))     == ('b', 'ARG0', 'a')
+        # assert m.invert(('a', 'ARG0', 'b')) == ('b', 'ARG0-of', 'a')
+        # assert m.invert(('a', 'ARG0-of', 'b')) == ('b', 'ARG0', 'a')
 
         m = Model.from_dict(mini_amr)
-        assert m.invert(('a', ':ARG0', 'b'))       == ('b', ':ARG0-of', 'a')
-        assert m.invert(('a', ':ARG0-of', 'b'))    == ('b', ':ARG0', 'a')
+        assert m.invert(('a', ':ARG0', 'b')) == ('b', ':ARG0-of', 'a')
+        assert m.invert(('a', ':ARG0-of', 'b')) == ('b', ':ARG0', 'a')
         assert m.invert(('a', ':consist-of', 'b')) == ('b', ':consist-of-of', 'a')
-        assert m.invert(('a', ':mod', 'b'))        == ('b', ':mod-of', 'a')
-        assert m.invert(('a', ':domain', 'b'))     == ('b', ':domain-of', 'a')
+        assert m.invert(('a', ':mod', 'b')) == ('b', ':mod-of', 'a')
+        assert m.invert(('a', ':domain', 'b')) == ('b', ':domain-of', 'a')
         # # without :
-        # assert m.invert(('a', 'mod', 'b'))         == ('b', 'domain', 'a')
-        # assert m.invert(('a', 'domain', 'b'))      == ('b', 'mod', 'a')
-
+        # assert m.invert(('a', 'mod', 'b')) == ('b', 'domain', 'a')
+        # assert m.invert(('a', 'domain', 'b')) == ('b', 'mod', 'a')
 
     def test_deinvert(self, mini_amr):
         m = Model()
-        assert m.deinvert(('a', ':ARG0', 'b'))       == ('a', ':ARG0', 'b')
-        assert m.deinvert(('a', ':ARG0-of', 'b'))    == ('b', ':ARG0', 'a')
+        assert m.deinvert(('a', ':ARG0', 'b')) == ('a', ':ARG0', 'b')
+        assert m.deinvert(('a', ':ARG0-of', 'b')) == ('b', ':ARG0', 'a')
         assert m.deinvert(('a', ':consist-of', 'b')) == ('b', ':consist', 'a')
-        assert m.deinvert(('a', ':mod', 'b'))        == ('a', ':mod', 'b')
-        assert m.deinvert(('a', ':domain', 'b'))     == ('a', ':domain', 'b')
+        assert m.deinvert(('a', ':mod', 'b')) == ('a', ':mod', 'b')
+        assert m.deinvert(('a', ':domain', 'b')) == ('a', ':domain', 'b')
         # # without :
-        # assert m.deinvert(('a', 'ARG0', 'b'))        == ('a', 'ARG0', 'b')
-        # assert m.deinvert(('a', 'ARG0-of', 'b'))     == ('b', 'ARG0', 'a')
+        # assert m.deinvert(('a', 'ARG0', 'b')) == ('a', 'ARG0', 'b')
+        # assert m.deinvert(('a', 'ARG0-of', 'b')) == ('b', 'ARG0', 'a')
 
         m = Model.from_dict(mini_amr)
-        assert m.deinvert(('a', ':ARG0', 'b'))       == ('a', ':ARG0', 'b')
-        assert m.deinvert(('a', ':ARG0-of', 'b'))    == ('b', ':ARG0', 'a')
+        assert m.deinvert(('a', ':ARG0', 'b')) == ('a', ':ARG0', 'b')
+        assert m.deinvert(('a', ':ARG0-of', 'b')) == ('b', ':ARG0', 'a')
         assert m.deinvert(('a', ':consist-of', 'b')) == ('a', ':consist-of', 'b')
-        assert m.deinvert(('a', ':mod', 'b'))        == ('a', ':mod', 'b')
-        assert m.deinvert(('a', ':domain', 'b'))     == ('a', ':domain', 'b')
+        assert m.deinvert(('a', ':mod', 'b')) == ('a', ':mod', 'b')
+        assert m.deinvert(('a', ':domain', 'b')) == ('a', ':domain', 'b')
         # # without :
-        # assert m.deinvert(('a', 'ARG0-of', 'b'))     == ('b', 'ARG0', 'a')
-        # assert m.deinvert(('a', 'consist-of', 'b'))  == ('a', 'consist-of', 'b')
+        # assert m.deinvert(('a', 'ARG0-of', 'b')) == ('b', 'ARG0', 'a')
+        # assert m.deinvert(('a', 'consist-of', 'b')) == ('a', 'consist-of', 'b')
 
     def test_canonicalize_role(self, mini_amr):
         m = Model()
-        assert m.canonicalize_role(':ARG0')          == ':ARG0'
-        assert m.canonicalize_role(':ARG0-of')       == ':ARG0-of'
-        assert m.canonicalize_role(':ARG0-of-of')    == ':ARG0'
-        assert m.canonicalize_role(':consist')       == ':consist'
-        assert m.canonicalize_role(':consist-of')    == ':consist-of'
+        assert m.canonicalize_role(':ARG0') == ':ARG0'
+        assert m.canonicalize_role(':ARG0-of') == ':ARG0-of'
+        assert m.canonicalize_role(':ARG0-of-of') == ':ARG0'
+        assert m.canonicalize_role(':consist') == ':consist'
+        assert m.canonicalize_role(':consist-of') == ':consist-of'
         assert m.canonicalize_role(':consist-of-of') == ':consist'
-        assert m.canonicalize_role(':mod')           == ':mod'
-        assert m.canonicalize_role(':mod-of')        == ':mod-of'
-        assert m.canonicalize_role(':domain')        == ':domain'
-        assert m.canonicalize_role(':domain-of')     == ':domain-of'
+        assert m.canonicalize_role(':mod') == ':mod'
+        assert m.canonicalize_role(':mod-of') == ':mod-of'
+        assert m.canonicalize_role(':domain') == ':domain'
+        assert m.canonicalize_role(':domain-of') == ':domain-of'
         # without :
-        assert m.canonicalize_role('ARG0')           == ':ARG0'
-        assert m.canonicalize_role('ARG0-of')        == ':ARG0-of'
-        assert m.canonicalize_role('ARG0-of-of')     == ':ARG0'
+        assert m.canonicalize_role('ARG0') == ':ARG0'
+        assert m.canonicalize_role('ARG0-of') == ':ARG0-of'
+        assert m.canonicalize_role('ARG0-of-of') == ':ARG0'
 
         m = Model.from_dict(mini_amr)
-        assert m.canonicalize_role(':ARG0')          == ':ARG0'
-        assert m.canonicalize_role(':ARG0-of')       == ':ARG0-of'
-        assert m.canonicalize_role(':ARG0-of-of')    == ':ARG0'
-        assert m.canonicalize_role(':consist')       == ':consist-of-of'
-        assert m.canonicalize_role(':consist-of')    == ':consist-of'
+        assert m.canonicalize_role(':ARG0') == ':ARG0'
+        assert m.canonicalize_role(':ARG0-of') == ':ARG0-of'
+        assert m.canonicalize_role(':ARG0-of-of') == ':ARG0'
+        assert m.canonicalize_role(':consist') == ':consist-of-of'
+        assert m.canonicalize_role(':consist-of') == ':consist-of'
         assert m.canonicalize_role(':consist-of-of') == ':consist-of-of'
-        assert m.canonicalize_role(':mod')           == ':mod'
-        assert m.canonicalize_role(':mod-of')        == ':domain'
-        assert m.canonicalize_role(':domain')        == ':domain'
-        assert m.canonicalize_role(':domain-of')     == ':mod'
+        assert m.canonicalize_role(':mod') == ':mod'
+        assert m.canonicalize_role(':mod-of') == ':domain'
+        assert m.canonicalize_role(':domain') == ':domain'
+        assert m.canonicalize_role(':domain-of') == ':mod'
         # without :
-        assert m.canonicalize_role('consist')        == ':consist-of-of'
-        assert m.canonicalize_role('consist-of')     == ':consist-of'
-        assert m.canonicalize_role('consist-of-of')  == ':consist-of-of'
+        assert m.canonicalize_role('consist') == ':consist-of-of'
+        assert m.canonicalize_role('consist-of') == ':consist-of'
+        assert m.canonicalize_role('consist-of-of') == ':consist-of-of'
 
     def test_canonicalize(self, mini_amr):
         m = Model()
-        assert m.canonicalize(('a', ':ARG0', 'b'))          == ('a', ':ARG0', 'b')
-        assert m.canonicalize(('a', ':ARG0-of', 'b'))       == ('a', ':ARG0-of', 'b')
-        assert m.canonicalize(('a', ':ARG0-of-of', 'b'))    == ('a', ':ARG0', 'b')
-        assert m.canonicalize(('a', ':consist', 'b'))       == ('a', ':consist', 'b')
-        assert m.canonicalize(('a', ':consist-of', 'b'))    == ('a', ':consist-of', 'b')
+        assert m.canonicalize(('a', ':ARG0', 'b')) == ('a', ':ARG0', 'b')
+        assert m.canonicalize(('a', ':ARG0-of', 'b')) == ('a', ':ARG0-of', 'b')
+        assert m.canonicalize(('a', ':ARG0-of-of', 'b')) == ('a', ':ARG0', 'b')
+        assert m.canonicalize(('a', ':consist', 'b')) == ('a', ':consist', 'b')
+        assert m.canonicalize(('a', ':consist-of', 'b')) == ('a', ':consist-of', 'b')
         assert m.canonicalize(('a', ':consist-of-of', 'b')) == ('a', ':consist', 'b')
-        assert m.canonicalize(('a', ':mod', 'b'))           == ('a', ':mod', 'b')
-        assert m.canonicalize(('a', ':mod-of', 'b'))        == ('a', ':mod-of', 'b')
-        assert m.canonicalize(('a', ':domain', 'b'))        == ('a', ':domain', 'b')
-        assert m.canonicalize(('a', ':domain-of', 'b'))     == ('a', ':domain-of', 'b')
+        assert m.canonicalize(('a', ':mod', 'b')) == ('a', ':mod', 'b')
+        assert m.canonicalize(('a', ':mod-of', 'b')) == ('a', ':mod-of', 'b')
+        assert m.canonicalize(('a', ':domain', 'b')) == ('a', ':domain', 'b')
+        assert m.canonicalize(('a', ':domain-of', 'b')) == ('a', ':domain-of', 'b')
         # without :
-        assert m.canonicalize(('a', 'ARG0', 'b'))           == ('a', ':ARG0', 'b')
-        assert m.canonicalize(('a', 'ARG0-of', 'b'))        == ('a', ':ARG0-of', 'b')
-        assert m.canonicalize(('a', 'ARG0-of-of', 'b'))     == ('a', ':ARG0', 'b')
+        assert m.canonicalize(('a', 'ARG0', 'b')) == ('a', ':ARG0', 'b')
+        assert m.canonicalize(('a', 'ARG0-of', 'b')) == ('a', ':ARG0-of', 'b')
+        assert m.canonicalize(('a', 'ARG0-of-of', 'b')) == ('a', ':ARG0', 'b')
 
         m = Model.from_dict(mini_amr)
-        assert m.canonicalize(('a', ':ARG0', 'b'))          == ('a', ':ARG0', 'b')
-        assert m.canonicalize(('a', ':ARG0-of', 'b'))       == ('a', ':ARG0-of', 'b')
-        assert m.canonicalize(('a', ':ARG0-of-of', 'b'))    == ('a', ':ARG0', 'b')
-        assert m.canonicalize(('a', ':consist', 'b'))       == ('a', ':consist-of-of', 'b')
-        assert m.canonicalize(('a', ':consist-of', 'b'))    == ('a', ':consist-of', 'b')
+        assert m.canonicalize(('a', ':ARG0', 'b')) == ('a', ':ARG0', 'b')
+        assert m.canonicalize(('a', ':ARG0-of', 'b')) == ('a', ':ARG0-of', 'b')
+        assert m.canonicalize(('a', ':ARG0-of-of', 'b')) == ('a', ':ARG0', 'b')
+        assert m.canonicalize(('a', ':consist', 'b')) == ('a', ':consist-of-of', 'b')
+        assert m.canonicalize(('a', ':consist-of', 'b')) == ('a', ':consist-of', 'b')
         assert m.canonicalize(('a', ':consist-of-of', 'b')) == ('a', ':consist-of-of', 'b')
-        assert m.canonicalize(('a', ':mod', 'b'))           == ('a', ':mod', 'b')
-        assert m.canonicalize(('a', ':mod-of', 'b'))        == ('a', ':domain', 'b')
-        assert m.canonicalize(('a', ':domain', 'b'))        == ('a', ':domain', 'b')
-        assert m.canonicalize(('a', ':domain-of', 'b'))     == ('a', ':mod', 'b')
+        assert m.canonicalize(('a', ':mod', 'b')) == ('a', ':mod', 'b')
+        assert m.canonicalize(('a', ':mod-of', 'b')) == ('a', ':domain', 'b')
+        assert m.canonicalize(('a', ':domain', 'b')) == ('a', ':domain', 'b')
+        assert m.canonicalize(('a', ':domain-of', 'b')) == ('a', ':mod', 'b')
         # without :
-        assert m.canonicalize(('a', 'consist', 'b'))        == ('a', ':consist-of-of', 'b')
-        assert m.canonicalize(('a', 'consist-of', 'b'))     == ('a', ':consist-of', 'b')
-        assert m.canonicalize(('a', 'consist-of-of', 'b'))  == ('a', ':consist-of-of', 'b')
+        assert m.canonicalize(('a', 'consist', 'b')) == ('a', ':consist-of-of', 'b')
+        assert m.canonicalize(('a', 'consist-of', 'b')) == ('a', ':consist-of', 'b')
+        assert m.canonicalize(('a', 'consist-of-of', 'b')) == ('a', ':consist-of-of', 'b')
 
     def test_is_role_reifiable(self, mini_amr):
         m = Model()

@@ -4,41 +4,50 @@ penman
 
 .. automodule:: penman
 
-For basic usage, and to retain some backward compatibility with early
-versions, some functionality is available from the top-level
-:mod:`penman` module. For the rest, please use the standard API
+For basic usage, common functionality is available from the top-level
+:mod:`penman` module. For more advanced usage, please use the full API
 available via the submodules.
 
-.. _submodules:
+Users wanting to interact with graphs might find the :func:`decode` and
+:func:`encode` functions a good place to start::
 
-Submodules
-----------
+    >>> import penman
+    >>> g = penman.decode('(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))')
+    >>> g.top
+    'w'
+    >>> len(g.triples)
+    6
+    >>> [concept for _, _, concept in g.instances()]
+    ['want-01', 'boy', 'go']
+    >>> print(penman.encode(g, top='b'))
+    (b / boy
+       :ARG0-of (w / want-01
+                   :ARG1 (g / go
+                            :ARG0 b)))
 
-Data Structures
-'''''''''''''''
+The :func:`decode` and :func:`encode` functions work with one PENMAN
+graph. The :func:`load` and :func:`dump` functions work with
+collections of graphs.
 
-- :doc:`penman.epigraph` -- Base classes for epigraphical markers
-- :doc:`penman.graph` -- Classes for pure graphs
-- :doc:`penman.model` -- Class for defining semantic models
-- :doc:`penman.models` -- Pre-defined models
-- :doc:`penman.surface` -- Classes for surface alignments
-- :doc:`penman.tree` -- Classes for trees
+Users who want to work with trees would use :func:`parse` and
+:func:`format` instead::
 
-Serialization
-'''''''''''''
+   >>> import penman
+   >>> t =  penman.parse('(w / want-01 :ARG0 (b / boy) :ARG1 (g / go :ARG0 b))')
+   >>> var, branches = t.node
+   >>> var
+   'w'
+   >>> len(branches)
+   3
+   >>> role, target = branches[2]
+   >>> role
+   ':ARG1'
+   >>> print(penman.format(target))
+   (g / go
+      :ARG0 b)
 
-- :doc:`penman.constant` -- For working with constant values
-- :doc:`penman.codec` -- Codec class for reading and writing PENMAN data
-- :doc:`penman.layout` -- Conversion between trees and graphs
-- :doc:`penman.lexer` -- Low-level parsing of PENMAN data
-
-Other
-'''''
-
-- :doc:`penman.exceptions` -- Exception classes
-- :doc:`penman.interface` -- Functional interface to a codec
-- :doc:`penman.transform` -- Graph and tree transformation functions
-
+.. contents:: Contents
+   :local:
 
 Module Constants
 ----------------
@@ -54,6 +63,10 @@ Module Constants
 
 Classes
 -------
+
+.. class:: Tree
+
+   Alias of :exc:`penman.tree.Tree`.
 
 .. class:: Triple
 
@@ -71,29 +84,53 @@ Classes
 Module Functions
 ----------------
 
-.. function:: decode
+Trees
+'''''
 
-   Alias of :exc:`penman.interface.decode`.
+.. autofunction:: parse
 
-.. function:: loads
+.. autofunction:: iterparse
 
-   Alias of :exc:`penman.interface.loads`.
+.. autofunction:: format
 
-.. function:: load
+.. function:: interpret(t, model=None)
 
-   Alias of :exc:`penman.interface.load`.
+   Interpret a graph from the :class:`Tree` *t*.
 
-.. function:: encode
+   Alias of :func:`penman.layout.interpret`
 
-   Alias of :exc:`penman.interface.encode`.
+Graphs
+''''''
 
-.. function:: dumps
+.. autofunction:: decode
 
-   Alias of :exc:`penman.interface.dumps`.
+.. autofunction:: iterdecode
 
-.. function:: dump
+.. autofunction:: encode
 
-   Alias of :exc:`penman.interface.dump`.
+.. function:: configure(g, top=None, model=None)
+
+   Configure a tree from the :class:`Graph` *g*.
+
+   Alias of :func:`penman.layout.configure`
+
+Corpus Files
+''''''''''''
+
+.. autofunction:: loads
+
+.. autofunction:: load
+
+.. autofunction:: dumps
+
+.. autofunction:: dump
+
+Triple Conjunctions
+'''''''''''''''''''
+
+.. autofunction:: parse_triples
+
+.. autofunction:: format_triples
 
 
 Exceptions
@@ -106,3 +143,22 @@ Exceptions
 .. exception:: DecodeError
 
    Alias of :exc:`penman.exceptions.DecodeError`.
+
+.. _submodules:
+
+Submodules
+----------
+
+- :doc:`penman.codec` -- Codec class for reading and writing PENMAN data
+- :doc:`penman.constant` -- For working with constant values
+- :doc:`penman.epigraph` -- Base classes for epigraphical markers
+- :doc:`penman.exceptions` -- Exception classes
+- :doc:`penman.graph` -- Classes for pure graphs
+- :doc:`penman.layout` -- Conversion between trees and graphs
+- :doc:`penman.model` -- Class for defining semantic models
+- :doc:`penman.models` -- Pre-defined models
+- :doc:`penman.surface` -- For working with surface alignments
+- :doc:`penman.transform` -- Graph and tree transformation functions
+- :doc:`penman.tree` -- Classes for trees
+
+
