@@ -1,8 +1,15 @@
 # Change Log
 
-## [Unreleased][unreleased]
+## [v1.1.0]
 
-(no unreleased changes)
+### Added
+
+* `penman.layout.Pop` class is now part of the public API ([#85])
+
+### Fixed
+
+* `penman.layout` no longer checks `POP` for object identity ([#85])
+
 
 ## [v1.0.0]
 
@@ -728,3 +735,4 @@ First release with very basic functionality.
 [#79]: https://github.com/goodmami/penman/issues/79
 [#80]: https://github.com/goodmami/penman/issues/80
 [#81]: https://github.com/goodmami/penman/issues/81
+[#85]: https://github.com/goodmami/penman/issues/85

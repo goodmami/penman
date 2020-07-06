@@ -13,7 +13,13 @@ from penman.surface import (Alignment, RoleAlignment, alignments)
 from penman.tree import (Tree, is_atomic)
 from penman.graph import (Graph, CONCEPT_ROLE)
 from penman.model import Model
-from penman.layout import (Push, POP, appears_inverted, get_pushed_variable)
+from penman.layout import (
+    Push,
+    Pop,
+    POP,
+    appears_inverted,
+    get_pushed_variable,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -296,7 +302,7 @@ def _reified_markers(epidata: Epidata) -> _SplitMarkers:
     for epi in epidata:
         if isinstance(epi, Push):
             push = epi
-        elif epi is POP:
+        elif isinstance(epi, Pop):
             pops.append(epi)
         elif epi.mode == 1:
             role_epis.append(epi)
