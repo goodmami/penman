@@ -3,7 +3,7 @@
 Tree and graph transformations.
 """
 
-from typing import Union, Dict, Set, List, Tuple
+from typing import Optional, Dict, Set, List, Tuple
 import logging
 
 from penman.types import (Variable, Target, BasicTriple, Node)
@@ -274,7 +274,7 @@ def indicate_branches(g: Graph, model: Model) -> Graph:
     return g
 
 
-_SplitMarkers = Tuple[Union[Epidatum, None], Epidata, Epidata, Epidata]
+_SplitMarkers = Tuple[Optional[Push], List[Pop], Epidata, Epidata]
 
 
 def _reified_markers(epidata: Epidata) -> _SplitMarkers:
