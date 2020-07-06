@@ -344,7 +344,7 @@ def _preconfigure_triple(triple, pushed, epidata):
         elif target and epi.mode == 2:  # target epidata
             target = f'{target!s}{epi!s}'
         else:
-            logging.warning('epigraphical marker ignored: %r', epi)
+            logger.warning('epigraphical marker ignored: %r', epi)
 
     if push and pops:
         logger.warning(
