@@ -5,6 +5,7 @@
 ### Added
 
 * `penman.layout.Pop` class is now part of the public API ([#85])
+* `penman.models.noop` model for tree-like graph usage ([#84])
 
 ### Fixed
 
@@ -735,4 +736,5 @@ First release with very basic functionality.
 [#79]: https://github.com/goodmami/penman/issues/79
 [#80]: https://github.com/goodmami/penman/issues/80
 [#81]: https://github.com/goodmami/penman/issues/81
+[#84]: https://github.com/goodmami/penman/issues/84
 [#85]: https://github.com/goodmami/penman/issues/85
