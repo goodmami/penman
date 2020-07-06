@@ -2,6 +2,12 @@
 
 ## [v1.1.0]
 
+**Release date: 2020-07-06**
+
+A no-op model is added to allow inspection of graphs without
+deinverting triples, and Penman is now a bit more threadsafe for
+multiprocessing applications.
+
 ### Added
 
 * `penman.layout.Pop` class is now part of the public API ([#85])
@@ -680,6 +686,7 @@ First release with very basic functionality.
 [v0.11.1]: ../../releases/tag/v0.11.1
 [v0.12.0]: ../../releases/tag/v0.12.0
 [v1.0.0]: ../../releases/tag/v1.0.0
+[v1.1.0]: ../../releases/tag/v1.1.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
