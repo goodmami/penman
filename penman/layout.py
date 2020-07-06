@@ -88,7 +88,7 @@ class Push(LayoutMarker):
         return f'Push({self.variable})'
 
 
-class _Pop(LayoutMarker):
+class Pop(LayoutMarker):
     """Epigraph marker to indicate the end of a node context."""
 
     __slots__ = ()
@@ -97,8 +97,8 @@ class _Pop(LayoutMarker):
         return 'POP'
 
 
-#: Epigraphical marker to indicate the end of a node context.
-POP = _Pop()
+#: A singleton instance of :class:`Pop`.
+POP = Pop()
 
 
 # Tree to graph interpretation ################################################
@@ -261,7 +261,7 @@ def configure(g: Graph,
         model = _default_model
     node, data, nodemap = _configure(g, top, model)
     # remove any superfluous POPs at the end (maybe from dereification)
-    while data and data[-1] is POP:
+    while data and isinstance(data[-1], Pop):
         data.pop()
     # if any data remain, the graph was not properly annotated for a tree
     while data:
@@ -274,7 +274,7 @@ def configure(g: Graph,
             raise LayoutError('possible cycle in configuration')
         data = skipped + data
         # remove any superfluous POPs
-        while data and data[-1] is POP:
+        while data and isinstance(data[-1], Pop):
             data.pop()
     tree = Tree(node, metadata=g.metadata)
     logger.debug('Configured: %s', tree)
@@ -337,14 +337,14 @@ def _preconfigure_triple(triple, pushed, epidata):
                 continue
             pushed.add(pvar)
             push = epi
-        elif epi is POP:
+        elif isinstance(epi, Pop):
             pops.append(epi)
         elif epi.mode == 1:  # role epidata
             role = f'{role!s}{epi!s}'
         elif target and epi.mode == 2:  # target epidata
             target = f'{target!s}{epi!s}'
         else:
-            logging.warning('epigraphical marker ignored: %r', epi)
+            logger.warning('epigraphical marker ignored: %r', epi)
 
     if push and pops:
         logger.warning(
@@ -365,7 +365,7 @@ def _configure_node(var, data, nodemap, model):
 
     while data:
         datum = data.pop()
-        if datum is POP:
+        if isinstance(datum, Pop):
             break
 
         triple, push = datum
@@ -407,7 +407,7 @@ def _find_next(data, nodemap):
     var = None
     for i in range(len(data) - 1, -1, -1):
         datum = data[i]
-        if datum is POP:
+        if isinstance(datum, Pop):
             continue
         source, _, target = datum[0]
         if source in nodemap and _get_or_establish_site(source, nodemap):
@@ -632,7 +632,7 @@ def node_contexts(g: Graph) -> List[Union[Variable, None]]:
 
         try:
             for epi in g.epidata[triple]:
-                if epi is POP:
+                if isinstance(epi, Pop):
                     stack.pop()
         except IndexError:
             break  # more POPs than contexts in stack

@@ -30,7 +30,7 @@ any input content that is not a graph or a metadata comment will be
 discarded. To see what features are available for the current version
 and how to call the command, run :command:`penman --help`::
 
-  usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr] [--check]
+  usage: penman [-h] [-V] [-v] [-q] [--model FILE | --amr | --noop] [--check]
                 [--indent N] [--compact] [--triples] [--make-variables FMT]
                 [--rearrange KEY] [--reconfigure KEY] [--canonicalize-roles]
                 [--reify-edges] [--dereify-edges] [--reify-attributes]
@@ -49,6 +49,7 @@ and how to call the command, run :command:`penman --help`::
     -q, --quiet           suppress output on <stdout> and <stderr>
     --model FILE          JSON model file describing the semantic model
     --amr                 use the AMR model
+    --noop                use the no-op model
     --check               check graphs for compliance with the model
 
   formatting options:
@@ -159,7 +160,9 @@ require it. For Abstract Meaning Representation (AMR) graphs, the
 
 This model contains information about AMR's valid roles, canonical
 role inversions (such as ``:domain`` to ``:mod``), and relation
-reifications.
+reifications. Also available is the no-op model via :command:`--noop`,
+which does not deinvert tree edges when interpreting the graph so that
+a role like ``:ARG0-of`` is the role used in the graph triples.
 
 Other models can be given by using the :command:`--model` option with
 a path to a JSON file containing the model information::

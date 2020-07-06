@@ -178,6 +178,9 @@ def main():
     model_group.add_argument(
         '--amr', action='store_true',
         help='use the AMR model')
+    model_group.add_argument(
+        '--noop', action='store_true',
+        help='use the no-op model')
     parser.add_argument(
         '--check', action='store_true',
         help='check graphs for compliance with the model')
@@ -231,7 +234,7 @@ def main():
     logger = logging.getLogger('penman')
     logger.setLevel(logging.ERROR - (args.verbosity * 10))
 
-    model = _get_model(args.amr, args.model)
+    model = _get_model(args.amr, args.noop, args.model)
 
     if args.rearrange:
         args.rearrange = _make_sort_key(
@@ -272,9 +275,11 @@ def main():
     sys.exit(exitcode)
 
 
-def _get_model(amr, model_file):
+def _get_model(amr, noop, model_file):
     if amr:
         from penman.models.amr import model
+    elif noop:
+        from penman.models.noop import model
     elif model_file:
         model = Model(**json.load(model_file))
     else:

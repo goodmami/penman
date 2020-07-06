@@ -1,12 +1,15 @@
 
-import pytest
 import random
+import logging
+
+import pytest
 
 from penman.exceptions import LayoutError
 from penman.model import Model
 from penman.tree import Tree
 from penman.graph import Graph
 from penman.codec import PENMANCodec
+from penman import layout
 from penman.layout import (
     interpret,
     rearrange,
@@ -126,6 +129,17 @@ def test_issue_34():
                                 (':ARG1', ('a', [('/', 'act'),
                                                  (':polarity', '-'),
                                                  (':polarity', '-')]))]))]))
+
+
+def test_issue_85(monkeypatch, caplog):
+    # https://github.com/goodmami/penman/issues/85
+    # Emulate multiprocessing by reassigning POP
+    with monkeypatch.context() as m:
+        m.setattr(layout, 'POP', layout.Pop())
+        g = codec.decode('(a / alpha :ARG0 (b / beta))')
+    caplog.set_level(logging.WARNING)
+    codec.encode(g, indent=None)
+    assert 'epigraphical marker ignored: POP' not in caplog.text
 
 
 def test_reconfigure():

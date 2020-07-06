@@ -108,12 +108,28 @@ surface alignments.
 
 ### Citation
 
-The canonical citation for the Penman library will soon be a system
-demo paper for [ACL 2020]. Until the proceedings are published, simply
-putting https://github.com/goodmami/penman in a footnote is
-sufficient. If you are referring to the graph
-transformation/normalization work or prefer an academic citation,
-please use the following:
+If you make use of Penman in your work, please cite [Goodman, 2020].
+The BibTeX is below:
+
+[Goodman, 2020]: https://www.aclweb.org/anthology/2020.acl-demos.35/
+
+```bibtex
+@inproceedings{goodman-2020-penman,
+    title = "{P}enman: An Open-Source Library and Tool for {AMR} Graphs",
+    author = "Goodman, Michael Wayne",
+    booktitle = "Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics: System Demonstrations",
+    month = jul,
+    year = "2020",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/2020.acl-demos.35",
+    pages = "312--319",
+    abstract = "Abstract Meaning Representation (AMR) (Banarescu et al., 2013) is a framework for semantic dependencies that encodes its rooted and directed acyclic graphs in a format called PENMAN notation. The format is simple enough that users of AMR data often write small scripts or libraries for parsing it into an internal graph representation, but there is enough complexity that these users could benefit from a more sophisticated and well-tested solution. The open-source Python library Penman provides a robust parser, functions for graph inspection and manipulation, and functions for formatting graphs into PENMAN notation. Many functions are also available in a command-line tool, thus extending its utility to non-Python setups.",
+}
+```
+
+For the graph transformation/normalization work, please use the
+following:
 
 ``` bibtex
 @inproceedings{Goodman:2019,
@@ -126,7 +142,6 @@ please use the following:
 }
 ```
 
-[ACL 2020]: https://acl2020.org/
 
 ### Disclaimer
 

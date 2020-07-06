@@ -330,20 +330,20 @@ class Model(object):
             for triple in graph.triples:
                 var, role, tgt = triple
                 if not self.has_role(role):
-                    err[triple].append(f'invalid role')
+                    err[triple].append('invalid role')
                 if var not in g:
                     g[var] = []
                 g[var].append(triple)
             if not graph.top:
-                err[None].append(f'top is not set')
+                err[None].append('top is not set')
             elif graph.top not in g:
-                err[None].append(f'top is not a variable in the graph')
+                err[None].append('top is not a variable in the graph')
             else:
                 reachable = _dfs(g, graph.top)
                 unreachable = set(g).difference(reachable)
                 for uvar in sorted(unreachable):
                     for triple in g[uvar]:
-                        err[triple].append(f'unreachable')
+                        err[triple].append('unreachable')
         return dict(err)
 
 

@@ -1,8 +1,22 @@
 # Change Log
 
-## [Unreleased][unreleased]
+## [v1.1.0]
 
-(no unreleased changes)
+**Release date: 2020-07-06**
+
+A no-op model is added to allow inspection of graphs without
+deinverting triples, and Penman is now a bit more threadsafe for
+multiprocessing applications.
+
+### Added
+
+* `penman.layout.Pop` class is now part of the public API ([#85])
+* `penman.models.noop` model for tree-like graph usage ([#84])
+
+### Fixed
+
+* `penman.layout` no longer checks `POP` for object identity ([#85])
+
 
 ## [v1.0.0]
 
@@ -672,6 +686,7 @@ First release with very basic functionality.
 [v0.11.1]: ../../releases/tag/v0.11.1
 [v0.12.0]: ../../releases/tag/v0.12.0
 [v1.0.0]: ../../releases/tag/v1.0.0
+[v1.1.0]: ../../releases/tag/v1.1.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
@@ -728,3 +743,5 @@ First release with very basic functionality.
 [#79]: https://github.com/goodmami/penman/issues/79
 [#80]: https://github.com/goodmami/penman/issues/80
 [#81]: https://github.com/goodmami/penman/issues/81
+[#84]: https://github.com/goodmami/penman/issues/84
+[#85]: https://github.com/goodmami/penman/issues/85
