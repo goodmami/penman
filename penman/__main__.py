@@ -231,6 +231,7 @@ def main():
     else:
         args.verbosity = min(args.verbosity, 3)
 
+    logging.basicConfig()
     logger = logging.getLogger('penman')
     logger.setLevel(logging.ERROR - (args.verbosity * 10))
 

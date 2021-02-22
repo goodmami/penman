@@ -31,8 +31,6 @@ __all__ = [
     'dumps',
 ]
 
-import logging
-
 from penman.__about__ import (
     __version__,
     __version_info__,
@@ -69,5 +67,3 @@ from penman.codec import (
     _dump as dump,
     _dumps as dumps,
 )
-
-logging.basicConfig()

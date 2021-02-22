@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.1.1]
+
+### Changed
+
+* A root logger is now initialized when the `penman` command is used
+  and not merely by importing the `penman` library ([#95])
+
+
 ## [v1.1.0]
 
 **Release date: 2020-07-06**
@@ -745,3 +753,4 @@ First release with very basic functionality.
 [#81]: https://github.com/goodmami/penman/issues/81
 [#84]: https://github.com/goodmami/penman/issues/84
 [#85]: https://github.com/goodmami/penman/issues/85
+[#95]: https://github.com/goodmami/penman/issues/95
