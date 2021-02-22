@@ -2,6 +2,11 @@
 
 ## [v1.1.1]
 
+### Fixed
+
+* When configuring a tree, ensure surface alignments don't get
+  inverted ([#92])
+
 ### Changed
 
 * A root logger is now initialized when the `penman` command is used
@@ -753,4 +758,5 @@ First release with very basic functionality.
 [#81]: https://github.com/goodmami/penman/issues/81
 [#84]: https://github.com/goodmami/penman/issues/84
 [#85]: https://github.com/goodmami/penman/issues/85
+[#92]: https://github.com/goodmami/penman/issues/92
 [#95]: https://github.com/goodmami/penman/issues/95

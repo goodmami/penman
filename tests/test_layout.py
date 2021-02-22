@@ -213,3 +213,14 @@ def test_node_contexts():
     # also ('b', ':instance', None) here
     g = codec.decode('(a :ARG0 (b) :ARG1 (g / gamma))')
     assert node_contexts(g) == ['a', 'a', 'b', 'a', 'g']
+
+
+def test_issue_92():
+    # https://github.com/goodmami/penman/issues/92
+    g = codec.decode('(a / alpha :ARG0~e.0 (b / beta))')
+    assert configure(g) == Tree(
+        ('a', [('/', 'alpha'),
+               (':ARG0~e.0', ('b', [('/', 'beta')]))]))
+    assert configure(g, top='b') == Tree(
+        ('b', [('/', 'beta'),
+               (':ARG0-of~e.0', ('a', [('/', 'alpha')]))]))

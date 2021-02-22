@@ -371,8 +371,10 @@ def _configure_node(var, data, nodemap, model):
         triple, push = datum
         if triple[0] == var:
             source, role, target = triple
-        elif triple[2] == var:
-            source, role, target = model.invert(triple)
+        elif triple[2] == var and triple[1] != CONCEPT_ROLE:
+            target, role, source = triple
+            role, _, alignment = role.partition('~')
+            role = f'{model.invert_role(role)}{_}{alignment}'
         else:
             # misplaced triple
             data.append(datum)
