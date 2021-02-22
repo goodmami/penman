@@ -33,6 +33,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: python -m pytest
+      run: python -m pip install pytest
     - name: Test
       run: pytest --doctest-glob=\*.rst --doctest-modules --ignore-glob=penman/interface.py
