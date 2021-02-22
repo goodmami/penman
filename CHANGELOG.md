@@ -2,6 +2,8 @@
 
 ## [v1.1.1]
 
+**Release date: 2021-02-22**
+
 ### Fixed
 
 * When configuring a tree, ensure surface alignments don't get
@@ -700,6 +702,7 @@ First release with very basic functionality.
 [v0.12.0]: ../../releases/tag/v0.12.0
 [v1.0.0]: ../../releases/tag/v1.0.0
 [v1.1.0]: ../../releases/tag/v1.1.0
+[v1.1.1]: ../../releases/tag/v1.1.1
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
