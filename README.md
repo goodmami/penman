@@ -3,7 +3,7 @@
 
 [![PyPI Version](https://img.shields.io/pypi/v/penman.svg)](https://pypi.org/project/Penman/)
 ![Python Support](https://img.shields.io/pypi/pyversions/penman.svg)
-[![Build Status](https://travis-ci.org/goodmami/penman.svg?branch=develop)](https://travis-ci.org/goodmami/penman)
+[![.github/workflows/checks.yml](https://github.com/goodmami/penman/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/goodmami/penman/actions/workflows/checks.yml)
 [![Documentation Status](https://readthedocs.org/projects/penman/badge/?version=latest)](https://penman.readthedocs.io/en/latest/?badge=latest)
 
 
