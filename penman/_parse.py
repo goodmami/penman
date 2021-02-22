@@ -15,7 +15,7 @@ from penman._lexer import (
 )
 
 
-logger = logging.getLogger('pe')
+logger = logging.getLogger('penman')
 
 
 def parse(s: str) -> Tree:
