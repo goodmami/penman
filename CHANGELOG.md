@@ -6,6 +6,8 @@
 
 * Duplicate edges no longer cause crashes with
   `layout.appears_inverted()` ([#87])
+* Single-letter concepts (e.g., `(i / i)`) no longer cause strange
+  reconfigurations nor spurious errors about a cycle ([#90])
 
 
 ## [v1.1.1]
@@ -770,5 +772,6 @@ First release with very basic functionality.
 [#84]: https://github.com/goodmami/penman/issues/84
 [#85]: https://github.com/goodmami/penman/issues/85
 [#87]: https://github.com/goodmami/penman/issues/87
+[#90]: https://github.com/goodmami/penman/issues/90
 [#92]: https://github.com/goodmami/penman/issues/92
 [#95]: https://github.com/goodmami/penman/issues/95

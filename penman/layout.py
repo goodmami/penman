@@ -273,18 +273,26 @@ def configure(g: Graph,
     while data and isinstance(data[-1], Pop):
         data.pop()
     # if any data remain, the graph was not properly annotated for a tree
+    skipped: List[BasicTriple] = []
     while data:
-        skipped, var, data = _find_next(data, nodemap)
+        _skipped, var, data = _find_next(data, nodemap)
+        skipped.extend(_skipped)
         data_count = len(data)
         if var is None or data_count == 0:
             raise LayoutError('possibly disconnected graph')
-        _configure_node(var, data, nodemap, model)
-        if len(data) >= data_count:
-            raise LayoutError('possible cycle in configuration')
-        data = skipped + data
+        _, surprising = _configure_node(var, data, nodemap, model)
+        if len(data) == data_count and surprising:
+            skipped.insert(0, data.pop())
+        elif len(data) >= data_count:
+            raise LayoutError('unknown configuration error')
+        else:
+            data = skipped + data
+            skipped.clear()
         # remove any superfluous POPs
         while data and isinstance(data[-1], Pop):
             data.pop()
+    if skipped:
+        raise LayoutError('incomplete configuration')
     tree = Tree(node, metadata=g.metadata)
     logger.debug('Configured: %s', tree)
     return tree
@@ -305,7 +313,7 @@ def _configure(g, top, model):
     nodemap[top] = (top, [])
 
     data = list(reversed(_preconfigure(g)))
-    node = _configure_node(top, data, nodemap, model)
+    node, _ = _configure_node(top, data, nodemap, model)
 
     return node, data, nodemap
 
@@ -371,6 +379,9 @@ def _configure_node(var, data, nodemap, model):
     """
     node = nodemap[var]
     edges = node[1]
+    # Something is 'surprising' when a triple doesn't predictably fit
+    # given the current state
+    surprising = False
 
     while data:
         datum = data.pop()
@@ -387,6 +398,7 @@ def _configure_node(var, data, nodemap, model):
         else:
             # misplaced triple
             data.append(datum)
+            surprising = True
             break
 
         if role == CONCEPT_ROLE:
@@ -400,15 +412,16 @@ def _configure_node(var, data, nodemap, model):
 
         if push and push.variable == target:
             nodemap[push.variable] = (push.variable, [])
-            target = _configure_node(
+            target, _surprising = _configure_node(
                 push.variable, data, nodemap, model)
+            surprising &= _surprising
         elif role != '/' and target in nodemap and nodemap[target] is None:
             # site of potential node context
             nodemap[target] = node
 
         edges.insert(index, (role, target))
 
-    return node
+    return node, surprising
 
 
 def _find_next(data, nodemap):

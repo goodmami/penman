@@ -164,6 +164,18 @@ def test_reconfigure():
                (':ARG1', 'g')]))
 
 
+def test_issue_90():
+    # https://github.com/goodmami/penman/issues/90
+
+    g = Graph([('i', ':instance', 'iota'),
+               ('i2', ':instance', 'i'),
+               ('i', ':ARG0', 'i2')],
+              top='i')
+    assert reconfigure(g) == Tree(
+        ('i', [('/', 'iota'),
+               (':ARG0', ('i2', [('/', 'i')]))]))
+
+
 def test_get_pushed_variable():
     g = codec.decode('''
         (a / alpha
