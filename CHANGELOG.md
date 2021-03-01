@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.2.0]
+
+### Fixed
+
+* Duplicate edges no longer cause crashes with
+  `layout.appears_inverted()` ([#87])
+
+
 ## [v1.1.1]
 
 **Release date: 2021-02-22**
@@ -761,5 +769,6 @@ First release with very basic functionality.
 [#81]: https://github.com/goodmami/penman/issues/81
 [#84]: https://github.com/goodmami/penman/issues/84
 [#85]: https://github.com/goodmami/penman/issues/85
+[#87]: https://github.com/goodmami/penman/issues/87
 [#92]: https://github.com/goodmami/penman/issues/92
 [#95]: https://github.com/goodmami/penman/issues/95

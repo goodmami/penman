@@ -139,7 +139,15 @@ def interpret(t: Tree, model: Model = None) -> Graph:
         model = _default_model
     variables = {v for v, _ in t.nodes()}
     top, triples, epidata = _interpret_node(t.node, variables, model)
-    g = Graph(triples, top=top, epidata=epidata, metadata=t.metadata)
+    epimap = {}
+    for triple, epis in epidata:
+        if triple in epimap:
+            logger.warning(
+                f'ignoring epigraph data for duplicate triple: {triple}'
+            )
+        else:
+            epimap[triple] = epis
+    g = Graph(triples, top=top, epidata=epimap, metadata=t.metadata)
     logger.info('Interpreted: %s', g)
     return g
 
@@ -147,7 +155,7 @@ def interpret(t: Tree, model: Model = None) -> Graph:
 def _interpret_node(t: Node, variables: Set[Variable], model: Model):
     has_concept = False
     triples = []
-    epidata = {}
+    epidata = []
     var, edges = t
     for role, target in edges:
         epis: List[Epidatum] = []
@@ -167,24 +175,25 @@ def _interpret_node(t: Node, variables: Set[Variable], model: Model):
                 else:
                     logger.warning('cannot deinvert attribute: %r', triple)
             triples.append(triple)
-            epidata[triple] = epis
+            epidata.append((triple, epis))
         # nested nodes
         else:
             triple = model.deinvert((var, role, target[0]))
             triples.append(triple)
-            epidata[triple] = epis
+
+            epis.append(Push(target[0]))
+            epidata.append((triple, epis))
 
             # recurse to nested nodes
-            epidata[triple].append(Push(target[0]))
             _, _triples, _epis = _interpret_node(target, variables, model)
             triples.extend(_triples)
-            epidata.update(_epis)
-            epidata[triples[-1]].append(POP)
+            _epis[-1][1].append(POP)  # POP from last triple of nested node
+            epidata.extend(_epis)
 
     if not has_concept:
         instance = (var, CONCEPT_ROLE, None)
         triples.insert(0, instance)
-        epidata[instance] = []
+        epidata.append((instance, []))
 
     return var, triples, epidata
 
