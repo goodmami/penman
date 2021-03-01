@@ -139,7 +139,15 @@ def interpret(t: Tree, model: Model = None) -> Graph:
         model = _default_model
     variables = {v for v, _ in t.nodes()}
     top, triples, epidata = _interpret_node(t.node, variables, model)
-    g = Graph(triples, top=top, epidata=epidata, metadata=t.metadata)
+    epimap = {}
+    for triple, epis in epidata:
+        if triple in epimap:
+            logger.warning(
+                f'ignoring epigraph data for duplicate triple: {triple}'
+            )
+        else:
+            epimap[triple] = epis
+    g = Graph(triples, top=top, epidata=epimap, metadata=t.metadata)
     logger.info('Interpreted: %s', g)
     return g
 
@@ -147,7 +155,7 @@ def interpret(t: Tree, model: Model = None) -> Graph:
 def _interpret_node(t: Node, variables: Set[Variable], model: Model):
     has_concept = False
     triples = []
-    epidata = {}
+    epidata = []
     var, edges = t
     for role, target in edges:
         epis: List[Epidatum] = []
@@ -167,24 +175,25 @@ def _interpret_node(t: Node, variables: Set[Variable], model: Model):
                 else:
                     logger.warning('cannot deinvert attribute: %r', triple)
             triples.append(triple)
-            epidata[triple] = epis
+            epidata.append((triple, epis))
         # nested nodes
         else:
             triple = model.deinvert((var, role, target[0]))
             triples.append(triple)
-            epidata[triple] = epis
+
+            epis.append(Push(target[0]))
+            epidata.append((triple, epis))
 
             # recurse to nested nodes
-            epidata[triple].append(Push(target[0]))
             _, _triples, _epis = _interpret_node(target, variables, model)
             triples.extend(_triples)
-            epidata.update(_epis)
-            epidata[triples[-1]].append(POP)
+            _epis[-1][1].append(POP)  # POP from last triple of nested node
+            epidata.extend(_epis)
 
     if not has_concept:
         instance = (var, CONCEPT_ROLE, None)
         triples.insert(0, instance)
-        epidata[instance] = []
+        epidata.append((instance, []))
 
     return var, triples, epidata
 
@@ -264,20 +273,34 @@ def configure(g: Graph,
     while data and isinstance(data[-1], Pop):
         data.pop()
     # if any data remain, the graph was not properly annotated for a tree
+    skipped: List[BasicTriple] = []
     while data:
-        skipped, var, data = _find_next(data, nodemap)
+        _skipped, var, data = _find_next(data, nodemap)
+        skipped.extend(_skipped)
         data_count = len(data)
         if var is None or data_count == 0:
             raise LayoutError('possibly disconnected graph')
-        _configure_node(var, data, nodemap, model)
-        if len(data) >= data_count:
-            raise LayoutError('possible cycle in configuration')
-        data = skipped + data
+
+        _, surprising = _configure_node(var, data, nodemap, model)
+
+        if len(data) == data_count and surprising:
+            skipped.insert(0, data.pop())
+        elif len(data) >= data_count:
+            raise LayoutError('unknown configuration error')
+        else:
+            data = skipped + data
+            skipped.clear()
+
         # remove any superfluous POPs
         while data and isinstance(data[-1], Pop):
             data.pop()
+    if skipped:
+        raise LayoutError('incomplete configuration')
+
+    _process_epigraph(node)
     tree = Tree(node, metadata=g.metadata)
     logger.debug('Configured: %s', tree)
+
     return tree
 
 
@@ -295,13 +318,13 @@ def _configure(g, top, model):
         raise LayoutError(f'top is not a variable: {top!r}')
     nodemap[top] = (top, [])
 
-    data = list(reversed(_preconfigure(g)))
-    node = _configure_node(top, data, nodemap, model)
+    data = list(reversed(_preconfigure(g, model)))
+    node, _ = _configure_node(top, data, nodemap, model)
 
     return node, data, nodemap
 
 
-def _preconfigure(g):
+def _preconfigure(g, model):
     """
     Arrange the triples and epidata for ordered traversal.
 
@@ -310,46 +333,37 @@ def _preconfigure(g):
     data = []
     epidata = g.epidata
     pushed = set()
+
     for triple in g.triples:
-        triple, push, pops = _preconfigure_triple(triple, pushed, epidata)
-        data.append((triple, push))
+        var, role, target = triple
+        epis, push, pops = [], False, []
+
+        for epi in epidata.get(triple, []):
+            if isinstance(epi, Push):
+                pvar = epi.variable
+                if pvar in pushed:
+                    logger.warning(
+                        f"ignoring secondary node contexts for '{pvar}'"
+                    )
+                    continue  # change to 'pass' to allow multiple contexts
+                if pvar not in (var, target) or role == CONCEPT_ROLE:
+                    logger.warning(
+                        f"node context '{pvar}' invalid for triple: {triple!r}"
+                    )
+                    continue
+                if pvar == var:
+                    triple = model.invert(triple)
+                pushed.add(pvar)
+                push = True
+            elif isinstance(epi, Pop):
+                pops.append(epi)
+            else:
+                epis.append(epi)
+
+        data.append((triple, push, epis))
         data.extend(pops)
+
     return data
-
-
-def _preconfigure_triple(triple, pushed, epidata):
-    """
-    Validate layout by markers and format other markers onto role or target.
-    """
-    var, role, target = triple
-    push, pops = None, []
-
-    for epi in epidata.get(triple, []):
-        if isinstance(epi, Push):
-            pvar = epi.variable
-            if push is not None or pvar in pushed:
-                logger.warning(
-                    f"ignoring secondary node contexts for '{pvar}'")
-                continue  # change to 'pass' to allow multiple contexts
-            if pvar not in (var, target) or role == CONCEPT_ROLE:
-                logger.warning(
-                    f"node context '{pvar}' invalid for triple: {triple!r}")
-                continue
-            pushed.add(pvar)
-            push = epi
-        elif isinstance(epi, Pop):
-            pops.append(epi)
-        elif epi.mode == 1:  # role epidata
-            role = f'{role!s}{epi!s}'
-        elif target and epi.mode == 2:  # target epidata
-            target = f'{target!s}{epi!s}'
-        else:
-            logger.warning('epigraphical marker ignored: %r', epi)
-
-    if push and pops:
-        logger.warning(
-            f'incompatible node context changes on triple: {triple!r}')
-    return (var, role, target), push, pops
 
 
 def _configure_node(var, data, nodemap, model):
@@ -362,44 +376,44 @@ def _configure_node(var, data, nodemap, model):
     """
     node = nodemap[var]
     edges = node[1]
+    # Something is 'surprising' when a triple doesn't predictably fit
+    # given the current state
+    surprising = False
 
     while data:
         datum = data.pop()
         if isinstance(datum, Pop):
             break
-
-        triple, push = datum
+        triple, push, epis = datum
+        # Finalize triple orientation
         if triple[0] == var:
-            source, role, target = triple
+            _, role, target = triple  # expected situation
         elif triple[2] == var and triple[1] != CONCEPT_ROLE:
-            target, role, source = triple
-            role, _, alignment = role.partition('~')
-            role = f'{model.invert_role(role)}{_}{alignment}'
+            _, role, target = model.invert(triple)  # unexpected inversion
+            push = False  # preconfigured push site may no longer be valid
+            surprising = True
         else:
-            # misplaced triple
-            data.append(datum)
+            data.append(datum)  # cannot place triple
+            surprising = True
             break
 
+        # Insert into tree, recursively configuring nodes
         if role == CONCEPT_ROLE:
             if not target:
                 continue  # prefer (a) over (a /) when concept is missing
-            role = '/'
-            index = 0
-            push = None  # never push on concept roles
+            edges.insert(0, ('/', target, epis))
         else:
-            index = len(edges)
+            if push:
+                nodemap[target] = (target, [])
+                target, _surprising = _configure_node(
+                    target, data, nodemap, model
+                )
+                surprising &= _surprising
+            elif target in nodemap and nodemap[target] is None:
+                nodemap[target] = node  # site of potential node context
+            edges.append((role, target, epis))
 
-        if push and push.variable == target:
-            nodemap[push.variable] = (push.variable, [])
-            target = _configure_node(
-                push.variable, data, nodemap, model)
-        elif role != '/' and target in nodemap and nodemap[target] is None:
-            # site of potential node context
-            nodemap[target] = node
-
-        edges.insert(index, (role, target))
-
-    return node
+    return node, surprising
 
 
 def _find_next(data, nodemap):
@@ -445,6 +459,23 @@ def _get_or_establish_site(var, nodemap):
         return True
     # var is not yet available
     return False
+
+
+def _process_epigraph(node):
+    """Format epigraph data onto roles and targets."""
+    _, edges = node
+    for i, (role, target, epis) in enumerate(edges):
+        atomic_target = is_atomic(target)
+        for epi in epis:
+            if epi.mode == 1:  # role epidata
+                role = f'{role!s}{epi!s}'
+            elif epi.mode == 2 and atomic_target:  # target epidata
+                target = f'{target!s}{epi!s}'
+            else:
+                logger.warning('epigraphical marker ignored: %r', epi)
+        if not atomic_target:
+            _process_epigraph(target)
+        edges[i] = (role, target)
 
 
 def reconfigure(g: Graph,

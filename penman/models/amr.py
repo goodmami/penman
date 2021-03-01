@@ -13,12 +13,7 @@ from penman.model import Model
 #: client code.
 roles = {
     # role                  arbitrary data
-    ":ARG0":                {"type": "frame"},
-    ":ARG1":                {"type": "frame"},
-    ":ARG2":                {"type": "frame"},
-    ":ARG3":                {"type": "frame"},
-    ":ARG4":                {"type": "frame"},
-    ":ARG5":                {"type": "frame"},
+    ":ARG[0-9]":            {"type": "frame"},
     ":accompanier":         {"type": "general"},
     ":age":                 {"type": "general"},
     ":beneficiary":         {"type": "general"},
@@ -101,6 +96,9 @@ roles = {
     ":prep-with":           {"type": "preposition"},
     ":prep-without":        {"type": "preposition"},
     ":conj-as-if":          {"type": "conjunction"},
+    # incompletely documented or obscure
+    ":wiki":                {"type": "wiki"},
+    ":range":               {"type": "ordinal"},
 }
 
 

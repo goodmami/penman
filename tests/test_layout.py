@@ -164,6 +164,18 @@ def test_reconfigure():
                (':ARG1', 'g')]))
 
 
+def test_issue_90():
+    # https://github.com/goodmami/penman/issues/90
+
+    g = Graph([('i', ':instance', 'iota'),
+               ('i2', ':instance', 'i'),
+               ('i', ':ARG0', 'i2')],
+              top='i')
+    assert reconfigure(g) == Tree(
+        ('i', [('/', 'iota'),
+               (':ARG0', ('i2', [('/', 'i')]))]))
+
+
 def test_get_pushed_variable():
     g = codec.decode('''
         (a / alpha
@@ -199,6 +211,19 @@ def test_issue_47():
     assert appears_inverted(g, ('b', ':ARG1', 'g'))
 
 
+def test_issue_87():
+    # https://github.com/goodmami/penman/issues/87
+
+    # The duplicate triple (i, :ARG0, c) below means the graph is bad
+    # so the output is not guaranteed. Just check for errors.
+    g = codec.decode('(c / company :ARG0-of (i / insure-02 :ARG0 c))')
+    appears_inverted(g, ('i', ':ARG0', 'c'))
+    codec.encode(g)
+    g = codec.decode('(c / company :ARG0-of i :ARG0-of (i / insure-02))')
+    appears_inverted(g, ('i', ':ARG0', 'c'))
+    codec.encode(g)
+
+
 def test_node_contexts():
     g = codec.decode('(a / alpha)')
     assert node_contexts(g) == ['a']
@@ -224,3 +249,12 @@ def test_issue_92():
     assert configure(g, top='b') == Tree(
         ('b', [('/', 'beta'),
                (':ARG0-of~e.0', ('a', [('/', 'alpha')]))]))
+
+
+def test_issue_93():
+    # https://github.com/goodmami/penman/issues/93
+    g = codec.decode('(a / alpha :ARG0 b~1)')
+    g.triples.append(('b', ':instance', 'beta'))
+    assert configure(g) == Tree(
+        ('a', [('/', 'alpha'),
+               (':ARG0', ('b', [('/', 'beta')]))]))

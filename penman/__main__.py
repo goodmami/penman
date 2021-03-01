@@ -54,7 +54,7 @@ def process(f,
 
         g = _process_in(t, model, normalize_options)
         if check:
-            exitcode = _check(g, model)
+            exitcode |= _check(g, model)
         if triples:
             s = codec.format_triples(
                 g.triples,

@@ -1,5 +1,30 @@
 # Change Log
 
+## [v1.2.0]
+
+**Release date: 2021-03-01**
+
+### Added
+
+* Active but incompletely documented roles to the AMR model ([#89]):
+  - `:ARG6`
+  - `:ARG7`
+  - `:ARG8`
+  - `:ARG9`
+  - `:wiki`
+  - `:range`
+
+### Fixed
+
+* Duplicate edges no longer cause crashes with
+  `layout.appears_inverted()` ([#87])
+* Single-letter concepts (e.g., `(i / i)`) no longer cause strange
+  reconfigurations nor spurious errors about a cycle ([#90])
+* Format epigraph data only after configuring the tree ([#93])
+* The return code of `penman --check` is now 1 if any graph failed the
+  check, not just the last one.
+
+
 ## [v1.1.1]
 
 **Release date: 2021-02-22**
@@ -761,5 +786,9 @@ First release with very basic functionality.
 [#81]: https://github.com/goodmami/penman/issues/81
 [#84]: https://github.com/goodmami/penman/issues/84
 [#85]: https://github.com/goodmami/penman/issues/85
+[#87]: https://github.com/goodmami/penman/issues/87
+[#89]: https://github.com/goodmami/penman/issues/89
+[#90]: https://github.com/goodmami/penman/issues/90
 [#92]: https://github.com/goodmami/penman/issues/92
+[#93]: https://github.com/goodmami/penman/issues/93
 [#95]: https://github.com/goodmami/penman/issues/95
