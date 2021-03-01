@@ -8,6 +8,7 @@
   `layout.appears_inverted()` ([#87])
 * Single-letter concepts (e.g., `(i / i)`) no longer cause strange
   reconfigurations nor spurious errors about a cycle ([#90])
+* Format epigraph data only after configuring the tree ([#93])
 
 
 ## [v1.1.1]
@@ -774,4 +775,5 @@ First release with very basic functionality.
 [#87]: https://github.com/goodmami/penman/issues/87
 [#90]: https://github.com/goodmami/penman/issues/90
 [#92]: https://github.com/goodmami/penman/issues/92
+[#93]: https://github.com/goodmami/penman/issues/93
 [#95]: https://github.com/goodmami/penman/issues/95

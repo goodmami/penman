@@ -249,3 +249,12 @@ def test_issue_92():
     assert configure(g, top='b') == Tree(
         ('b', [('/', 'beta'),
                (':ARG0-of~e.0', ('a', [('/', 'alpha')]))]))
+
+
+def test_issue_93():
+    # https://github.com/goodmami/penman/issues/93
+    g = codec.decode('(a / alpha :ARG0 b~1)')
+    g.triples.append(('b', ':instance', 'beta'))
+    assert configure(g) == Tree(
+        ('a', [('/', 'alpha'),
+               (':ARG0', ('b', [('/', 'beta')]))]))
