@@ -2,6 +2,16 @@
 
 ## [v1.2.0]
 
+### Added
+
+* Active but incompletely documented roles to the AMR model ([#89]):
+  - `:ARG6`
+  - `:ARG7`
+  - `:ARG8`
+  - `:ARG9`
+  - `:wiki`
+  - `:range`
+
 ### Fixed
 
 * Duplicate edges no longer cause crashes with
@@ -775,6 +785,7 @@ First release with very basic functionality.
 [#84]: https://github.com/goodmami/penman/issues/84
 [#85]: https://github.com/goodmami/penman/issues/85
 [#87]: https://github.com/goodmami/penman/issues/87
+[#89]: https://github.com/goodmami/penman/issues/89
 [#90]: https://github.com/goodmami/penman/issues/90
 [#92]: https://github.com/goodmami/penman/issues/92
 [#93]: https://github.com/goodmami/penman/issues/93
