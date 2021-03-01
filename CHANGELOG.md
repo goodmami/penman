@@ -2,6 +2,8 @@
 
 ## [v1.2.0]
 
+**Release date: 2021-03-01**
+
 ### Added
 
 * Active but incompletely documented roles to the AMR model ([#89]):
