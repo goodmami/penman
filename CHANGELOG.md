@@ -9,6 +9,8 @@
 * Single-letter concepts (e.g., `(i / i)`) no longer cause strange
   reconfigurations nor spurious errors about a cycle ([#90])
 * Format epigraph data only after configuring the tree ([#93])
+* The return code of `penman --check` is now 1 if any graph failed the
+  check, not just the last one.
 
 
 ## [v1.1.1]
