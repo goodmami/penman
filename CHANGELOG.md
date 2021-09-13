@@ -1,5 +1,13 @@
 # Change Log
 
+## Unreleased
+
+### Changed
+
+* Only regular ASCII spaces are breaking; others are treated as
+  literal characters and may appear in symbols. ([#99])
+
+
 ## [v1.2.0]
 
 **Release date: 2021-03-01**
@@ -793,3 +801,4 @@ First release with very basic functionality.
 [#92]: https://github.com/goodmami/penman/issues/92
 [#93]: https://github.com/goodmami/penman/issues/93
 [#95]: https://github.com/goodmami/penman/issues/95
+[#99]: https://github.com/goodmami/penman/issues/99

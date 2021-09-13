@@ -23,12 +23,12 @@ PATTERNS = {
     'ALIGNMENT':  r'~(?:[a-z]\.?)?[0-9]+(?:,[0-9]+)*',
     # ROLE cannot be made up of COLON + SYMBOL because it then becomes
     # difficult to detect anonymous roles: (a : b) vs (a :b c)
-    'ROLE':       r':[^\s()\/:~]*',
-    'SYMBOL':     r'[^\s()\/:~]+',
+    'ROLE':       r':[^ \t\r\n\v\f()\/:~]*',
+    'SYMBOL':     r'[^ \t\r\n\v\f()\/:~]+',
     'LPAREN':     r'\(',
     'RPAREN':     r'\)',
     'SLASH':      r'\/',  # concept (node label) role
-    'UNEXPECTED': r'[^\s]'
+    'UNEXPECTED': r'[^ \t\r\n\v\f]'
 }
 
 

@@ -64,3 +64,13 @@ def test_lex_triples():
 
 def test_TokenIterator():
     pass  # TODO: write tests for expect() and accept()
+
+
+def test_nonbreaking_space_issue_99():
+    # https://github.com/goodmami/penman/issues/99
+    assert [tok.type for tok in lexer.lex('1 2')] == ['SYMBOL', 'SYMBOL']
+    assert [tok.type for tok in lexer.lex('1\t2')] == ['SYMBOL', 'SYMBOL']
+    assert [tok.type for tok in lexer.lex('1\n2')] == ['SYMBOL', 'SYMBOL']
+    assert [tok.type for tok in lexer.lex('1\r2')] == ['SYMBOL', 'SYMBOL']
+    assert [tok.type for tok in lexer.lex('1\u00a02')] == ['SYMBOL']
+    assert [tok.type for tok in lexer.lex('あ　い')] == ['SYMBOL']
