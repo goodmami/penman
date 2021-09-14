@@ -1,9 +1,6 @@
-# 58 deprecates use_2to3, used by sphinxcontrib-tikz
-setuptools<=57.5
-
 sphinx==4.2.0
 furo==2021.9.8
-sphinxcontrib-tikz==0.4.14
+# sphinxcontrib-tikz==0.4.14
 pygments==2.10.0
 sphinx-copybutton==0.4.0
 
