@@ -16,49 +16,62 @@ string is **formatting**, while the whole process is called
 **encoding**. These processes are illustrated by the following figure
 (concepts are not shown on the tree and graph for simplicity):
 
-.. tikz::
-   :libs: arrows,positioning
+..
+   Normally the tikz code is used to generate the image, but there is
+   an issue preventing the necessary library from being installed, so
+   until that's fixed just use a pre-built version.
 
-   [every node/.style={font=\ttfamily\scriptsize,text height=1.5ex,text depth=.8ex},
-    var/.style={draw,circle,inner sep=0},
-    reentrancy/.style={draw=none,fill=none,text height=1ex,text depth=0},
-    proc/.style={-latex,every node/.style={font=\ttfamily\tiny}},
-    top/.style={label={[font=\ttfamily\tiny,anchor=base,yshift=.5ex]above:top}}]
-   \node[draw=none] (X) {};
-   \node[below=0ex of X] (P) {PENMAN};
-   \node[right=8em of P] (T) {Tree};
-   \node[right=8em of T] (G) {Graph};
-   (P) -- (T) -- (G);
+   https://github.com/sphinx-contrib/tikz/issues/13
 
-   \node [below=5ex of P,xshift=1em,draw=none,text badly ragged,
-          label={[align=left]below:(a / alpha\\~~~:ARG0 (b / beta)\\~~~:ARG0-of (g / gamma\\~~~~~~:ARG1 b))}]
-	 (Pa) {};
 
-   \coordinate[top,below=5ex of T] (TTop);
-   \node[var,below=2ex of TTop] (Ta) {a};
-   \node[var,below=4ex of Ta,xshift=-1.5em] (Tb) {b};
-   \node[var,below=4ex of Ta,xshift=1.5em] (Tg) {g};
-   \node[reentrancy,below=4ex of Tg] (Tb2) {b};
-   \draw[-latex] (TTop) -- (Ta);
-   \draw[-latex] (Ta) -- (Tb) node [midway,left] {:ARG0};
-   \draw[-latex] (Ta) -- (Tg) node [midway,right] {:ARG0-of};
-   \draw[-latex] (Tg) -- (Tb2) node [midway,right] {:ARG1};
+.. image:: _static/representations.png
+   :align: center
+   :alt: The three stages of PENMAN structure.
 
-   \coordinate[top,below=5ex of G] (GTop);
-   \node[var,below=2ex of GTop] (Ga) {a};
-   \node[var,below=3ex of Ga,xshift=-3em] (Gb) {b};
-   \node[var,below=6ex of Ga] (Gg) {g};
-   \draw[-latex] (GTop) -- (Ga);
-   \draw[-latex] (Ga) -- (Gb) node [near start,left] {:ARG0};
-   \draw[-latex] (Gg) -- (Ga) node [midway,right] {:ARG0};
-   \draw[-latex] (Gg) -- (Gb) node [near start,below left] {:ARG1};
+..
+   .. tikz::
+      :libs: arrows,positioning
 
-   \draw[proc,color=teal,transform canvas={yshift=0.5ex}] (P) -- (T) node[midway,above=-.5ex] {parse};
-   \draw[proc,color=teal,transform canvas={yshift=0.5ex}] (T) -- (G) node[midway,above=-.5ex] {interpret};
-   \draw[proc,color=violet,transform canvas={yshift=-0.5ex}] (G) -- (T) node[midway,below=-.5ex] {configure};
-   \draw[proc,color=violet,transform canvas={yshift=-0.5ex}] (T) -- (P) node[midway,below=-.5ex] {format};
-   \draw[proc,color=teal,transform canvas={yshift=2.5ex}] (P) -- (G) node[midway,above=-.5ex] {decode};
-   \draw[proc,color=violet,transform canvas={yshift=-2.5ex}] (G) -- (P) node[midway,below=-.5ex] {encode};
+      [every node/.style={font=\ttfamily\scriptsize,text height=1.5ex,text depth=.8ex},
+       var/.style={draw,circle,inner sep=0},
+       reentrancy/.style={draw=none,fill=none,text height=1ex,text depth=0},
+       proc/.style={-latex,every node/.style={font=\ttfamily\tiny}},
+       top/.style={label={[font=\ttfamily\tiny,anchor=base,yshift=.5ex]above:top}}]
+      \node[draw=none] (X) {};
+      \node[below=0ex of X] (P) {PENMAN};
+      \node[right=8em of P] (T) {Tree};
+      \node[right=8em of T] (G) {Graph};
+      (P) -- (T) -- (G);
+
+      \node [below=5ex of P,xshift=1em,draw=none,text badly ragged,
+	     label={[align=left]below:(a / alpha\\~~~:ARG0 (b / beta)\\~~~:ARG0-of (g / gamma\\~~~~~~:ARG1 b))}]
+	     (Pa) {};
+
+      \coordinate[top,below=5ex of T] (TTop);
+      \node[var,below=2ex of TTop] (Ta) {a};
+      \node[var,below=4ex of Ta,xshift=-1.5em] (Tb) {b};
+      \node[var,below=4ex of Ta,xshift=1.5em] (Tg) {g};
+      \node[reentrancy,below=4ex of Tg] (Tb2) {b};
+      \draw[-latex] (TTop) -- (Ta);
+      \draw[-latex] (Ta) -- (Tb) node [midway,left] {:ARG0};
+      \draw[-latex] (Ta) -- (Tg) node [midway,right] {:ARG0-of};
+      \draw[-latex] (Tg) -- (Tb2) node [midway,right] {:ARG1};
+
+      \coordinate[top,below=5ex of G] (GTop);
+      \node[var,below=2ex of GTop] (Ga) {a};
+      \node[var,below=3ex of Ga,xshift=-3em] (Gb) {b};
+      \node[var,below=6ex of Ga] (Gg) {g};
+      \draw[-latex] (GTop) -- (Ga);
+      \draw[-latex] (Ga) -- (Gb) node [near start,left] {:ARG0};
+      \draw[-latex] (Gg) -- (Ga) node [midway,right] {:ARG0};
+      \draw[-latex] (Gg) -- (Gb) node [near start,below left] {:ARG1};
+
+      \draw[proc,color=teal,transform canvas={yshift=0.5ex}] (P) -- (T) node[midway,above=-.5ex] {parse};
+      \draw[proc,color=teal,transform canvas={yshift=0.5ex}] (T) -- (G) node[midway,above=-.5ex] {interpret};
+      \draw[proc,color=violet,transform canvas={yshift=-0.5ex}] (G) -- (T) node[midway,below=-.5ex] {configure};
+      \draw[proc,color=violet,transform canvas={yshift=-0.5ex}] (T) -- (P) node[midway,below=-.5ex] {format};
+      \draw[proc,color=teal,transform canvas={yshift=2.5ex}] (P) -- (G) node[midway,above=-.5ex] {decode};
+      \draw[proc,color=violet,transform canvas={yshift=-2.5ex}] (G) -- (P) node[midway,below=-.5ex] {encode};
 
 Conversion from a PENMAN string to a :class:`~penman.tree.Tree`, and
 vice versa, is straightforward and lossless. Conversion to a
