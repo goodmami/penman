@@ -17,8 +17,6 @@ The command becomes available at the command-line after installing
 Penman (see :doc:`setup`). This guide will explain how to use the
 command for several use cases.
 
-.. contents::
-
 
 Command Usage
 -------------

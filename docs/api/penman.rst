@@ -46,8 +46,6 @@ Users who want to work with trees would use :func:`parse` and
    (g / go
       :ARG0 b)
 
-.. contents:: Contents
-   :local:
 
 Module Constants
 ----------------
