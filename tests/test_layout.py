@@ -50,6 +50,7 @@ def test_interpret(amr_model):
 
 
 def test_rearrange():
+    random.seed(1)
     t = codec.parse('''
         (a / alpha
            :ARG0 (b / beta
