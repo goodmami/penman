@@ -21,8 +21,6 @@ from penman.layout import (
 )
 
 
-random.seed(1)
-
 codec = PENMANCodec()
 model = Model()
 
