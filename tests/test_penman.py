@@ -31,13 +31,13 @@ def test_loads():
 
 def test_load(tmp_path):
     f = tmp_path / 'test_load1'
-    f.write_text('(a / alpha)(b / beta)')
+    f.write_text('(a / alpha)(b / beta)', encoding='utf-8')
     gs = load(f)
     assert len(gs) == 2
     assert gs[0].triples == [('a', ':instance', 'alpha')]
     assert gs[1].triples == [('b', ':instance', 'beta')]
 
-    with f.open() as fh:
+    with f.open(encoding='utf-8') as fh:
         assert load(fh) == gs
 
 
@@ -54,9 +54,9 @@ def test_dump(tmp_path):
     f1 = tmp_path / 'test_dump1'
     f2 = tmp_path / 'test_dump2'
     dump(gs, f1)
-    with f2.open('w') as fh:
+    with f2.open('w', encoding='utf-8') as fh:
         dump(gs, fh)
-    assert f1.read_text() == f2.read_text()
+    assert f1.read_text(encoding='utf-8') == f2.read_text(encoding='utf-8')
 
 
 def test_parse():
