@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import locale
 import sys
 import os
 import argparse
@@ -222,12 +222,16 @@ def main():
         '--indicate-branches', action='store_true',
         help='insert triples to indicate tree structure')
 
+    norm.add_argument(
+        '--encoding', action='store_true', default=locale.getpreferredencoding(),
+        help='encoding to use for input/output. Defaults to system default')
+
     args = parser.parse_args()
 
     if args.quiet:
         args.verbosity = 0
         sys.stdout.close()
-        sys.stdout = open(os.devnull, 'w')
+        sys.stdout = open(os.devnull, 'w', encoding=args.encoding)
     else:
         args.verbosity = min(args.verbosity, 3)
 
@@ -264,7 +268,7 @@ def main():
 
     if args.FILE:
         for file in args.FILE:
-            with open(file) as f:
+            with open(file, encoding=args.encoding) as f:
                 exitcode = process(
                     f, model, sys.stdout, sys.stderr, args.check,
                     normalize_options, format_options, args.triples)
