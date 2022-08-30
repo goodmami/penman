@@ -11,13 +11,13 @@ with open(os.path.join(base_dir, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 about = {}
-with open(os.path.join(base_dir, "penman", "__about__.py")) as f:
+with open(os.path.join(base_dir, "penman", "__about__.py"), encoding='utf-8') as f:
     exec(f.read(), about)
 
 # thanks: https://snarky.ca/clarifying-pep-518/
 docs_requirements = os.path.join(base_dir, 'docs', 'requirements.txt')
 if os.path.isfile(docs_requirements):
-    with open(docs_requirements) as f:
+    with open(docs_requirements, encoding='utf-8') as f:
         docs_require = f.readlines()
 else:
     docs_require = []
