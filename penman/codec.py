@@ -3,7 +3,6 @@
 """
 Serialization of PENMAN graphs.
 """
-import locale
 from typing import Union, Iterable, Iterator, List, IO
 from pathlib import Path
 
@@ -242,7 +241,7 @@ def _encode(g: Graph,
 
 def _load(source: FileOrFilename,
           model: Model = None,
-          encoding: str = locale.getpreferredencoding()) -> List[Graph]:
+          encoding: Optional[str] = None) -> List[Graph]:
     """
     Deserialize a list of PENMAN-encoded graphs from *source*.
 
@@ -281,7 +280,7 @@ def _dump(graphs: Iterable[Graph],
           model: Model = None,
           indent: Union[int, bool] = -1,
           compact: bool = False,
-          encoding: str = locale.getpreferredencoding()) -> None:
+          encoding: Optional[str] = None) -> None:
     """
     Serialize each graph in *graphs* to PENMAN and write to *file*.
 
