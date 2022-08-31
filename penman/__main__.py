@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import locale
 import sys
 import os
 import argparse
@@ -170,6 +169,9 @@ def main():
     parser.add_argument(
         'FILE', nargs='*',
         help='read graphs from FILEs instead of stdin')
+    parser.add_argument(
+        '--encoding', default=None,
+        help='encoding to use for input/output. Defaults to system default')
     model_group = parser.add_mutually_exclusive_group()
     model_group.add_argument(
         '--model', metavar='FILE',
@@ -222,16 +224,12 @@ def main():
         '--indicate-branches', action='store_true',
         help='insert triples to indicate tree structure')
 
-    norm.add_argument(
-        '--encoding', action='store_true', default=locale.getpreferredencoding(),
-        help='encoding to use for input/output. Defaults to system default')
-
     args = parser.parse_args()
 
     if args.quiet:
         args.verbosity = 0
         sys.stdout.close()
-        sys.stdout = open(os.devnull, 'w', encoding=args.encoding)
+        sys.stdout = open(os.devnull, 'w')
     else:
         args.verbosity = min(args.verbosity, 3)
 
