@@ -1,5 +1,15 @@
 # Change Log
 
+## [v1.2.2]
+
+**Release date: 2022-09-01**
+
+### Added
+
+* `--encoding` option for the `penman` command ([#109])
+* `encoding` parameter on `penman.load` and `penman.dump` ([#109])
+
+
 ## [v1.2.1]
 
 **Release date: 2021-09-13**
@@ -740,6 +750,7 @@ First release with very basic functionality.
 [v1.1.1]: ../../releases/tag/v1.1.1
 [v1.2.0]: ../../releases/tag/v1.2.0
 [v1.2.1]: ../../releases/tag/v1.2.1
+[v1.2.2]: ../../releases/tag/v1.2.2
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
@@ -805,3 +816,4 @@ First release with very basic functionality.
 [#93]: https://github.com/goodmami/penman/issues/93
 [#95]: https://github.com/goodmami/penman/issues/95
 [#99]: https://github.com/goodmami/penman/issues/99
+[#109]: https://github.com/goodmami/penman/issues/109
