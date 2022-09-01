@@ -229,7 +229,7 @@ def main():
     if args.quiet:
         args.verbosity = 0
         sys.stdout.close()
-        sys.stdout = open(os.devnull, 'w')
+        sys.stdout = open(os.devnull, 'w', encoding='utf-8')
     else:
         args.verbosity = min(args.verbosity, 3)
 
