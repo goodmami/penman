@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import sys
 import os
 import argparse
@@ -170,6 +169,9 @@ def main():
     parser.add_argument(
         'FILE', nargs='*',
         help='read graphs from FILEs instead of stdin')
+    parser.add_argument(
+        '--encoding', default=None,
+        help='encoding to use for input/output. Defaults to system default')
     model_group = parser.add_mutually_exclusive_group()
     model_group.add_argument(
         '--model', metavar='FILE',
@@ -227,7 +229,7 @@ def main():
     if args.quiet:
         args.verbosity = 0
         sys.stdout.close()
-        sys.stdout = open(os.devnull, 'w')
+        sys.stdout = open(os.devnull, 'w', encoding='utf-8')
     else:
         args.verbosity = min(args.verbosity, 3)
 
@@ -264,7 +266,7 @@ def main():
 
     if args.FILE:
         for file in args.FILE:
-            with open(file) as f:
+            with open(file, encoding=args.encoding) as f:
                 exitcode = process(
                     f, model, sys.stdout, sys.stderr, args.check,
                     normalize_options, format_options, args.triples)
