@@ -40,6 +40,16 @@ class Tree:
         s = _format(self.node, 2)
         return f'Tree(\n  {s})'
 
+    def __contains__(self, item: str):
+        """
+        Test whether a given string is part of the tree as a terminal instance node.
+        """
+        if isinstance(item, str):
+            terminals = [target for _, (role, target) in self.walk() if role == "/" and is_atomic(target)]
+            return item in terminals
+        else:
+            raise NotImplemented
+
     def nodes(self) -> List[Node]:
         """
         Return the nodes in the tree as a flat list.

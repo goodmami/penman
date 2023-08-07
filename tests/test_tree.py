@@ -1,4 +1,3 @@
-
 import pytest
 
 from penman import tree
@@ -47,6 +46,14 @@ class TestTree:
         assert t.node == simple_node
         assert t.metadata == {'snt': 'Alpha.'}
 
+    def test__contains__(self):
+        t = tree.Tree(('a', [('/', 'alpha'), (':ARG', ('b', [('/', 'beta')]))]))
+
+        assert "alpha" in t
+        assert "beta" in t
+        assert "b" not in t
+        assert ":ARG" not in t
+
     def test_nodes(self, one_arg_node, reentrant):
         t = tree.Tree(one_arg_node)
         assert t.nodes() == [one_arg_node, ('b', [('/', 'beta')])]
@@ -86,7 +93,6 @@ class TestTree:
         ]
 
     def test_reset_variables(self, one_arg_node, reentrant, var_instance):
-
         def _vars(t):
             return [v for v, _ in t.nodes()]
 
