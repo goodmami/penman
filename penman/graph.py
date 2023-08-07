@@ -4,7 +4,7 @@
 Data structures for Penman graphs and triples.
 """
 
-from typing import (Union, Optional, Mapping, List, Dict, Set, NamedTuple)
+from typing import (Union, Optional, Mapping, List, Dict, Set, NamedTuple, Tuple)
 from collections import defaultdict
 import copy
 
@@ -172,6 +172,20 @@ class Graph(object):
             return self
         else:
             return NotImplemented
+
+    def __contains__(self, item: Union[str, Triple, Tuple[str, str, str]]):
+        """
+        Containment checking of either a string or a triple (tuple). In the case of a
+        string, will return True if the given string is a terminal instance in the graph.
+        If a triple or tuple, will return True if the triple exists in self.triples.
+        """
+        if isinstance(item, str):
+            terminals = [t[2] for t in self.instances()]
+            return item in terminals
+        elif isinstance(item, tuple):
+            return item in self.triples
+        else:
+            raise NotImplemented
 
     @property
     def top(self) -> Union[Variable, None]:
