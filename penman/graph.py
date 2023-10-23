@@ -179,13 +179,10 @@ class Graph(object):
         string, will return True if the given string is a terminal instance in the graph.
         If a triple or tuple, will return True if the triple exists in self.triples.
         """
-        if isinstance(item, str):
-            terminals = [t[2] for t in self.instances()]
-            return item in terminals
-        elif isinstance(item, tuple):
+        if isinstance(item, tuple):
             return item in self.triples
-        else:
-            raise NotImplemented
+        terminals = {t[2] for t in self.instances()}
+        return item in terminals
 
     @property
     def top(self) -> Union[Variable, None]:
