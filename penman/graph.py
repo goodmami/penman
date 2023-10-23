@@ -173,16 +173,29 @@ class Graph(object):
         else:
             return NotImplemented
 
-    def __contains__(self, item: Union[str, Triple, Tuple[str, str, str]]):
+    def __contains__(
+        self, item: Union[Triple, Tuple[Constant, Constant, Constant]]
+    ):
         """
-        Containment checking of either a string or a triple (tuple). In the case of a
-        string, will return True if the given string is a terminal instance in the graph.
-        If a triple or tuple, will return True if the triple exists in self.triples.
+        Containment checking of a triple (or tuple). If the input `item`
+        contains `None`, that part will be ignored. Examples:
+
+        (None, ":ARG9", None) in g  # any triple with role :ARG9
+        (None, ":instance", "foo") in g  # any instance with concept "foo"
         """
-        if isinstance(item, tuple):
+        if None in item:
+            for triple in self.triples:
+                triple_matches = True
+                # Compare non-None items of the given item with every one
+                # of graph's triples
+                for new_item, existing_item in zip(item, triple):
+                    if new_item is not None and new_item != existing_item:
+                        triple_matches = False
+                if triple_matches:
+                    return True
+            return False
+        else:
             return item in self.triples
-        terminals = {t[2] for t in self.instances()}
-        return item in terminals
 
     @property
     def top(self) -> Union[Variable, None]:

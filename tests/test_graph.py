@@ -108,11 +108,13 @@ class TestGraph(object):
                    ('a', ':ARG', 'b'),
                    ('b', ':instance', 'beta')])
 
-        assert "alpha" in g
-        assert "beta" in g
-        assert "b" not in g
-        assert ('a', ':ARG', 'b') in g
-        assert Triple('b', ':instance', 'beta') in g
+        assert Triple(None, ':instance', 'beta') in g
+        assert Triple('b', None, 'beta') in g
+        assert Triple('b', ':instance', None) in g
+        # No match
+        assert Triple('b', ':instance', 'alpha') not in g
+        # Regular tuples
+        assert ('b', ':instance', None) in g
 
     def test_top(self, x1):
         assert Graph([('a', ':instance', None)]).top == 'a'
