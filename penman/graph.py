@@ -4,7 +4,16 @@
 Data structures for Penman graphs and triples.
 """
 
-from typing import (Union, Optional, Mapping, List, Dict, Set, NamedTuple, Tuple)
+from typing import (
+    Union,
+    Optional,
+    Mapping,
+    List,
+    Dict,
+    Set,
+    NamedTuple,
+    Tuple
+)
 from collections import defaultdict
 import copy
 
