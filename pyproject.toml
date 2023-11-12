@@ -1,3 +1,67 @@
 [build-system]
-requires = ["setuptools>=40.8.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "Penman"
+dynamic = ["version"]
+description = "PENMAN notation for graphs (e.g., AMR)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+  {name = "Michael Wayne Goodman", email = "goodman.m.w@gmail.com"}
+]
+keywords = ["nlp", "semantics", "amr"]
+classifiers = [
+  'Development Status :: 4 - Beta',
+  'Environment :: Console',
+  'Intended Audience :: Developers',
+  'Intended Audience :: Information Technology',
+  'Intended Audience :: Science/Research',
+  'License :: OSI Approved :: MIT License',
+  'Programming Language :: Python :: 3',
+  'Programming Language :: Python :: 3.8',
+  'Programming Language :: Python :: 3.9',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
+  'Topic :: Scientific/Engineering :: Information Analysis',
+  'Topic :: Software Development :: Libraries :: Python Modules',
+  'Topic :: Text Processing :: Linguistic',
+  'Topic :: Utilities'
+]
+
+[project.optional-dependencies]
+docs = [
+  "sphinx==4.2.0",
+  "furo==2021.9.8",
+  "pygments==2.15.0",
+  "sphinx-copybutton==0.4.0",
+]
+tests = [
+  "pytest",
+  "mypy",
+  "flake8",
+]
+dev = [
+  "sphinx==4.2.0",
+  "furo==2021.9.8",
+  "pygments==2.15.0",
+  "sphinx-copybutton==0.4.0",
+  "pytest",
+  "mypy",
+  "flake8",
+]
+
+[project.scripts]
+penman = "penman.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/goodmami/penman"
+Documentation = "https://penman.readthedocs.io/"
+Changelog = "https://github.com/goodmami/penman/blob/main/CHANGELOG.md"
+Source = "https://github.com/goodmami/penman"
+
+[tool.hatch.version]
+path = "penman/__about__.py"
