@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import penman
+from penman import Triple
 
 Graph = penman.Graph
 
@@ -101,6 +102,19 @@ class TestGraph(object):
         assert g.triples == [('b', ':instance', 'beta')]
         assert g.top == 'b'
         assert g is original
+
+    def test__contains__(self):
+        g = Graph([('a', ':instance', 'alpha'),
+                   ('a', ':ARG', 'b'),
+                   ('b', ':instance', 'beta')])
+
+        assert Triple(None, ':instance', 'beta') in g
+        assert Triple('b', None, 'beta') in g
+        assert Triple('b', ':instance', None) in g
+        # No match
+        assert Triple('b', ':instance', 'alpha') not in g
+        # Regular tuples
+        assert ('b', ':instance', None) in g
 
     def test_top(self, x1):
         assert Graph([('a', ':instance', None)]).top == 'a'

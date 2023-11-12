@@ -1,4 +1,3 @@
-
 import pytest
 
 from penman import tree
@@ -86,7 +85,6 @@ class TestTree:
         ]
 
     def test_reset_variables(self, one_arg_node, reentrant, var_instance):
-
         def _vars(t):
             return [v for v, _ in t.nodes()]
 
