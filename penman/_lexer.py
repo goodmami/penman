@@ -4,7 +4,7 @@
 Classes and functions for lexing PENMAN strings.
 """
 
-from typing import Union, Iterable, Iterator, NamedTuple, Pattern
+from typing import Union, Iterable, Iterator, NamedTuple, Pattern, Optional
 import re
 import logging
 
@@ -159,7 +159,7 @@ class TokenIterator(Iterator[Token]):
 
 
 def lex(lines: Union[Iterable[str], str],
-        pattern: Union[Pattern[str], str] = None) -> TokenIterator:
+        pattern: Optional[Union[Pattern[str], str]] = None) -> TokenIterator:
     """
     Yield PENMAN tokens matched in *lines*.
 

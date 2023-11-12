@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 
 class PenmanError(Exception):
     """Base class for errors in the Penman package."""
@@ -21,11 +23,11 @@ class DecodeError(PenmanError):
     """Raised on PENMAN syntax errors."""
 
     def __init__(self,
-                 message: str = None,
-                 filename: str = None,
-                 lineno: int = None,
-                 offset: int = None,
-                 text: str = None):
+                 message: Optional[str] = None,
+                 filename: Optional[str] = None,
+                 lineno: Optional[int] = None,
+                 offset: Optional[int] = None,
+                 text: Optional[str] = None):
         self.message = message
         self.filename = filename
         self.lineno = lineno
