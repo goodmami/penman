@@ -4,7 +4,7 @@
 Surface strings, tokens, and alignments.
 """
 
-from typing import TypeVar, Type, Mapping, Tuple
+from typing import TypeVar, Type, Mapping, Tuple, Optional
 
 from penman.types import BasicTriple
 from penman.graph import Graph
@@ -19,7 +19,7 @@ class AlignmentMarker(Epidatum):
 
     __slots__ = 'indices', 'prefix',
 
-    def __init__(self, indices: Tuple[int, ...], prefix: str = None):
+    def __init__(self, indices: Tuple[int, ...], prefix: Optional[str] = None):
         super().__init__()
         self.indices = indices
         self.prefix = prefix

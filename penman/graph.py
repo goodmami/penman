@@ -93,10 +93,10 @@ class Graph(object):
     """
 
     def __init__(self,
-                 triples: Triples = None,
-                 top: Variable = None,
-                 epidata: Mapping[BasicTriple, Epidata] = None,
-                 metadata: Mapping[str, str] = None):
+                 triples: Optional[Triples] = None,
+                 top: Optional[Variable] = None,
+                 epidata: Optional[Mapping[BasicTriple, Epidata]] = None,
+                 metadata: Optional[Mapping[str, str]] = None):
         if not triples:
             triples = []
         if not epidata:
@@ -207,8 +207,8 @@ class Graph(object):
 
     def edges(self,
               source: Optional[Variable] = None,
-              role: Role = None,
-              target: Variable = None) -> List[Edge]:
+              role: Optional[Role] = None,
+              target: Optional[Variable] = None) -> List[Edge]:
         """
         Return edges filtered by their *source*, *role*, or *target*.
 
@@ -221,8 +221,8 @@ class Graph(object):
 
     def attributes(self,
                    source: Optional[Variable] = None,
-                   role: Role = None,
-                   target: Constant = None) -> List[Attribute]:
+                   role: Optional[Role] = None,
+                   target: Optional[Constant] = None) -> List[Attribute]:
         """
         Return attributes filtered by their *source*, *role*, or *target*.
 

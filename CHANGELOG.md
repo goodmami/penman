@@ -1,5 +1,16 @@
 # Change Log
 
+## [Unreleased]
+
+### Python Versions
+
+* Removed support for Python 3.6
+* Removed support for Python 3.7
+* Added support for Python 3.10
+* Added support for Python 3.11
+* Added support for Python 3.12
+
+
 ## [v1.2.2]
 
 **Release date: 2022-09-01**

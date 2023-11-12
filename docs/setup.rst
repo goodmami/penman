@@ -15,7 +15,7 @@ source code.
 Requirements
 ------------
 
-The Penman package runs with `Python 3.6`_ and higher versions, but
+The Penman package runs with `Python 3.8`_ and higher versions, but
 otherwise it has no dependencies beyond Python's standard library.
 
 Some development tasks, such as unit testing, building the
@@ -105,7 +105,7 @@ Style-checking with Flake8
 
 .. _PyPI: https://pypi.org/project/Penman/
 .. _GitHub: https://github.com/goodmami/penman/
-.. _Python 3.6: https://www.python.org/
+.. _Python 3.8: https://www.python.org/
 .. _virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _pytest: http://pytest.org/
 .. _tox: https://tox.readthedocs.io/en/latest/

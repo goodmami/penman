@@ -35,7 +35,7 @@ class PENMANCodec(object):
     An encoder/decoder for PENMAN-serialized graphs.
     """
 
-    def __init__(self, model: Model = None):
+    def __init__(self, model: Optional[Model] = None):
         if model is None:
             model = Model()
         self.model = model
@@ -105,7 +105,7 @@ class PENMANCodec(object):
 
     def encode(self,
                g: Graph,
-               top: Variable = None,
+               top: Optional[Variable] = None,
                indent: Union[int, None] = -1,
                compact: bool = False) -> str:
         """
@@ -168,7 +168,7 @@ class PENMANCodec(object):
 # public API.
 
 def _decode(s: str,
-            model: Model = None) -> Graph:
+            model: Optional[Model] = None) -> Graph:
     """
     Deserialize PENMAN-serialized *s* into its Graph object
 
@@ -188,7 +188,7 @@ def _decode(s: str,
 
 
 def _iterdecode(lines: Union[Iterable[str], str],
-                model: Model = None) -> Iterator[Graph]:
+                model: Optional[Model] = None) -> Iterator[Graph]:
     """
     Yield graphs parsed from *lines*.
 
@@ -210,8 +210,8 @@ def _iterdecode(lines: Union[Iterable[str], str],
 
 
 def _encode(g: Graph,
-            top: Variable = None,
-            model: Model = None,
+            top: Optional[Variable] = None,
+            model: Optional[Model] = None,
             indent: Union[int, bool] = -1,
             compact: bool = False) -> str:
     """
@@ -240,7 +240,7 @@ def _encode(g: Graph,
 
 
 def _load(source: FileOrFilename,
-          model: Model = None,
+          model: Optional[Model] = None,
           encoding: Optional[str] = None) -> List[Graph]:
     """
     Deserialize a list of PENMAN-encoded graphs from *source*.
@@ -261,7 +261,7 @@ def _load(source: FileOrFilename,
 
 
 def _loads(string: str,
-           model: Model = None) -> List[Graph]:
+           model: Optional[Model] = None) -> List[Graph]:
     """
     Deserialize a list of PENMAN-encoded graphs from *string*.
 
@@ -277,7 +277,7 @@ def _loads(string: str,
 
 def _dump(graphs: Iterable[Graph],
           file: FileOrFilename,
-          model: Model = None,
+          model: Optional[Model] = None,
           indent: Union[int, bool] = -1,
           compact: bool = False,
           encoding: Optional[str] = None) -> None:
@@ -314,7 +314,7 @@ def _dump_stream(fh, gs, codec, indent, compact):
 
 
 def _dumps(graphs: Iterable[Graph],
-           model: Model = None,
+           model: Optional[Model] = None,
            indent: Union[int, bool] = -1,
            compact: bool = False) -> str:
     """

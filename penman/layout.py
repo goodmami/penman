@@ -50,7 +50,7 @@ following data::
                           ('b', ':ARG0', 'd')]            : POP
 """
 
-from typing import Union, Mapping, Callable, Any, List, Set, cast
+from typing import Union, Mapping, Callable, Any, List, Set, cast, Optional
 import copy
 import logging
 
@@ -103,7 +103,7 @@ POP = Pop()
 
 # Tree to graph interpretation ################################################
 
-def interpret(t: Tree, model: Model = None) -> Graph:
+def interpret(t: Tree, model: Optional[Model] = None) -> Graph:
     """
     Interpret tree *t* as a graph using *model*.
 
@@ -228,8 +228,8 @@ def _process_atomic(target):
 # Graph to tree configuration #################################################
 
 def configure(g: Graph,
-              top: Variable = None,
-              model: Model = None) -> Tree:
+              top: Optional[Variable] = None,
+              model: Optional[Model] = None) -> Tree:
     """
     Create a tree from a graph by making as few decisions as possible.
 
@@ -311,7 +311,7 @@ def _configure(g, top, model):
     if len(g.triples) == 0:
         return (g.top, []), [], {}
 
-    nodemap: _Nodemap = {var: None for var in g.variables()}
+    nodemap: _Nodemap = {var: None for var in g.variables()}  # type: ignore
     if top is None:
         top = g.top
     if top not in nodemap:
@@ -479,9 +479,9 @@ def _process_epigraph(node):
 
 
 def reconfigure(g: Graph,
-                top: Variable = None,
-                model: Model = None,
-                key: Callable[[Role], Any] = None) -> Tree:
+                top: Optional[Variable] = None,
+                model: Optional[Model] = None,
+                key: Optional[Callable[[Role], Any]] = None) -> Tree:
     """
     Create a tree from a graph after any discarding layout markers.
 
@@ -503,7 +503,7 @@ def reconfigure(g: Graph,
 
 
 def rearrange(t: Tree,
-              key: Callable[[Role], Any] = None,
+              key: Optional[Callable[[Role], Any]] = None,
               attributes_first: bool = False) -> None:
     """
     Sort the branches at each node in tree *t* according to *key*.

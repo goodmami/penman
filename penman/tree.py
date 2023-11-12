@@ -3,7 +3,7 @@
 Definitions of tree structures.
 """
 
-from typing import Dict, List, Tuple, Set, Mapping, Any, Iterator
+from typing import Dict, List, Tuple, Set, Mapping, Any, Iterator, Optional
 
 from penman.types import (Variable, Branch, Node)
 
@@ -24,7 +24,7 @@ class Tree:
 
     def __init__(self,
                  node: Node,
-                 metadata: Mapping[str, str] = None):
+                 metadata: Optional[Mapping[str, str]] = None):
         self.node = node
         self.metadata = metadata or {}
 
@@ -170,7 +170,10 @@ def _default_variable_prefix(concept: Any) -> Variable:
     return prefix
 
 
-def _map_vars(node, varmap):
+def _map_vars(
+    node: Node,
+    varmap: Dict[Variable, Variable]
+) -> Tuple[Variable, List[Branch]]:
     var, branches = node
 
     newbranches: List[Branch] = []
@@ -184,7 +187,7 @@ def _map_vars(node, varmap):
     return (varmap[var], newbranches)
 
 
-def is_atomic(x) -> bool:
+def is_atomic(x: Any) -> bool:
     """
     Return ``True`` if *x* is a valid atomic value.
 

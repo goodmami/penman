@@ -45,9 +45,9 @@ class Model(object):
                  top_variable: Variable = 'top',
                  top_role: Role = ':TOP',
                  concept_role: Role = CONCEPT_ROLE,
-                 roles: Mapping[Role, Any] = None,
-                 normalizations: Mapping[Role, Role] = None,
-                 reifications: Iterable[_ReificationSpec] = None):
+                 roles: Optional[Mapping[Role, Any]] = None,
+                 normalizations: Optional[Mapping[Role, Role]] = None,
+                 reifications: Optional[Iterable[_ReificationSpec]] = None):
         self.top_variable = top_variable
         self.top_role = top_role
         self.concept_role = concept_role
@@ -194,7 +194,7 @@ class Model(object):
 
     def reify(self,
               triple: BasicTriple,
-              variables: Set[Variable] = None) -> _Reification:
+              variables: Optional[Set[Variable]] = None) -> _Reification:
         """
         Return the three triples that reify *triple*.
 
