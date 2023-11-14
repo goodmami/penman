@@ -65,3 +65,19 @@ Source = "https://github.com/goodmami/penman"
 
 [tool.hatch.version]
 path = "penman/__about__.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+]
+
+[tool.hatch.envs.dev]
+dependencies = [
+  "pytest",
+  "mypy",
+  "flake8",
+]
+[tool.hatch.envs.dev.scripts]
+test = "pytest {args:--doctest-glob=*.rst --doctest-modules --ignore-glob=penman/interface.py}"
+lint = "flake8 {args:--max-complexity=10} penman/"
+typecheck = "mypy penman/"
