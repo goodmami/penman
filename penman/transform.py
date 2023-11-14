@@ -3,24 +3,23 @@
 Tree and graph transformations.
 """
 
-from typing import Optional, Dict, Set, List, Tuple
 import logging
+from typing import Dict, List, Optional, Set, Tuple
 
-from penman.types import (Variable, Target, BasicTriple, Node)
+from penman.epigraph import Epidata, Epidatum
 from penman.exceptions import ModelError
-from penman.epigraph import (Epidatum, Epidata)
-from penman.surface import (Alignment, RoleAlignment, alignments)
-from penman.tree import (Tree, is_atomic)
-from penman.graph import (Graph, CONCEPT_ROLE)
-from penman.model import Model
+from penman.graph import CONCEPT_ROLE, Graph
 from penman.layout import (
-    Push,
-    Pop,
     POP,
+    Pop,
+    Push,
     appears_inverted,
     get_pushed_variable,
 )
-
+from penman.model import Model
+from penman.surface import Alignment, RoleAlignment, alignments
+from penman.tree import Tree, is_atomic
+from penman.types import BasicTriple, Node, Target, Variable
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +59,7 @@ def canonicalize_roles(t: Tree, model: Model) -> Tree:
 def _canonicalize_node(node: Node, model: Model) -> Node:
     var, edges = node
     canonical_edges = []
-    for i, edge in enumerate(edges):
+    for edge in edges:
         role, tgt = edge
         # alignments aren't parsed off yet, so handle them superficially
         role, tilde, alignment = role.partition('~')

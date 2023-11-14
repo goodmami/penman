@@ -3,10 +3,9 @@
 Definitions of tree structures.
 """
 
-from typing import Dict, List, Tuple, Set, Mapping, Any, Iterator, Optional
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Set, Tuple
 
-from penman.types import (Variable, Branch, Node)
-
+from penman.types import Branch, Node, Variable
 
 _Step = Tuple[Tuple[int, ...], Branch]  # see Tree.walk()
 

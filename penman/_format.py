@@ -1,8 +1,8 @@
 
-from typing import Optional, Union, List, Iterable
+from typing import Iterable, List, Optional, Union
 
+from penman.tree import Tree, is_atomic
 from penman.types import BasicTriple
-from penman.tree import (Tree, is_atomic)
 
 
 def format(tree: Tree,

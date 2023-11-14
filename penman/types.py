@@ -3,8 +3,7 @@
 Basic types used by various Penman modules.
 """
 
-from typing import (Union, Iterable, Tuple, List, Any)
-
+from typing import Any, Iterable, List, Tuple, Union
 
 Variable = str
 Constant = Union[str, float, int, None]  # None for missing values

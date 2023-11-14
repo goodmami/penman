@@ -4,12 +4,11 @@
 Classes and functions for lexing PENMAN strings.
 """
 
-from typing import Union, Iterable, Iterator, NamedTuple, Pattern, Optional
-import re
 import logging
+import re
+from typing import Iterable, Iterator, NamedTuple, Optional, Pattern, Union
 
 from penman.exceptions import DecodeError
-
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +125,7 @@ class TokenIterator(Iterator[Token]):
         try:
             token = self.next()
         except StopIteration:
-            raise self.error('Unexpected end of input')
+            raise self.error('Unexpected end of input') from None
         if token.type not in choices:
             raise self.error('Expected: {}'.format(', '.join(choices)),
                              token=token)

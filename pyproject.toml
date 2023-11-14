@@ -81,3 +81,7 @@ select = [
   "F",    # Pyflakes
   "W",    # pycodestyle warnings
 ]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-wrap-aliases = true

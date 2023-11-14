@@ -10,15 +10,17 @@ import warnings
 
 from penman.codec import (  # noqa: F401
     _decode as decode,
-    _iterdecode as iterdecode,
-    _encode as encode,
-    _load as load,
-    _loads as loads,
     _dump as dump,
     _dumps as dumps,
+    _encode as encode,
+    _iterdecode as iterdecode,
+    _load as load,
+    _loads as loads,
 )
 
 warnings.warn(
     'The penman.interface module is deprecated. Use the functions from '
     'the penman module directly, e.g., penman.decode().',
-    DeprecationWarning)
+    DeprecationWarning,
+    stacklevel=2,
+)

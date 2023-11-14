@@ -3,13 +3,12 @@
 Functions for working with constant values.
 """
 
-from typing import Union
-from enum import Enum
 import json
+from enum import Enum
+from typing import Union
 
-from penman.types import Constant
 from penman.exceptions import ConstantError
-
+from penman.types import Constant
 
 pytype = type  # store because type() is redefined below
 

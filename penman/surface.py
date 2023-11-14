@@ -4,13 +4,12 @@
 Surface strings, tokens, and alignments.
 """
 
-from typing import TypeVar, Type, Mapping, Tuple, Optional
+from typing import Mapping, Optional, Tuple, Type, TypeVar
 
-from penman.types import BasicTriple
-from penman.graph import Graph
 from penman.epigraph import Epidatum
 from penman.exceptions import SurfaceError
-
+from penman.graph import Graph
+from penman.types import BasicTriple
 
 T = TypeVar('T', bound='AlignmentMarker')  # for classmethods
 
