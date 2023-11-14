@@ -32,28 +32,6 @@ classifiers = [
   'Topic :: Utilities'
 ]
 
-[project.optional-dependencies]
-docs = [
-  "sphinx==4.2.0",
-  "furo==2021.9.8",
-  "pygments==2.15.0",
-  "sphinx-copybutton==0.4.0",
-]
-tests = [
-  "pytest",
-  "mypy",
-  "flake8",
-]
-dev = [
-  "sphinx==4.2.0",
-  "furo==2021.9.8",
-  "pygments==2.15.0",
-  "sphinx-copybutton==0.4.0",
-  "pytest",
-  "mypy",
-  "flake8",
-]
-
 [project.scripts]
 penman = "penman.__main__:main"
 
