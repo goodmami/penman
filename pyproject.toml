@@ -79,6 +79,7 @@ select = [
   "E",    # pycodestyle errors
   "I",    # isort
   "F",    # Pyflakes
+  "N",    # PEP-8 naming
   "W",    # pycodestyle warnings
 ]
 

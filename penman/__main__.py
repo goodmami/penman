@@ -119,25 +119,25 @@ def _check(g, model):
         return 0
 
 
-def _order_funcs(KEY_FUNCS):
+def _order_funcs(key_funcs):
 
     def split_arg(arg):
         values = arg.split(',')
         for value in values:
-            if value not in KEY_FUNCS:
+            if value not in key_funcs:
                 raise argparse.ArgumentTypeError(
                     'invalid choice: {!r} (choose from {})'
-                    .format(value, ', '.join(map(repr, KEY_FUNCS))))
+                    .format(value, ', '.join(map(repr, key_funcs))))
         return values
 
     return split_arg
 
 
-def _make_sort_key(keys, model, KEY_FUNCS):
+def _make_sort_key(keys, model, key_funcs):
     kwargs = {}
     funcs = []
     for key in keys:
-        name = KEY_FUNCS[key]
+        name = key_funcs[key]
         func = getattr(model, name, None)
         if func is None:
             kwargs[name] = True
