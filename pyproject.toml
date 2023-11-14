@@ -81,3 +81,14 @@ dependencies = [
 test = "pytest {args:--doctest-glob=*.rst --doctest-modules --ignore-glob=penman/interface.py}"
 lint = "flake8 {args:--max-complexity=10} penman/"
 typecheck = "mypy penman/"
+
+[tool.hatch.envs.docs]
+dependencies = [
+  "sphinx",
+  "furo",
+  "pygments",
+  "sphinx-copybutton",
+]
+[tool.hatch.envs.docs.scripts]
+build = "make -C docs html"
+clean = "make -C docs clean"
