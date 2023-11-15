@@ -1,14 +1,33 @@
 # Change Log
 
-## [Unreleased]
+## [v1.3.0]
+
+**Release date: 2023-11-14**
+
+This release has two user-facing changes: the addition and removal of
+support for Python versions, and fixed reification directions for a
+few roles. Most of the changes in this release are for maintenance,
+such as updates to the way docs are built ([#131]), how the project is
+managed ([#126]), and how CI workflows are run ([#124]).
 
 ### Python Versions
 
-* Removed support for Python 3.6
-* Removed support for Python 3.7
-* Added support for Python 3.10
-* Added support for Python 3.11
-* Added support for Python 3.12
+* Removed support for Python 3.6 ([#123])
+* Removed support for Python 3.7 ([#123])
+* Added support for Python 3.10 ([#123])
+* Added support for Python 3.11 ([#123])
+* Added support for Python 3.12 ([#123])
+
+### Fixed
+
+* Swapped source/target for reifications ([#122])
+  - `:accompanier`
+  - `:example`
+  - `:poss`
+
+### Removed
+
+* The installation extras `test`, `docs`, and `dev` ([#125])
 
 
 ## [v1.2.2]
@@ -762,6 +781,7 @@ First release with very basic functionality.
 [v1.2.0]: ../../releases/tag/v1.2.0
 [v1.2.1]: ../../releases/tag/v1.2.1
 [v1.2.2]: ../../releases/tag/v1.2.2
+[v1.3.0]: ../../releases/tag/v1.3.0
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
@@ -828,3 +848,9 @@ First release with very basic functionality.
 [#95]: https://github.com/goodmami/penman/issues/95
 [#99]: https://github.com/goodmami/penman/issues/99
 [#109]: https://github.com/goodmami/penman/issues/109
+[#122]: https://github.com/goodmami/penman/issues/122
+[#123]: https://github.com/goodmami/penman/issues/123
+[#124]: https://github.com/goodmami/penman/issues/124
+[#125]: https://github.com/goodmami/penman/issues/125
+[#126]: https://github.com/goodmami/penman/issues/126
+[#131]: https://github.com/goodmami/penman/issues/131
