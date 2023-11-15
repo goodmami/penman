@@ -116,7 +116,7 @@ normalizations = {
 #: e.g., to be modified or focused.
 reifications = [
     # role           concept                source   target
-    (":accompanier", "accompany-01",        ":ARG0", ":ARG1"),
+    (":accompanier", "accompany-01",        ":ARG1", ":ARG0"),
     (":age",         "age-01",              ":ARG1", ":ARG2"),
     (":beneficiary", "benefit-01",          ":ARG0", ":ARG1"),
     (":beneficiary", "receive-01",          ":ARG2", ":ARG0"),
@@ -128,7 +128,7 @@ reifications = [
     (":destination", "be-destined-for-91",  ":ARG1", ":ARG2"),
     (":duration",    "last-01",             ":ARG1", ":ARG2"),
     (":employed-by", "have-org-role-91",    ":ARG0", ":ARG1"),
-    (":example",     "exemplify-01",        ":ARG0", ":ARG1"),
+    (":example",     "exemplify-01",        ":ARG1", ":ARG0"),
     (":extent",      "have-extent-91",      ":ARG1", ":ARG2"),
     (":frequency",   "have-frequency-91",   ":ARG1", ":ARG2"),
     (":instrument",  "have-instrument-91",  ":ARG1", ":ARG2"),
@@ -141,8 +141,8 @@ reifications = [
     (":ord",         "have-ord-91",         ":ARG1", ":ARG2"),
     (":part",        "have-part-91",        ":ARG1", ":ARG2"),
     (":polarity",    "have-polarity-91",    ":ARG1", ":ARG2"),
-    (":poss",        "own-01",              ":ARG0", ":ARG1"),
-    (":poss",        "have-03",             ":ARG0", ":ARG1"),
+    (":poss",        "own-01",              ":ARG1", ":ARG0"),
+    (":poss",        "have-03",             ":ARG1", ":ARG0"),
     (":purpose",     "have-purpose-91",     ":ARG1", ":ARG2"),
     (":role",        "have-org-role-91",    ":ARG0", ":ARG2"),
     (":source",      "be-from-91",          ":ARG1", ":ARG2"),

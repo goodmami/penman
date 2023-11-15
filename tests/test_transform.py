@@ -144,8 +144,8 @@ def test_dereify_edges_amr_codec():
             :ARG1-of (b / beta
                         :ARG0 p)
             :ARG1-of (g / gamma
-                        :ARG0-of (_ / own-01
-                                    :ARG1 (p / pi))))'''))
+                        :ARG1-of (_ / own-01
+                                    :ARG0 (p / pi))))'''))
     assert form(g) == (
         '(a / alpha :ARG1-of (b / beta :ARG0 p)'
         ' :ARG1-of (g / gamma :poss (p / pi)))')
