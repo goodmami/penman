@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-import sys
-import os
 import argparse
 import json
 import logging
+import os
+import sys
 
+from penman import layout, transform
 from penman.__about__ import __version__
-from penman.model import Model
-from penman import layout
 from penman.codec import PENMANCodec
-from penman import transform
-
+from penman.model import Model
 
 # Names of functions allowed for ordering triples/branches; we cannot
 # resolve them to the actual functions until the model is loaded.  If
@@ -108,38 +106,38 @@ def _check(g, model):
     i = 1
     errors = model.errors(g)
     if errors:
-        for triple, errors in errors.items():
+        for triple, error_messages in errors.items():
             if triple:
                 context = '({}) '.format(' '.join(map(str, triple)))
             else:
                 context = ''
-            for error in errors:
-                g.metadata[f'error-{i}'] = context + error
+            for error_message in error_messages:
+                g.metadata[f'error-{i}'] = context + error_message
             i += 1
         return 1
     else:
         return 0
 
 
-def _order_funcs(KEY_FUNCS):
+def _order_funcs(key_funcs):
 
     def split_arg(arg):
         values = arg.split(',')
         for value in values:
-            if value not in KEY_FUNCS:
+            if value not in key_funcs:
                 raise argparse.ArgumentTypeError(
                     'invalid choice: {!r} (choose from {})'
-                    .format(value, ', '.join(map(repr, KEY_FUNCS))))
+                    .format(value, ', '.join(map(repr, key_funcs))))
         return values
 
     return split_arg
 
 
-def _make_sort_key(keys, model, KEY_FUNCS):
+def _make_sort_key(keys, model, key_funcs):
     kwargs = {}
     funcs = []
     for key in keys:
-        name = KEY_FUNCS[key]
+        name = key_funcs[key]
         func = getattr(model, name, None)
         if func is None:
             kwargs[name] = True

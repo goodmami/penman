@@ -5,7 +5,6 @@ AMR semantic model definition.
 
 from penman.model import Model
 
-
 #: The roles are the edge labels of reifications. The purpose of roles
 #: in a :class:`~penman.model.Model` is mainly to define the set of
 #: valid roles, but they map to arbitrary data which is not used by

@@ -4,22 +4,14 @@
 Semantic models for interpreting graphs.
 """
 
-from typing import (
-    cast, Optional, Tuple, List, Dict, Set, Iterable, Mapping, Any)
+import random
 import re
 from collections import defaultdict
-import random
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, cast
 
 from penman.exceptions import ModelError
-from penman.types import (
-    Variable,
-    Role,
-    Constant,
-    Target,
-    BasicTriple
-)
 from penman.graph import CONCEPT_ROLE, Graph
-
+from penman.types import BasicTriple, Constant, Role, Target, Variable
 
 _ReificationSpec = Tuple[Role, Constant, Role, Role]
 _Reified = Tuple[Constant, Role, Role]

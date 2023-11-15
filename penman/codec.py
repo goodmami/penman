@@ -3,27 +3,26 @@
 """
 Serialization of PENMAN graphs.
 """
-from typing import Optional, Union, Iterable, Iterator, List, IO
 from pathlib import Path
+from typing import IO, Iterable, Iterator, List, Optional, Union
 
-from penman.types import (
-    Variable,
-    BasicTriple,
-)
-from penman.tree import Tree
-from penman.graph import Graph
-from penman.model import Model
-from penman._parse import (
-    parse,
-    iterparse,
-    parse_triples,
-)
+from penman import layout
 from penman._format import (
     format,
     format_triples,
 )
-from penman import layout
-
+from penman._parse import (
+    iterparse,
+    parse,
+    parse_triples,
+)
+from penman.graph import Graph
+from penman.model import Model
+from penman.tree import Tree
+from penman.types import (
+    BasicTriple,
+    Variable,
+)
 
 # "Utility" types; not Penman-specific
 

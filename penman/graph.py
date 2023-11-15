@@ -4,21 +4,20 @@
 Data structures for Penman graphs and triples.
 """
 
-from typing import (Union, Optional, Mapping, List, Dict, Set, NamedTuple)
-from collections import defaultdict
 import copy
+from collections import defaultdict
+from typing import Dict, List, Mapping, NamedTuple, Optional, Set, Union
 
+from penman.epigraph import Epidata
 from penman.exceptions import GraphError
 from penman.types import (
-    Variable,
+    BasicTriple,
     Constant,
     Role,
     Target,
-    BasicTriple,
     Triples,
+    Variable,
 )
-from penman.epigraph import Epidata
-
 
 CONCEPT_ROLE = ':instance'
 

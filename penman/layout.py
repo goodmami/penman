@@ -50,18 +50,17 @@ following data::
                           ('b', ':ARG0', 'd')]            : POP
 """
 
-from typing import Union, Mapping, Callable, Any, List, Set, cast, Optional
 import copy
 import logging
+from typing import Any, Callable, List, Mapping, Optional, Set, Union, cast
 
-from penman.exceptions import LayoutError
-from penman.types import (Variable, Role, BasicTriple, Branch, Node)
 from penman.epigraph import Epidatum
-from penman.surface import (Alignment, RoleAlignment)
-from penman.tree import (Tree, is_atomic)
-from penman.graph import (Graph, CONCEPT_ROLE)
+from penman.exceptions import LayoutError
+from penman.graph import CONCEPT_ROLE, Graph
 from penman.model import Model
-
+from penman.surface import Alignment, RoleAlignment
+from penman.tree import Tree, is_atomic
+from penman.types import BasicTriple, Branch, Node, Role, Variable
 
 logger = logging.getLogger(__name__)
 

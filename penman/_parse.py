@@ -1,19 +1,18 @@
 
-from typing import Union, Iterable, Iterator, List
 import logging
+from typing import Iterable, Iterator, List, Union
 
-from penman.types import (
-    Target,
-    BasicTriple,
-)
-from penman.tree import Tree
 from penman._lexer import (
     PENMAN_RE,
     TRIPLE_RE,
-    lex,
     TokenIterator,
+    lex,
 )
-
+from penman.tree import Tree
+from penman.types import (
+    BasicTriple,
+    Target,
+)
 
 logger = logging.getLogger('penman')
 

@@ -2,8 +2,8 @@
 No-op semantic model definition.
 """
 
-from penman.types import BasicTriple
 from penman.model import Model
+from penman.types import BasicTriple
 
 
 class NoOpModel(Model):
