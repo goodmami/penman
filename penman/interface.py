@@ -1,4 +1,3 @@
-
 """
 Functions for basic reading and writing of PENMAN graphs.
 

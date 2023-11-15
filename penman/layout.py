@@ -71,6 +71,7 @@ _Nodemap = Mapping[Variable, Union[Node, None]]
 
 # Epigraphical markers
 
+
 class LayoutMarker(Epidatum):
     """Epigraph marker for layout choices."""
 
@@ -78,7 +79,7 @@ class LayoutMarker(Epidatum):
 class Push(LayoutMarker):
     """Epigraph marker to indicate a new node context."""
 
-    __slots__ = 'variable',
+    __slots__ = ('variable',)
 
     def __init__(self, variable):
         self.variable = variable
@@ -101,6 +102,7 @@ POP = Pop()
 
 
 # Tree to graph interpretation ################################################
+
 
 def interpret(t: Tree, model: Optional[Model] = None) -> Graph:
     """
@@ -226,9 +228,12 @@ def _process_atomic(target):
 
 # Graph to tree configuration #################################################
 
-def configure(g: Graph,
-              top: Optional[Variable] = None,
-              model: Optional[Model] = None) -> Tree:
+
+def configure(
+    g: Graph,
+    top: Optional[Variable] = None,
+    model: Optional[Model] = None,
+) -> Tree:
     """
     Create a tree from a graph by making as few decisions as possible.
 
@@ -477,10 +482,12 @@ def _process_epigraph(node):
         edges[i] = (role, target)
 
 
-def reconfigure(g: Graph,
-                top: Optional[Variable] = None,
-                model: Optional[Model] = None,
-                key: Optional[Callable[[Role], Any]] = None) -> Tree:
+def reconfigure(
+    g: Graph,
+    top: Optional[Variable] = None,
+    model: Optional[Model] = None,
+    key: Optional[Callable[[Role], Any]] = None,
+) -> Tree:
     """
     Create a tree from a graph after any discarding layout markers.
 
@@ -488,10 +495,10 @@ def reconfigure(g: Graph,
     """
     p = copy.deepcopy(g)
     for epilist in p.epidata.values():
-        epilist[:] = [epi for epi in epilist
-                      if not isinstance(epi, LayoutMarker)]
+        epilist[:] = [
+            epi for epi in epilist if not isinstance(epi, LayoutMarker)
+        ]
     if key is not None:
-
         # function def because mypy doesn't like key in lambda
         def _key(triple):
             return key(triple[1])
@@ -501,9 +508,11 @@ def reconfigure(g: Graph,
     return configure(p, top=top, model=model)
 
 
-def rearrange(t: Tree,
-              key: Optional[Callable[[Role], Any]] = None,
-              attributes_first: bool = False) -> None:
+def rearrange(
+    t: Tree,
+    key: Optional[Callable[[Role], Any]] = None,
+    attributes_first: bool = False,
+) -> None:
     """
     Sort the branches at each node in tree *t* according to *key*.
 
@@ -562,8 +571,10 @@ def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
     branches[:] = first + sorted(rest, key=key)
 
 
-def get_pushed_variable(g: Graph,
-                        triple: BasicTriple) -> Union[Variable, None]:
+def get_pushed_variable(
+    g: Graph,
+    triple: BasicTriple,
+) -> Union[Variable, None]:
     """
     Return the variable pushed by *triple*, if any, otherwise ``None``.
 

@@ -1,4 +1,3 @@
-
 """
 AMR semantic model definition.
 """
@@ -98,7 +97,7 @@ roles = {
     # incompletely documented or obscure
     ":wiki":                {"type": "wiki"},
     ":range":               {"type": "ordinal"},
-}
+}  # fmt: skip
 
 
 #: Normalizations are like role aliases. If the left side of the
@@ -108,7 +107,7 @@ roles = {
 normalizations = {
     ":mod-of":    ":domain",
     ":domain-of": ":mod",
-}
+}  # fmt: skip
 
 
 #: Reifications are a particular kind of transformation that replaces
@@ -154,7 +153,7 @@ reifications = [
     (":topic",       "concern-02",          ":ARG0", ":ARG1"),
     (":value",       "have-value-91",       ":ARG1", ":ARG2"),
     (":quant",       "have-quant-91",       ":ARG1", ":ARG2"),
-]
+]  # fmt: skip
 
 
 #: The AMR model is an instance of :class:`~penman.model.Model` using

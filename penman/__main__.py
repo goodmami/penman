@@ -28,14 +28,16 @@ RECONFIGURE_KEYS = {
 }
 
 
-def process(f,
-            model,
-            out,
-            err,
-            check,
-            normalize_options,
-            format_options,
-            triples):
+def process(
+    f,
+    model,
+    out,
+    err,
+    check,
+    normalize_options,
+    format_options,
+    triples,
+):
     """Read graphs from *f* and write to *out*."""
 
     exitcode = 0
@@ -55,7 +57,8 @@ def process(f,
         if triples:
             s = codec.format_triples(
                 g.triples,
-                indent=bool(format_options.get('indent', True)))
+                indent=bool(format_options.get('indent', True)),
+            )
         else:
             t = _process_out(g, model, normalize_options)
             s = codec.format(t, **format_options)
@@ -120,14 +123,15 @@ def _check(g, model):
 
 
 def _order_funcs(key_funcs):
-
     def split_arg(arg):
         values = arg.split(',')
         for value in values:
             if value not in key_funcs:
                 raise argparse.ArgumentTypeError(
-                    'invalid choice: {!r} (choose from {})'
-                    .format(value, ', '.join(map(repr, key_funcs))))
+                    'invalid choice: {!r} (choose from {})'.format(
+                        value, ', '.join(map(repr, key_funcs))
+                    )
+                )
         return values
 
     return split_arg
@@ -156,71 +160,116 @@ def main():
         description='Read and write graphs in the PENMAN notation.',
     )
     parser.add_argument(
-        '-V', '--version', action='version',
-        version='Penman v{}'.format(__version__))
+        '-V',
+        '--version',
+        action='version',
+        version='Penman v{}'.format(__version__),
+    )
     parser.add_argument(
-        '-v', '--verbose', action='count', dest='verbosity', default=0,
-        help='increase verbosity')
+        '-v',
+        '--verbose',
+        action='count',
+        dest='verbosity',
+        default=0,
+        help='increase verbosity',
+    )
     parser.add_argument(
-        '-q', '--quiet', action='store_true',
-        help='suppress output on <stdout> and <stderr>')
+        '-q',
+        '--quiet',
+        action='store_true',
+        help='suppress output on <stdout> and <stderr>',
+    )
     parser.add_argument(
-        'FILE', nargs='*',
-        help='read graphs from FILEs instead of stdin')
+        'FILE',
+        nargs='*',
+        help='read graphs from FILEs instead of stdin',
+    )
     parser.add_argument(
-        '--encoding', default=None,
-        help='encoding to use for input/output. Defaults to system default')
+        '--encoding',
+        default=None,
+        help='encoding to use for input/output. Defaults to system default',
+    )
     model_group = parser.add_mutually_exclusive_group()
     model_group.add_argument(
-        '--model', metavar='FILE',
+        '--model',
+        metavar='FILE',
         type=argparse.FileType('r'),
-        help='JSON model file describing the semantic model')
+        help='JSON model file describing the semantic model',
+    )
     model_group.add_argument(
-        '--amr', action='store_true',
-        help='use the AMR model')
+        '--amr',
+        action='store_true',
+        help='use the AMR model',
+    )
     model_group.add_argument(
-        '--noop', action='store_true',
-        help='use the no-op model')
+        '--noop',
+        action='store_true',
+        help='use the no-op model',
+    )
     parser.add_argument(
-        '--check', action='store_true',
-        help='check graphs for compliance with the model')
+        '--check',
+        action='store_true',
+        help='check graphs for compliance with the model',
+    )
     form = parser.add_argument_group('formatting options')
     form.add_argument(
-        '--indent', metavar='N',
-        help='indent N spaces per level ("no" for no newlines)')
+        '--indent',
+        metavar='N',
+        help='indent N spaces per level ("no" for no newlines)',
+    )
     form.add_argument(
-        '--compact', action='store_true',
-        help='compactly print node attributes on one line')
+        '--compact',
+        action='store_true',
+        help='compactly print node attributes on one line',
+    )
     form.add_argument(
-        '--triples', action='store_true',
-        help='print graphs as triple conjunctions')
+        '--triples',
+        action='store_true',
+        help='print graphs as triple conjunctions',
+    )
     norm = parser.add_argument_group('normalization options')
     norm.add_argument(
-        '--make-variables', metavar='FMT',
-        help="recreate node variables with FMT (e.g.: '{prefix}{j}')")
+        '--make-variables',
+        metavar='FMT',
+        help="recreate node variables with FMT (e.g.: '{prefix}{j}')",
+    )
     norm.add_argument(
-        '--rearrange', metavar='KEY',
+        '--rearrange',
+        metavar='KEY',
         type=_order_funcs(REARRANGE_KEYS),
-        help='reorder the branches of the tree')
+        help='reorder the branches of the tree',
+    )
     norm.add_argument(
-        '--reconfigure', metavar='KEY',
+        '--reconfigure',
+        metavar='KEY',
         type=_order_funcs(RECONFIGURE_KEYS),
-        help='reconfigure the graph layout with reordered triples')
+        help='reconfigure the graph layout with reordered triples',
+    )
     norm.add_argument(
-        '--canonicalize-roles', action='store_true',
-        help='canonicalize role forms')
+        '--canonicalize-roles',
+        action='store_true',
+        help='canonicalize role forms',
+    )
     norm.add_argument(
-        '--reify-edges', action='store_true',
-        help='reify all eligible edges')
+        '--reify-edges',
+        action='store_true',
+        help='reify all eligible edges',
+    )
     norm.add_argument(
-        '--dereify-edges', action='store_true',
-        help='dereify all eligible edges')
+        '--dereify-edges',
+        action='store_true',
+        help='dereify all eligible edges',
+    )
     norm.add_argument(
-        '--reify-attributes', action='store_true',
-        help='reify all attributes')
+        '--reify-attributes',
+        action='store_true',
+        help='reify all attributes',
+    )
     norm.add_argument(
-        '--indicate-branches', action='store_true',
-        help='insert triples to indicate tree structure')
+        '--indicate-branches',
+        action='store_true',
+        help='insert triples to indicate tree structure',
+    )
 
     args = parser.parse_args()
 
@@ -238,12 +287,14 @@ def main():
     model = _get_model(args.amr, args.noop, args.model)
 
     if args.rearrange:
-        args.rearrange = _make_sort_key(
-            args.rearrange, model, REARRANGE_KEYS)
+        args.rearrange = _make_sort_key(args.rearrange, model, REARRANGE_KEYS)
 
     if args.reconfigure:
         args.reconfigure = _make_sort_key(
-            args.reconfigure, model, RECONFIGURE_KEYS)
+            args.reconfigure,
+            model,
+            RECONFIGURE_KEYS,
+        )
 
     indent = _indent(args.indent)
 
@@ -266,12 +317,26 @@ def main():
         for file in args.FILE:
             with open(file, encoding=args.encoding) as f:
                 exitcode = process(
-                    f, model, sys.stdout, sys.stderr, args.check,
-                    normalize_options, format_options, args.triples)
+                    f,
+                    model,
+                    sys.stdout,
+                    sys.stderr,
+                    args.check,
+                    normalize_options,
+                    format_options,
+                    args.triples,
+                )
     else:
         exitcode = process(
-            sys.stdin, model, sys.stdout, sys.stderr, args.check,
-            normalize_options, format_options, args.triples)
+            sys.stdin,
+            model,
+            sys.stdout,
+            sys.stderr,
+            args.check,
+            normalize_options,
+            format_options,
+            args.triples,
+        )
 
     sys.exit(exitcode)
 
@@ -290,7 +355,7 @@ def _get_model(amr, noop, model_file):
 
 def _indent(indent):
     if indent:
-        if indent.lower() in ("no", "none", "false"):
+        if indent.lower() in ('no', 'none', 'false'):
             indent = None
         else:
             try:
@@ -298,8 +363,9 @@ def _indent(indent):
                 if indent < -1:
                     raise ValueError
             except ValueError:
-                sys.exit('error: --indent value must be "no" or an '
-                         'integer >= -1')
+                sys.exit(
+                    'error: --indent value must be "no" or an integer >= -1'
+                )
     else:
         indent = -1
     return indent

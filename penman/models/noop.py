@@ -14,6 +14,7 @@ class NoOpModel(Model):
     that :meth:`NoOpModel.deinvert` always returns the original
     triple, even if it was inverted.
     """
+
     def deinvert(self, triple: BasicTriple) -> BasicTriple:
         """Return *triple* (does not deinvert)."""
         return triple

@@ -22,12 +22,14 @@ class LayoutError(PenmanError):
 class DecodeError(PenmanError):
     """Raised on PENMAN syntax errors."""
 
-    def __init__(self,
-                 message: Optional[str] = None,
-                 filename: Optional[str] = None,
-                 lineno: Optional[int] = None,
-                 offset: Optional[int] = None,
-                 text: Optional[str] = None):
+    def __init__(
+        self,
+        message: Optional[str] = None,
+        filename: Optional[str] = None,
+        lineno: Optional[int] = None,
+        offset: Optional[int] = None,
+        text: Optional[str] = None,
+    ):
         self.message = message
         self.filename = filename
         self.lineno = lineno

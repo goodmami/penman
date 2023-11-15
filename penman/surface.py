@@ -15,8 +15,10 @@ T = TypeVar('T', bound='AlignmentMarker')  # for classmethods
 
 
 class AlignmentMarker(Epidatum):
-
-    __slots__ = 'indices', 'prefix',
+    __slots__ = (
+        'indices',
+        'prefix',
+    )
 
     def __init__(self, indices: Tuple[int, ...], prefix: Optional[str] = None):
         super().__init__()
@@ -46,16 +48,12 @@ class AlignmentMarker(Epidatum):
                 prefix = _s[0:i]
                 _s = _s[i:]
         except IndexError as exc:
-            raise SurfaceError(
-                f'invalid alignment marker: {s!r}'
-            ) from exc
+            raise SurfaceError(f'invalid alignment marker: {s!r}') from exc
 
         try:
             indices = tuple(map(int, _s.split(',')))
         except ValueError as exc:
-            raise SurfaceError(
-                f'invalid alignments: {s!r}'
-            ) from exc
+            raise SurfaceError(f'invalid alignments: {s!r}') from exc
 
         return cls(indices, prefix=prefix)
 
@@ -67,14 +65,14 @@ class AlignmentMarker(Epidatum):
         return f'{name}({args})'
 
     def __str__(self):
-        return '~{}{}'.format(self.prefix or '',
-                              ','.join(map(str, self.indices)))
+        return '~{}{}'.format(
+            self.prefix or '', ','.join(map(str, self.indices))
+        )
 
     def __eq__(self, other):
         if not isinstance(other, AlignmentMarker):
             return False
-        return (self.prefix == other.prefix
-                and self.indices == other.indices)
+        return self.prefix == other.prefix and self.indices == other.indices
 
 
 class Alignment(AlignmentMarker):
@@ -138,8 +136,10 @@ def role_alignments(g: Graph) -> _Alignments:
     return _get_alignments(g, RoleAlignment)
 
 
-def _get_alignments(g: Graph,
-                    alignment_type: Type[AlignmentMarker]) -> _Alignments:
+def _get_alignments(
+    g: Graph,
+    alignment_type: Type[AlignmentMarker],
+) -> _Alignments:
     alns = {}
     triple = None
     for triple, epidata in g.epidata.items():
