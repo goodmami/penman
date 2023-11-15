@@ -91,11 +91,13 @@ class Graph(object):
         <Graph object (top=b) at ...>
     """
 
-    def __init__(self,
-                 triples: Optional[Triples] = None,
-                 top: Optional[Variable] = None,
-                 epidata: Optional[Mapping[BasicTriple, Epidata]] = None,
-                 metadata: Optional[Mapping[str, str]] = None):
+    def __init__(
+        self,
+        triples: Optional[Triples] = None,
+        top: Optional[Variable] = None,
+        epidata: Optional[Mapping[BasicTriple, Epidata]] = None,
+        metadata: Optional[Mapping[str, str]] = None,
+    ):
         if not triples:
             triples = []
         if not epidata:
@@ -105,8 +107,9 @@ class Graph(object):
 
         # the following (a) creates a new list (b) validates that
         # they are triples, and (c) ensures roles begin with :
-        self.triples = [(src, _ensure_colon(role), tgt)
-                        for src, role, tgt in triples]
+        self.triples = [
+            (src, _ensure_colon(role), tgt) for src, role, tgt in triples
+        ]
         self._top = top
         self.epidata = dict(epidata)
         self.metadata = dict(metadata)
@@ -117,16 +120,21 @@ class Graph(object):
 
     def __str__(self):
         triples = '[{}]'.format(',\n   '.join(map(repr, self.triples)))
-        epidata = '{{{}}}'.format(',\n    '.join(
-            map('{0[0]!r}: {0[1]!r}'.format, self.epidata.items())))
+        epidata = '{{{}}}'.format(
+            ',\n    '.join(
+                map('{0[0]!r}: {0[1]!r}'.format, self.epidata.items())
+            )
+        )
         return f'Graph(\n  {triples},\n  epidata={epidata})'
 
     def __eq__(self, other):
         if not isinstance(other, Graph):
             return NotImplemented
-        return (self.top == other.top
-                and len(self.triples) == len(other.triples)
-                and set(self.triples) == set(other.triples))
+        return (
+            self.top == other.top
+            and len(self.triples) == len(other.triples)
+            and set(self.triples) == set(other.triples)
+        )
 
     def __or__(self, other):
         if isinstance(other, Graph):
@@ -201,27 +209,35 @@ class Graph(object):
         """
         Return instances (concept triples).
         """
-        return [Instance(*t)
-                for t in self._filter_triples(None, CONCEPT_ROLE, None)]
+        return [
+            Instance(*t)
+            for t in self._filter_triples(None, CONCEPT_ROLE, None)
+        ]
 
-    def edges(self,
-              source: Optional[Variable] = None,
-              role: Optional[Role] = None,
-              target: Optional[Variable] = None) -> List[Edge]:
+    def edges(
+        self,
+        source: Optional[Variable] = None,
+        role: Optional[Role] = None,
+        target: Optional[Variable] = None,
+    ) -> List[Edge]:
         """
         Return edges filtered by their *source*, *role*, or *target*.
 
         Edges don't include terminal triples (concepts or attributes).
         """
         variables = self.variables()
-        return [Edge(*t)
-                for t in self._filter_triples(source, role, target)
-                if t[1] != CONCEPT_ROLE and t[2] in variables]
+        return [
+            Edge(*t)
+            for t in self._filter_triples(source, role, target)
+            if t[1] != CONCEPT_ROLE and t[2] in variables
+        ]
 
-    def attributes(self,
-                   source: Optional[Variable] = None,
-                   role: Optional[Role] = None,
-                   target: Optional[Constant] = None) -> List[Attribute]:
+    def attributes(
+        self,
+        source: Optional[Variable] = None,
+        role: Optional[Role] = None,
+        target: Optional[Constant] = None,
+    ) -> List[Attribute]:
         """
         Return attributes filtered by their *source*, *role*, or *target*.
 
@@ -229,14 +245,18 @@ class Graph(object):
         target is a nonterminal.
         """
         variables = self.variables()
-        return [Attribute(*t)
-                for t in self._filter_triples(source, role, target)
-                if t[1] != CONCEPT_ROLE and t[2] not in variables]
+        return [
+            Attribute(*t)
+            for t in self._filter_triples(source, role, target)
+            if t[1] != CONCEPT_ROLE and t[2] not in variables
+        ]
 
-    def _filter_triples(self,
-                        source: Optional[Variable],
-                        role: Optional[Role],
-                        target: Optional[Target]) -> List[BasicTriple]:
+    def _filter_triples(
+        self,
+        source: Optional[Variable],
+        role: Optional[Role],
+        target: Optional[Target],
+    ) -> List[BasicTriple]:
         """
         Filter triples based on their source, role, and/or target.
         """
@@ -244,10 +264,13 @@ class Graph(object):
             triples = list(self.triples)
         else:
             triples = [
-                t for t in self.triples
-                if ((source is None or source == t[0])
+                t
+                for t in self.triples
+                if (
+                    (source is None or source == t[0])
                     and (role is None or role == t[1])
-                    and (target is None or target == t[2]))
+                    and (target is None or target == t[2])
+                )
             ]
         return triples
 

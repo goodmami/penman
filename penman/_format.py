@@ -1,13 +1,14 @@
-
 from typing import Iterable, List, Optional, Union
 
 from penman.tree import Tree, is_atomic
 from penman.types import BasicTriple
 
 
-def format(tree: Tree,
-           indent: Union[int, None] = -1,
-           compact: bool = False) -> str:
+def format(
+    tree: Tree,
+    indent: Union[int, None] = -1,
+    compact: bool = False,
+) -> str:
     """
     Format *tree* into a PENMAN string.
 
@@ -28,8 +29,10 @@ def format(tree: Tree,
     if not isinstance(tree, Tree):
         tree = Tree(tree)
     vars = [var for var, _ in tree.nodes()] if compact else []
-    parts = ['# ::{}{}'.format(key, ' ' + value if value else value)
-             for key, value in tree.metadata.items()]
+    parts = [
+        '# ::{}{}'.format(key, ' ' + value if value else value)
+        for key, value in tree.metadata.items()
+    ]
     parts.append(_format_node(tree.node, indent, 0, set(vars)))
     return '\n'.join(parts)
 
@@ -54,15 +57,19 @@ def format_triples(triples: Iterable[BasicTriple], indent: bool = True) -> str:
     """
     delim = ' ^\n' if indent else ' ^ '
     # need to remove initial : on roles for triples
-    conjunction = [f'{role.lstrip(":")}({source}, {target})'
-                   for source, role, target in triples]
+    conjunction = [
+        f'{role.lstrip(":")}({source}, {target})'
+        for source, role, target in triples
+    ]
     return delim.join(conjunction)
 
 
-def _format_node(node,
-                 indent: Optional[int],
-                 column: int,
-                 vars: set) -> str:
+def _format_node(
+    node,
+    indent: Optional[int],
+    column: int,
+    vars: set,
+) -> str:
     """
     Format tree *node* into a PENMAN string.
     """

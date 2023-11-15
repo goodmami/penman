@@ -17,17 +17,17 @@ logger = logging.getLogger(__name__)
 # capturing groups. They are used during lexing and will be
 # checked by name during parsing.
 PATTERNS = {
-    'COMMENT':    r'\#.*$',
-    'STRING':     r'"[^"\\]*(?:\\.[^"\\]*)*"',
-    'ALIGNMENT':  r'~(?:[a-z]\.?)?[0-9]+(?:,[0-9]+)*',
+    'COMMENT': r'\#.*$',
+    'STRING': r'"[^"\\]*(?:\\.[^"\\]*)*"',
+    'ALIGNMENT': r'~(?:[a-z]\.?)?[0-9]+(?:,[0-9]+)*',
     # ROLE cannot be made up of COLON + SYMBOL because it then becomes
     # difficult to detect anonymous roles: (a : b) vs (a :b c)
-    'ROLE':       r':[^ \t\r\n\v\f()\/:~]*',
-    'SYMBOL':     r'[^ \t\r\n\v\f()\/:~]+',
-    'LPAREN':     r'\(',
-    'RPAREN':     r'\)',
-    'SLASH':      r'\/',  # concept (node label) role
-    'UNEXPECTED': r'[^ \t\r\n\v\f]'
+    'ROLE': r':[^ \t\r\n\v\f()\/:~]*',
+    'SYMBOL': r'[^ \t\r\n\v\f()\/:~]+',
+    'LPAREN': r'\(',
+    'RPAREN': r'\)',
+    'SLASH': r'\/',  # concept (node label) role
+    'UNEXPECTED': r'[^ \t\r\n\v\f]',
 }
 
 
@@ -38,27 +38,37 @@ def _compile(*names: str) -> Pattern[str]:
 
 # The order matters in these pattern lists as more permissive patterns
 # can short-circuit stricter patterns.
-PENMAN_RE = _compile('COMMENT',
-                     'STRING',
-                     'LPAREN', 'RPAREN', 'SLASH',
-                     'ROLE', 'SYMBOL', 'ALIGNMENT',
-                     'UNEXPECTED')
-TRIPLE_RE = _compile('COMMENT',
-                     'STRING',
-                     'LPAREN', 'RPAREN',
-                     'SYMBOL',
-                     'UNEXPECTED')
+PENMAN_RE = _compile(
+    'COMMENT',
+    'STRING',
+    'LPAREN',
+    'RPAREN',
+    'SLASH',
+    'ROLE',
+    'SYMBOL',
+    'ALIGNMENT',
+    'UNEXPECTED',
+)
+TRIPLE_RE = _compile(
+    'COMMENT',
+    'STRING',
+    'LPAREN',
+    'RPAREN',
+    'SYMBOL',
+    'UNEXPECTED',
+)
 
 
 class Token(NamedTuple):
     """
     A lexed token.
     """
-    type: str    #: The token type.
-    text: str    #: The matched string for the token.
+
+    type: str  #: The token type.
+    text: str  #: The matched string for the token.
     lineno: int  #: The line number the token appears on.
     offset: int  #: The character offset of the token.
-    line: str    #: The line the token appears in.
+    line: str  #: The line the token appears in.
 
 
 class TokenIterator(Iterator[Token]):
@@ -127,8 +137,9 @@ class TokenIterator(Iterator[Token]):
         except StopIteration:
             raise self.error('Unexpected end of input') from None
         if token.type not in choices:
-            raise self.error('Expected: {}'.format(', '.join(choices)),
-                             token=token)
+            raise self.error(
+                'Expected: {}'.format(', '.join(choices)), token=token
+            )
         return token
 
     def accept(self, *choices):
@@ -157,8 +168,10 @@ class TokenIterator(Iterator[Token]):
         return DecodeError(message, lineno=lineno, offset=offset, text=line)
 
 
-def lex(lines: Union[Iterable[str], str],
-        pattern: Optional[Union[Pattern[str], str]] = None) -> TokenIterator:
+def lex(
+    lines: Union[Iterable[str], str],
+    pattern: Optional[Union[Pattern[str], str]] = None,
+) -> TokenIterator:
     """
     Yield PENMAN tokens matched in *lines*.
 
@@ -198,7 +211,8 @@ def _lex(lines: Iterable[str], regex: Pattern[str]) -> Iterator[Token]:
             if typ is None:
                 raise ValueError(
                     'Lexer pattern generated a match without a named '
-                    f'capturing group:\n{regex.pattern}')
+                    f'capturing group:\n{regex.pattern}'
+                )
             token = Token(typ, val, i, m.start(), line)
             if debug:
                 logger.debug(token)

@@ -1,4 +1,3 @@
-
 import logging
 from typing import Iterable, Iterator, List, Union
 
@@ -72,7 +71,7 @@ def parse_triples(s: str) -> List[BasicTriple]:
         ('b', ':ARG0', 'd')
         ('d', ':instance', 'dog')
 
-        """
+    """
     tokens = lex(s, pattern=TRIPLE_RE)
     return _parse_triples(tokens)
 

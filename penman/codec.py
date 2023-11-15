@@ -56,8 +56,7 @@ class PENMANCodec(object):
         tree = parse(s)
         return layout.interpret(tree, self.model)
 
-    def iterdecode(self,
-                   lines: Union[Iterable[str], str]) -> Iterator[Graph]:
+    def iterdecode(self, lines: Union[Iterable[str], str]) -> Iterator[Graph]:
         """
         Yield graphs parsed from *lines*.
 
@@ -99,14 +98,16 @@ class PENMANCodec(object):
         return parse(s)
 
     def parse_triples(self, s: str) -> List[BasicTriple]:
-        """ Parse a triple conjunction from *s*."""
+        """Parse a triple conjunction from *s*."""
         return parse_triples(s)
 
-    def encode(self,
-               g: Graph,
-               top: Optional[Variable] = None,
-               indent: Union[int, None] = -1,
-               compact: bool = False) -> str:
+    def encode(
+        self,
+        g: Graph,
+        top: Optional[Variable] = None,
+        indent: Union[int, None] = -1,
+        compact: bool = False,
+    ) -> str:
         """
         Serialize the graph *g* into PENMAN notation.
 
@@ -128,18 +129,22 @@ class PENMANCodec(object):
         tree = layout.configure(g, top=top, model=self.model)
         return self.format(tree, indent=indent, compact=compact)
 
-    def format(self,
-               tree: Tree,
-               indent: Union[int, None] = -1,
-               compact: bool = False) -> str:
+    def format(
+        self,
+        tree: Tree,
+        indent: Union[int, None] = -1,
+        compact: bool = False,
+    ) -> str:
         """
         Format *tree* into a PENMAN string.
         """
         return format(tree, indent=indent, compact=compact)
 
-    def format_triples(self,
-                       triples: Iterable[BasicTriple],
-                       indent: bool = True) -> str:
+    def format_triples(
+        self,
+        triples: Iterable[BasicTriple],
+        indent: bool = True,
+    ) -> str:
         """
         Return the formatted triple conjunction of *triples*.
 
@@ -166,8 +171,8 @@ class PENMANCodec(object):
 # underscore here so they are not included as part of penman.codec's
 # public API.
 
-def _decode(s: str,
-            model: Optional[Model] = None) -> Graph:
+
+def _decode(s: str, model: Optional[Model] = None) -> Graph:
     """
     Deserialize PENMAN-serialized *s* into its Graph object
 
@@ -186,8 +191,10 @@ def _decode(s: str,
     return codec.decode(s)
 
 
-def _iterdecode(lines: Union[Iterable[str], str],
-                model: Optional[Model] = None) -> Iterator[Graph]:
+def _iterdecode(
+    lines: Union[Iterable[str], str],
+    model: Optional[Model] = None,
+) -> Iterator[Graph]:
     """
     Yield graphs parsed from *lines*.
 
@@ -208,11 +215,13 @@ def _iterdecode(lines: Union[Iterable[str], str],
     yield from codec.iterdecode(lines)
 
 
-def _encode(g: Graph,
-            top: Optional[Variable] = None,
-            model: Optional[Model] = None,
-            indent: Union[int, bool] = -1,
-            compact: bool = False) -> str:
+def _encode(
+    g: Graph,
+    top: Optional[Variable] = None,
+    model: Optional[Model] = None,
+    indent: Union[int, bool] = -1,
+    compact: bool = False,
+) -> str:
     """
     Serialize the graph *g* from *top* to PENMAN notation.
 
@@ -232,15 +241,14 @@ def _encode(g: Graph,
 
     """
     codec = PENMANCodec(model=model)
-    return codec.encode(g,
-                        top=top,
-                        indent=indent,
-                        compact=compact)
+    return codec.encode(g, top=top, indent=indent, compact=compact)
 
 
-def _load(source: FileOrFilename,
-          model: Optional[Model] = None,
-          encoding: Optional[str] = None) -> List[Graph]:
+def _load(
+    source: FileOrFilename,
+    model: Optional[Model] = None,
+    encoding: Optional[str] = None,
+) -> List[Graph]:
     """
     Deserialize a list of PENMAN-encoded graphs from *source*.
 
@@ -259,8 +267,7 @@ def _load(source: FileOrFilename,
         return list(codec.iterdecode(source))
 
 
-def _loads(string: str,
-           model: Optional[Model] = None) -> List[Graph]:
+def _loads(string: str, model: Optional[Model] = None) -> List[Graph]:
     """
     Deserialize a list of PENMAN-encoded graphs from *string*.
 
@@ -274,12 +281,14 @@ def _loads(string: str,
     return list(codec.iterdecode(string))
 
 
-def _dump(graphs: Iterable[Graph],
-          file: FileOrFilename,
-          model: Optional[Model] = None,
-          indent: Union[int, bool] = -1,
-          compact: bool = False,
-          encoding: Optional[str] = None) -> None:
+def _dump(
+    graphs: Iterable[Graph],
+    file: FileOrFilename,
+    model: Optional[Model] = None,
+    indent: Union[int, bool] = -1,
+    compact: bool = False,
+    encoding: Optional[str] = None,
+) -> None:
     """
     Serialize each graph in *graphs* to PENMAN and write to *file*.
 
@@ -301,8 +310,7 @@ def _dump(graphs: Iterable[Graph],
 
 def _dump_stream(fh, gs, codec, indent, compact):
     """Helper method for dump() for incremental printing."""
-    ss = (codec.encode(g, indent=indent, compact=compact)
-          for g in gs)
+    ss = (codec.encode(g, indent=indent, compact=compact) for g in gs)
     try:
         print(next(ss), file=fh)
     except StopIteration:
@@ -312,10 +320,12 @@ def _dump_stream(fh, gs, codec, indent, compact):
         print(s, file=fh)
 
 
-def _dumps(graphs: Iterable[Graph],
-           model: Optional[Model] = None,
-           indent: Union[int, bool] = -1,
-           compact: bool = False) -> str:
+def _dumps(
+    graphs: Iterable[Graph],
+    model: Optional[Model] = None,
+    indent: Union[int, bool] = -1,
+    compact: bool = False,
+) -> str:
     """
     Serialize each graph in *graphs* to the PENMAN format.
 
@@ -328,6 +338,5 @@ def _dumps(graphs: Iterable[Graph],
         the string of serialized graphs
     """
     codec = PENMANCodec(model=model)
-    strings = [codec.encode(g, indent=indent, compact=compact)
-               for g in graphs]
+    strings = [codec.encode(g, indent=indent, compact=compact) for g in graphs]
     return '\n\n'.join(strings)

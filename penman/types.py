@@ -1,4 +1,3 @@
-
 """
 Basic types used by various Penman modules.
 """

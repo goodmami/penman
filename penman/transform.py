@@ -1,4 +1,3 @@
-
 """
 Tree and graph transformations.
 """
@@ -114,9 +113,7 @@ def reify_edges(g: Graph, model: Model) -> Graph:
             # the tree; maybe this should be a tree operation?
         else:
             new_triples.append(triple)
-    g = Graph(new_triples,
-              epidata=new_epidata,
-              metadata=g.metadata)
+    g = Graph(new_triples, epidata=new_epidata, metadata=g.metadata)
     logger.info('Reified edges: %s', g)
     return g
 
@@ -162,9 +159,7 @@ def dereify_edges(g: Graph, model: Model) -> Graph:
                 del new_epidata[triple]
         else:
             new_triples.append(triple)
-    g = Graph(new_triples,
-              epidata=new_epidata,
-              metadata=g.metadata)
+    g = Graph(new_triples, epidata=new_epidata, metadata=g.metadata)
     logger.info('Dereified edges: %s', g)
     return g
 
@@ -212,9 +207,7 @@ def reify_attributes(g: Graph) -> Graph:
             new_epidata[node_triple] = node_epis + [POP]
         else:
             new_triples.append(triple)
-    g = Graph(new_triples,
-              epidata=new_epidata,
-              metadata=g.metadata)
+    g = Graph(new_triples, epidata=new_epidata, metadata=g.metadata)
     logger.info('Reified attributes: %s', g)
     return g
 
@@ -256,9 +249,10 @@ def indicate_branches(g: Graph, model: Model) -> Graph:
     """
     new_triples: List[BasicTriple] = []
     for t in g.triples:
-        push = next((epi for epi in g.epidata.get(t, [])
-                     if isinstance(epi, Push)),
-                    None)
+        push = next(
+            (epi for epi in g.epidata.get(t, []) if isinstance(epi, Push)),
+            None,
+        )
         if push is not None:
             if push.variable == t[2]:
                 new_triples.append((t[0], model.top_role, t[2]))
@@ -266,9 +260,7 @@ def indicate_branches(g: Graph, model: Model) -> Graph:
                 assert isinstance(t[2], str)
                 new_triples.append((t[2], model.top_role, t[0]))
         new_triples.append(t)
-    g = Graph(new_triples,
-              epidata=g.epidata,
-              metadata=g.metadata)
+    g = Graph(new_triples, epidata=g.epidata, metadata=g.metadata)
     logger.info('Indicated branches: %s', g)
     return g
 
@@ -330,14 +322,17 @@ def _edge_markers(epidata: Epidata) -> Tuple[Epidata, Epidata]:
     return node_epis, out_epis
 
 
-_Dereification = Dict[Variable,
-                      Tuple[BasicTriple,  # inverted triple of reification
-                            BasicTriple,  # dereified triple
-                            List[Epidatum]]]  # computed epidata
+_Dereification = Dict[
+    Variable,
+    Tuple[
+        BasicTriple,  # inverted triple of reification
+        BasicTriple,  # dereified triple
+        List[Epidatum],
+    ],
+]  # computed epidata
 
 
 def _dereify_agenda(g: Graph, model: Model) -> _Dereification:
-
     alns = alignments(g)
     agenda: _Dereification = {}
     fixed: Set[Target] = set([g.top])
@@ -356,9 +351,11 @@ def _dereify_agenda(g: Graph, model: Model) -> _Dereification:
                 other[var].append(triple)
 
     for var, instance in inst.items():
-        if (var not in fixed
-                and len(other.get(var, [])) == 2
-                and model.is_concept_dereifiable(instance[2])):
+        if (
+            var not in fixed
+            and len(other.get(var, [])) == 2
+            and model.is_concept_dereifiable(instance[2])
+        ):
             # passed initial checks
             # now figure out which other edge is the first one
             first, second = other[var]
@@ -374,9 +371,13 @@ def _dereify_agenda(g: Graph, model: Model) -> _Dereification:
                 if instance in alns:
                     aln = alns[instance]
                     epidata.append(
-                        RoleAlignment(aln.indices, prefix=aln.prefix))
-                epidata.extend(epi for epi in g.epidata[second]
-                               if not isinstance(epi, RoleAlignment))
+                        RoleAlignment(aln.indices, prefix=aln.prefix)
+                    )
+                epidata.extend(
+                    epi
+                    for epi in g.epidata[second]
+                    if not isinstance(epi, RoleAlignment)
+                )
                 agenda[var] = (first, dereified, epidata)
 
     return agenda

@@ -1,4 +1,3 @@
-
 """
 Functions for working with constant values.
 """
@@ -26,11 +25,11 @@ class Type(Enum):
 
 
 # Make them available at the module level
-SYMBOL = Type.SYMBOL    #: Symbol constants (e.g., :code:`(... :polarity -)`)
-STRING = Type.STRING    #: String constants (e.g., :code:`(... :op1 "Kim")`)
+SYMBOL = Type.SYMBOL  #: Symbol constants (e.g., :code:`(... :polarity -)`)
+STRING = Type.STRING  #: String constants (e.g., :code:`(... :op1 "Kim")`)
 INTEGER = Type.INTEGER  #: Integer constants (e.g., :code:`(... :value 12)`)
-FLOAT = Type.FLOAT      #: Float constants (e.g., :code:`(... :value 1.2)`)
-NULL = Type.NULL        #: Empty values (e.g., :code:`(... :ARG1 )`)
+FLOAT = Type.FLOAT  #: Float constants (e.g., :code:`(... :value 1.2)`)
+NULL = Type.NULL  #: Empty values (e.g., :code:`(... :ARG1 )`)
 
 _typemap = {
     str: SYMBOL,  # needs further checking
@@ -63,9 +62,11 @@ def type(constant_string: Union[str, None]) -> Type:
         assert isinstance(constant_string, str)
         value = evaluate(constant_string)
         typ = _typemap[pytype(value)]
-        if (typ == Type.SYMBOL
-                and constant_string.startswith('"')
-                and constant_string.endswith('"')):
+        if (
+            typ == Type.SYMBOL
+            and constant_string.startswith('"')
+            and constant_string.endswith('"')
+        ):
             typ = Type.STRING
     return typ
 

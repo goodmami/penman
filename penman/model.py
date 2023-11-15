@@ -7,7 +7,17 @@ Semantic models for interpreting graphs.
 import random
 import re
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, cast
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Set,
+    Tuple,
+    cast,
+)
 
 from penman.exceptions import ModelError
 from penman.graph import CONCEPT_ROLE, Graph
@@ -33,13 +43,16 @@ class Model(object):
         normalizations: a mapping of roles to normalized roles
         reifications: a list of 4-tuples used to define reifications
     """
-    def __init__(self,
-                 top_variable: Variable = 'top',
-                 top_role: Role = ':TOP',
-                 concept_role: Role = CONCEPT_ROLE,
-                 roles: Optional[Mapping[Role, Any]] = None,
-                 normalizations: Optional[Mapping[Role, Role]] = None,
-                 reifications: Optional[Iterable[_ReificationSpec]] = None):
+
+    def __init__(
+        self,
+        top_variable: Variable = 'top',
+        top_role: Role = ':TOP',
+        concept_role: Role = CONCEPT_ROLE,
+        roles: Optional[Mapping[Role, Any]] = None,
+        normalizations: Optional[Mapping[Role, Role]] = None,
+        reifications: Optional[Iterable[_ReificationSpec]] = None,
+    ):
         self.top_variable = top_variable
         self.top_role = top_role
         self.concept_role = concept_role
@@ -49,7 +62,9 @@ class Model(object):
         self.roles = roles or {}
         self._role_re = re.compile(
             '^({})$'.format(
-                '|'.join(list(self.roles) + [top_role, concept_role])))
+                '|'.join(list(self.roles) + [top_role, concept_role])
+            )
+        )
 
         if normalizations:
             normalizations = dict(normalizations)
@@ -67,12 +82,14 @@ class Model(object):
     def __eq__(self, other):
         if not isinstance(other, Model):
             return NotImplemented
-        return (self.top_variable == other.top_variable
-                and self.top_role == other.top_role
-                and self.concept_role == other.concept_role
-                and self.roles == other.roles
-                and self.normalizations == other.normalizations
-                and self.reifications == other.reifications)
+        return (
+            self.top_variable == other.top_variable
+            and self.top_role == other.top_role
+            and self.concept_role == other.concept_role
+            and self.roles == other.roles
+            and self.normalizations == other.normalizations
+            and self.reifications == other.reifications
+        )
 
     @classmethod
     def from_dict(cls, d):
@@ -88,8 +105,9 @@ class Model(object):
         ``False`` is returned, even if something like
         :meth:`canonicalize_role` could return a valid role.
         """
-        return (self._has_role(role)
-                or (role.endswith('-of') and self._has_role(role[:-3])))
+        return self._has_role(role) or (
+            role.endswith('-of') and self._has_role(role[:-3])
+        )
 
     def _has_role(self, role: Role) -> bool:
         return self._role_re.match(role) is not None
@@ -184,9 +202,11 @@ class Model(object):
         """Return ``True`` if *role* can be reified."""
         return role in self.reifications
 
-    def reify(self,
-              triple: BasicTriple,
-              variables: Optional[Set[Variable]] = None) -> _Reification:
+    def reify(
+        self,
+        triple: BasicTriple,
+        variables: Optional[Set[Variable]] = None,
+    ) -> _Reification:
         """
         Return the three triples that reify *triple*.
 
@@ -217,18 +237,22 @@ class Model(object):
                 var = f'_{i}'
                 i += 1
 
-        return ((var, source_role, source),
-                (var, CONCEPT_ROLE, concept),
-                (var, target_role, target))
+        return (
+            (var, source_role, source),
+            (var, CONCEPT_ROLE, concept),
+            (var, target_role, target),
+        )
 
     def is_concept_dereifiable(self, concept: Target) -> bool:
         """Return ``True`` if *concept* can be dereified."""
         return concept in self.dereifications
 
-    def dereify(self,
-                instance_triple: BasicTriple,
-                source_triple: BasicTriple,
-                target_triple: BasicTriple) -> BasicTriple:
+    def dereify(
+        self,
+        instance_triple: BasicTriple,
+        source_triple: BasicTriple,
+        target_triple: BasicTriple,
+    ) -> BasicTriple:
         """
         Return the triple that dereifies the three argument triples.
 
@@ -257,19 +281,25 @@ class Model(object):
         target_role = target_triple[1]
 
         if concept not in self.dereifications:
-            raise ModelError(f"{concept!r} cannot be dereified")
+            raise ModelError(f'{concept!r} cannot be dereified')
         for role, source, target in self.dereifications[concept]:
             if source == source_role and target == target_role:
-                return (cast(Variable, source_triple[2]),
-                        role,
-                        target_triple[2])
+                return (
+                    cast(Variable, source_triple[2]),
+                    role,
+                    target_triple[2],
+                )
             elif target == source_role and source == target_role:
-                return (cast(Variable, target_triple[2]),
-                        role,
-                        source_triple[2])
+                return (
+                    cast(Variable, target_triple[2]),
+                    role,
+                    source_triple[2],
+                )
 
-        raise ModelError(f'{source_role!r} and {target_role!r} '
-                         f'are not valid roles to dereify {concept!r}')
+        raise ModelError(
+            f'{source_role!r} and {target_role!r} '
+            f'are not valid roles to dereify {concept!r}'
+        )
 
     def original_order(self, role: Role):
         """Role sorting key that does not change the order."""
@@ -341,14 +371,16 @@ class Model(object):
 
 def _dfs(g, top):
     # just keep source and target of edge relations
-    q = {var: {tgt for _, _, tgt in triples if tgt in g}
-         for var, triples in g.items()}
+    q = {
+        var: {target for _, _, target in triples if target in g}
+        for var, triples in g.items()
+    }
     # make edges bidirectional
-    for var, tgts in q.items():
-        for tgt in tgts:
-            if tgt not in q:
-                q[tgt] = set()
-            q[tgt].add(var)
+    for var, targets in q.items():
+        for target in targets:
+            if target not in q:
+                q[target] = set()
+            q[target].add(var)
 
     visited = set()
     agenda = [top]

@@ -1,4 +1,3 @@
-
 """
 Definitions of tree structures.
 """
@@ -21,9 +20,9 @@ class Tree:
 
     __slots__ = 'node', 'metadata'
 
-    def __init__(self,
-                 node: Node,
-                 metadata: Optional[Mapping[str, str]] = None):
+    def __init__(
+        self, node: Node, metadata: Optional[Mapping[str, str]] = None
+    ):
         self.node = node
         self.metadata = metadata or {}
 
@@ -80,8 +79,9 @@ class Tree:
         used: Set[Variable] = set()
         for var, branches in self.nodes():
             if var not in varmap:
-                concept = next((tgt for role, tgt in branches if role == '/'),
-                               None)
+                concept = next(
+                    (tgt for role, tgt in branches if role == '/'), None
+                )
                 pre = _default_variable_prefix(concept)
                 i = 0
                 newvar = None
@@ -89,7 +89,8 @@ class Tree:
                     newvar = fmt.format(
                         prefix=pre,
                         i=i,
-                        j='' if i == 0 else i + 1)
+                        j='' if i == 0 else i + 1,
+                    )
                     i += 1
                 used.add(newvar)
                 varmap[var] = newvar
@@ -101,10 +102,12 @@ def _format(node: Node, level: int) -> str:
     var, branches = node
     next_level = level + 2
     indent = '\n' + ' ' * next_level
-    branch_strings = [_format_branch(branch, next_level)
-                      for branch in branches]
+    branch_strings = [
+        _format_branch(branch, next_level) for branch in branches
+    ]
     return '({!r}, [{}{}])'.format(
-        var, indent, (',' + indent).join(branch_strings))
+        var, indent, (',' + indent).join(branch_strings)
+    )
 
 
 def _format_branch(branch: Branch, level: int) -> str:
@@ -171,7 +174,7 @@ def _default_variable_prefix(concept: Any) -> Variable:
 
 def _map_vars(
     node: Node,
-    varmap: Dict[Variable, Variable]
+    varmap: Dict[Variable, Variable],
 ) -> Tuple[Variable, List[Branch]]:
     var, branches = node
 

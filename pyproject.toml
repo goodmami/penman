@@ -59,6 +59,7 @@ dependencies = [
 test = "pytest {args:--doctest-glob=*.rst --doctest-modules --ignore-glob=penman/interface.py}"
 lint = "ruff {args} penman/"
 typecheck = "mypy penman/"
+format = "ruff format {args} penman/"
 
 [tool.hatch.envs.docs]
 dependencies = [
@@ -73,6 +74,7 @@ clean = "make -C docs clean"
 
 [tool.ruff]
 target-version = "py38"
+line-length = 79
 select = [
   "B",    # flake8-bugbear
   "C90",  # McCabe cyclomatic complexity
@@ -86,3 +88,6 @@ select = [
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-wrap-aliases = true
+
+[tool.ruff.format]
+quote-style = "single"
