@@ -1,11 +1,19 @@
-
-# Penman &mdash; a Python library for PENMAN graph notation
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="/docs/_static/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="/docs/_static/logo-light.svg">
+    <img alt="Shows the Penman logo: a slash character between two parentheses." src="/docs/_static/logo-light.svg">
+  </picture>
+</div>
+<h1 align="center">Penman &ndash; a library for PENMAN graph notation</h1>
+<div align="center">
 
 [![PyPI Version](https://img.shields.io/pypi/v/penman.svg)](https://pypi.org/project/Penman/)
 ![Python Support](https://img.shields.io/pypi/pyversions/penman.svg)
 [![.github/workflows/checks.yml](https://github.com/goodmami/penman/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/goodmami/penman/actions/workflows/checks.yml)
 [![Documentation Status](https://readthedocs.org/projects/penman/badge/?version=latest)](https://penman.readthedocs.io/en/latest/?badge=latest)
 
+</div>
 
 This package models graphs encoded in [PENMAN
 notation](#penman-notation) (e.g., [AMR][]), such as the following for
@@ -20,6 +28,8 @@ notation](#penman-notation) (e.g., [AMR][]), such as the following for
 
 The Penman package may be used as a Python [library](#library-usage)
 or as a [script](#script-usage).
+
+For Javascript, see [chanind/penman-js](https://github.com/chanind/penman-js).
 
 
 ### Features
