@@ -59,7 +59,7 @@ from penman.exceptions import LayoutError
 from penman.graph import CONCEPT_ROLE, Graph
 from penman.model import Model
 from penman.surface import Alignment, RoleAlignment
-from penman.tree import Tree, is_atomic
+from penman.tree import Tree, is_atomic, is_tgt_node, is_tgt_symbol
 from penman.types import BasicTriple, Branch, Node, Role, Variable
 
 logger = logging.getLogger(__name__)
@@ -166,10 +166,10 @@ def _interpret_node(t: Node, variables: Set[Variable], model: Model):
         has_concept |= role == CONCEPT_ROLE
 
         # atomic targets
-        if is_atomic(target):
-            target, target_epis = _process_atomic(target)
+        if is_tgt_symbol(target):
+            tgt, target_epis = _process_atomic(target)
             epis.extend(target_epis)
-            triple = (var, role, target)
+            triple = (var, role, tgt)
             if model.is_role_inverted(role):
                 if target in variables:
                     triple = model.invert(triple)
@@ -178,7 +178,8 @@ def _interpret_node(t: Node, variables: Set[Variable], model: Model):
             triples.append(triple)
             epidata.append((triple, epis))
         # nested nodes
-        else:
+        # mypy forgets that (Node ∨ Sym) ^ ¬Sym → Node
+        elif is_tgt_node(target):
             triple = model.deinvert((var, role, target[0]))
             triples.append(triple)
 
@@ -566,7 +567,7 @@ def _rearrange(node: Node, key: Callable[[Branch], Any]) -> None:
         first = []
         rest = branches[:]
     for _, target in rest:
-        if not is_atomic(target):
+        if is_tgt_node(target):
             _rearrange(target, key=key)
     branches[:] = first + sorted(rest, key=key)
 
