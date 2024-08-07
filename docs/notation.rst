@@ -90,8 +90,10 @@ grammar to allow for surface alignments.
    Symbol    <- NameChar+
    Role      <- ':' NameChar*
    Alignment <- '~' ([a-zA-Z] '.'?)? Digit+ (',' Digit+)*
-   String    <- '"' (!'"' ('\\' . / .))* '"'
-   NameChar  <- ![ \n\t\r\f\v()/:~] .
+   String    <- '"' (!'"' (StrEscape / StrChar))* '"'
+   StrEscape <- '\\' StrChar
+   StrChar   <- ![\n\r\f\v] .
+   NameChar  <- ![ \n\t\r\f\v"()/:~] .
    Digit     <- [0-9]
 
 This grammar has some seemingly unnecessary ambiguity in that both the

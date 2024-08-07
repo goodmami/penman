@@ -229,6 +229,16 @@ class TestPENMANCodec(object):
         assert len(g.triples) == (n         # n :instance triples
                                   + n - 1)  # n - 1 :ARG0 triples
 
+    def test_decode_issue_143(self):
+        # https://github.com/goodmami/penman/issues/143
+        with pytest.raises(penman.DecodeError):
+            decode('(a :op ")')
+        with pytest.raises(penman.DecodeError):
+            decode('(a :op1 " :op2 "foo")')
+        with pytest.raises(penman.DecodeError):
+            decode('(a :" foo)')
+
+
     def test_encode(self, x1):
         # empty graph
         g = penman.Graph([])

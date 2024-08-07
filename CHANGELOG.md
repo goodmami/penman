@@ -1,5 +1,14 @@
 # Change Log
 
+## [v1.3.1]
+
+**Release date: 2024-08-06**
+
+### Fixed
+
+* Double-quote characters are no longer parsed as roles or symbols ([#143])
+
+
 ## [v1.3.0]
 
 **Release date: 2023-11-14**
