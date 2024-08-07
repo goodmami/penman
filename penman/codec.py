@@ -3,6 +3,7 @@
 """
 Serialization of PENMAN graphs.
 """
+
 from pathlib import Path
 from typing import IO, Iterable, Iterator, List, Optional, Union
 
