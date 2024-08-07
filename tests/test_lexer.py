@@ -74,3 +74,18 @@ def test_nonbreaking_space_issue_99():
     assert [tok.type for tok in lexer.lex('1\r2')] == ['SYMBOL', 'SYMBOL']
     assert [tok.type for tok in lexer.lex('1\u00a02')] == ['SYMBOL']
     assert [tok.type for tok in lexer.lex('あ　い')] == ['SYMBOL']
+
+
+def test_unterminated_string_issue_143():
+    # https://github.com/goodmami/penman/issues/143
+    # unmatched quotes result in unexpected tokens
+    assert [tok.type for tok in lexer.lex('(a :op ")')] == [
+        'LPAREN', 'SYMBOL', 'ROLE', 'UNEXPECTED', 'RPAREN'
+    ]
+    assert [tok.type for tok in lexer.lex('(a :op1 " :op2 "foo")')] == [
+        'LPAREN', 'SYMBOL', 'ROLE', 'STRING', 'SYMBOL', 'UNEXPECTED', 'RPAREN'
+    ]
+    # also disallow quotes in role names
+    assert [tok.type for tok in lexer.lex('(a :" b)')] == [
+        'LPAREN', 'SYMBOL', 'ROLE', 'UNEXPECTED', 'SYMBOL', 'RPAREN'
+    ]
