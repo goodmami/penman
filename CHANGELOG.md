@@ -791,6 +791,7 @@ First release with very basic functionality.
 [v1.2.1]: ../../releases/tag/v1.2.1
 [v1.2.2]: ../../releases/tag/v1.2.2
 [v1.3.0]: ../../releases/tag/v1.3.0
+[v1.3.1]: ../../releases/tag/v1.3.1
 [README]: README.md
 
 [#4]: https://github.com/goodmami/penman/issues/4
@@ -863,3 +864,4 @@ First release with very basic functionality.
 [#125]: https://github.com/goodmami/penman/issues/125
 [#126]: https://github.com/goodmami/penman/issues/126
 [#131]: https://github.com/goodmami/penman/issues/131
+[#143]: https://github.com/goodmami/penman/issues/143

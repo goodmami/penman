@@ -2,8 +2,7 @@ name: Build and Publish to PyPI or TestPyPI
 
 # Adapted from https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
 
-on:
-  push:
+on: push
 
 jobs:
   build:
@@ -20,7 +19,7 @@ jobs:
       - name: Build
         run: hatch build
       - name: Store the distribution packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
