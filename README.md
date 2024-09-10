@@ -141,7 +141,7 @@ The BibTeX is below:
 For the graph transformation/normalization work, please cite [Goodman, 2019].
 The BibTeX is below:
 
-[Goodman, 2019]: http://jaslli.org/files/proceedings/05_paclic33_postconf.pdf
+[Goodman, 2019]: https://jaslli.org/files/proceedings/05_paclic33_postconf.pdf
 
 ``` bibtex
 @inproceedings{Goodman:2019,
