@@ -4,7 +4,9 @@ Definitions of tree structures.
 
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Set, Tuple
 
-from penman.types import Branch, Node, Variable
+from typing_extensions import TypeGuard
+
+from penman.types import Branch, Node, Symbol, Variable
 
 _Step = Tuple[Tuple[int, ...], Branch]  # see Tree.walk()
 
@@ -112,10 +114,10 @@ def _format(node: Node, level: int) -> str:
 
 def _format_branch(branch: Branch, level: int) -> str:
     role, target = branch
-    if is_atomic(target):
-        target = repr(target)
-    else:
+    if is_tgt_node(target):
         target = _format(target, level)
+    else:
+        target = repr(target)
     return f'({role!r}, {target})'
 
 
@@ -124,7 +126,7 @@ def _nodes(node: Node) -> List[Node]:
     ns = [] if var is None else [node]
     for _, target in branches:
         # if target is not atomic, assume it's a valid tree node
-        if not is_atomic(target):
+        if is_tgt_node(target):
             ns.extend(_nodes(target))
     return ns
 
@@ -135,7 +137,7 @@ def _walk(node: Node, path: Tuple[int, ...]) -> Iterator[_Step]:
         curpath = path + (i,)
         yield (curpath, branch)
         _, target = branch
-        if not is_atomic(target):
+        if is_tgt_node(target):
             yield from _walk(target, curpath)
 
 
@@ -180,13 +182,30 @@ def _map_vars(
 
     newbranches: List[Branch] = []
     for role, tgt in branches:
-        if not is_atomic(tgt):
+        if is_tgt_node(tgt):
             tgt = _map_vars(tgt, varmap)
-        elif role != '/' and tgt in varmap:
+        # MyPy forgets that (Node ∨ Sym) ^ ¬Node → Sym
+        elif is_tgt_symbol(tgt) and role != '/' and tgt in varmap:
             tgt = varmap[tgt]
         newbranches.append((role, tgt))
 
     return (varmap[var], newbranches)
+
+
+def is_tgt_node(target: Symbol | Node) -> TypeGuard[Node]:
+    """
+    Inverse of :func:`is_atomic`, only for Symbol | Node from branches.
+    Automatically narrows the type to Node for better type inference
+    """
+    return not is_atomic(target)
+
+
+def is_tgt_symbol(target: Symbol | Node) -> TypeGuard[Symbol]:
+    """
+    Same as :func:`is_atomic`, only for Symbol | Node from branches.
+    Automatically narrows the type to Symbol for better type inference
+    """
+    return is_atomic(target)
 
 
 def is_atomic(x: Any) -> bool:

@@ -17,7 +17,7 @@ from penman.layout import (
 )
 from penman.model import Model
 from penman.surface import Alignment, RoleAlignment, alignments
-from penman.tree import Tree, is_atomic
+from penman.tree import Tree, is_tgt_node
 from penman.types import BasicTriple, Node, Target, Variable
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ def _canonicalize_node(node: Node, model: Model) -> Node:
         role, tgt = edge
         # alignments aren't parsed off yet, so handle them superficially
         role, tilde, alignment = role.partition('~')
-        if not is_atomic(tgt):
+        if is_tgt_node(tgt):
             tgt = _canonicalize_node(tgt, model)
         canonical_role = model.canonicalize_role(role) + tilde + alignment
         canonical_edges.append((canonical_role, tgt))
